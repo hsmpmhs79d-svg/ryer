@@ -8362,11 +8362,40 @@ function copyContact(el) {
     }
   };
   if (IS_MOBILE) {
+    // 페이지 로드 직후 더미 state로 뒤로가기 안전망
+    var _lastBackTap = 0;
+    document.addEventListener('DOMContentLoaded', function() {
+      try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+    });
     window.addEventListener('popstate', function() {
+      // detail 열려있으면 detail만 닫기
       if (_mvDetailId !== null) {
         _mvDetailId = null;
         renderMobile();
+        try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+        return;
       }
+      // 메인 화면에서 뒤로가기 — 한 번 더 누르면 종료 패턴
+      var now = Date.now();
+      if (now - _lastBackTap < 2000) {
+        // 2초 내 두 번 → 진짜 떠나기 (history.back으로 한 번 더 pop)
+        history.back();
+        return;
+      }
+      _lastBackTap = now;
+      // 토스트 표시
+      var t = document.getElementById('mv-exit-toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'mv-exit-toast';
+        t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.3);';
+        t.textContent = '한 번 더 누르면 종료됩니다';
+        document.body.appendChild(t);
+      }
+      t.style.display = 'block';
+      setTimeout(function(){ t.style.display = 'none'; }, 1800);
+      // 다시 state 추가해서 머무름
+      try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
     });
   }
 
