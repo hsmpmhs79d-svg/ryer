@@ -928,6 +928,10 @@
 #drive-toolbar button:hover { opacity: 0.9; }
 
 /* === 모바일 전용 뷰 === */
+/* 풀투리프레시(아래로 당기면 새로고침되는 동작) 차단 */
+html, body { overscroll-behavior-y: contain; }
+body.mobile-mode { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+body.mobile-mode #mobile-view { overscroll-behavior-y: contain; }
 #mobile-view { display: none; }
 body.mobile-mode #mobile-view { display: block; }
 body.mobile-mode .header,
@@ -937,65 +941,105 @@ body.mobile-mode .container,
 body.mobile-mode #detail-area { display: none !important; }
 
 #mobile-view {
-  font-family: 'Malgun Gothic', sans-serif;
-  background: #f0f4f8;
+  font-family: -apple-system, 'SF Pro Text', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  background: #f5f7fb;
   min-height: 100vh;
   padding-bottom: 60px;
+  color: #0f172a;
 }
 .mv-header {
-  background: linear-gradient(135deg, #1a3a5c 0%, #2563a8 100%);
-  color: #fff; padding: 14px 16px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #2563eb 100%);
+  color: #fff; padding: 18px 20px 16px;
   position: sticky; top: 0; z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
 }
-.mv-header h1 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
-.mv-header .mv-sub { font-size: 12px; opacity: 0.85; }
+.mv-header h1 {
+  font-size: 19px; font-weight: 800; margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+.mv-header .mv-sub {
+  font-size: 12px; opacity: 0.8; letter-spacing: 0.1px;
+}
 .mv-tabs {
-  display: flex; background: #fff; border-bottom: 1px solid #e2e8f0;
-  position: sticky; top: 56px; z-index: 99;
+  display: flex; background: #fff;
+  position: sticky; top: 70px; z-index: 99;
+  padding: 10px 12px; gap: 8px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
 }
 .mv-tab {
-  flex: 1; padding: 12px 8px; text-align: center;
-  font-size: 13px; font-weight: 600; color: #64748b;
-  border-bottom: 2px solid transparent;
+  flex: 1; padding: 11px 8px; text-align: center;
+  font-size: 14px; font-weight: 700; color: #94a3b8;
+  border-radius: 10px;
+  background: #f1f5f9;
   cursor: pointer;
+  transition: all 0.15s;
+  border: none; font-family: inherit;
 }
-.mv-tab.active { color: #2563eb; border-bottom-color: #2563eb; }
-.mv-content { padding: 12px; }
+.mv-tab.active {
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+.mv-content { padding: 14px; }
 .mv-search {
-  width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1;
-  border-radius: 8px; font-size: 14px; margin-bottom: 12px;
-  font-family: inherit;
+  width: 100%; padding: 12px 16px; border: 1.5px solid #e2e8f0;
+  border-radius: 12px; font-size: 15px; margin-bottom: 14px;
+  font-family: inherit; background: #fff; color: #0f172a;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+.mv-search:focus {
+  outline: none; border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 .mv-card {
-  background: #fff; border-radius: 10px; padding: 12px 14px;
-  margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background: #fff; border-radius: 14px; padding: 14px 16px;
+  margin-bottom: 10px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+  border: 1px solid #f1f5f9;
+  transition: transform 0.1s, box-shadow 0.1s;
 }
-.mv-card .mv-name { font-weight: 700; font-size: 15px; color: #1a202c; margin-bottom: 4px; }
-.mv-card .mv-meta { font-size: 12px; color: #64748b; line-height: 1.5; }
-.mv-card .mv-phone { color: #2563eb; font-weight: 600; }
+.mv-card:active { transform: scale(0.98); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05); }
+.mv-card .mv-name { font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 4px; letter-spacing: -0.2px; }
+.mv-card .mv-meta { font-size: 13px; color: #64748b; line-height: 1.5; }
+.mv-card .mv-phone { color: #2563eb; font-weight: 700; }
 .mv-detail {
-  background: #fff; border-radius: 12px; padding: 16px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
-.mv-detail .row { display: flex; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+.mv-detail .row { display: flex; padding: 11px 0; border-bottom: 1px solid #f1f5f9; align-items: center; gap: 12px; }
 .mv-detail .row:last-child { border-bottom: none; }
-.mv-detail .lbl { width: 70px; color: #64748b; font-size: 13px; flex-shrink: 0; }
-.mv-detail .val { flex: 1; font-size: 14px; color: #1a202c; word-break: break-all; }
+.mv-detail .lbl { width: 76px; color: #94a3b8; font-size: 13px; flex-shrink: 0; font-weight: 600; letter-spacing: -0.1px; }
+.mv-detail .val { flex: 1; font-size: 15px; color: #0f172a; word-break: break-all; font-weight: 500; }
 .mv-back {
-  background: #fff; border: 1px solid #cbd5e1; border-radius: 8px;
-  padding: 8px 14px; font-size: 13px; cursor: pointer; margin-bottom: 12px;
-  font-family: inherit;
+  background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 10px 16px; font-size: 14px; cursor: pointer; margin-bottom: 14px;
+  font-family: inherit; font-weight: 700; color: #475569;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
+.mv-back:active { background: #f8fafc; }
+
+/* 전화 row의 📞 / 💬 버튼 */
+.mv-phone-val { display: flex !important; align-items: center; justify-content: space-between; gap: 8px; }
+.mv-phone-text { flex: 1; color: #2563eb; font-weight: 700; font-size: 15px; letter-spacing: 0.2px; }
+.mv-phone-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.mv-phone-btn {
+  width: 38px; height: 38px; border-radius: 50%; border: none;
+  font-size: 17px; cursor: pointer; font-family: inherit;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+  transition: transform 0.1s;
+}
+.mv-phone-btn:active { transform: scale(0.92); }
+.mv-call { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; }
+.mv-sms { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; }
 .mv-empty { text-align: center; color: #94a3b8; padding: 40px 20px; font-size: 14px; }
 .mv-sched-item {
-  background: #fff; border-radius: 10px; padding: 12px 14px;
+  background: #f8fafc; border-radius: 10px; padding: 12px 14px;
   margin-bottom: 8px; border-left: 4px solid #2563eb;
 }
 .mv-sched-item.done { opacity: 0.55; border-left-color: #94a3b8; }
-.mv-sched-item .mv-sched-date { font-size: 12px; color: #64748b; margin-bottom: 4px; }
-.mv-sched-item .mv-sched-cust { font-weight: 600; font-size: 14px; }
-.mv-sched-item .mv-sched-memo { font-size: 13px; color: #475569; margin-top: 4px; }
+.mv-sched-item .mv-sched-date { font-size: 13px; color: #475569; margin-bottom: 4px; font-weight: 600; }
+.mv-sched-item .mv-sched-cust { font-weight: 700; font-size: 15px; color: #0f172a; }
+.mv-sched-item .mv-sched-memo { font-size: 13px; color: #64748b; margin-top: 4px; }
 
 /* 모바일 캘린더 */
 .mv-cal-head {
@@ -1052,20 +1096,25 @@ body.mobile-mode #detail-area { display: none !important; }
 
 /* === 모바일 편집 UI === */
 .mv-section {
-  background: #fff; border-radius: 12px; margin-bottom: 12px;
-  padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  background: #fff; border-radius: 16px; margin-bottom: 12px;
+  padding: 16px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  border: 1px solid #f1f5f9;
 }
 .mv-section-title {
   display: flex; align-items: center; justify-content: space-between;
-  font-size: 14px; font-weight: 700; color: #1a3a5c;
-  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;
+  font-size: 15px; font-weight: 800; color: #0f172a;
+  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
+  letter-spacing: -0.2px; gap: 8px; flex-wrap: wrap;
 }
 .mv-edit-btn, .mv-add-btn {
-  background: #2563eb; color: #fff; border: none; border-radius: 6px;
-  padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%); color: #fff;
+  border: none; border-radius: 8px;
+  padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
   font-family: inherit;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
 }
-.mv-add-btn { background: #10b981; }
+.mv-add-btn { background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 2px 4px rgba(16, 185, 129, 0.25); }
+.mv-edit-btn:active, .mv-add-btn:active { transform: scale(0.96); }
 .mv-consult-item {
   background: #f8fafc; border-radius: 8px; padding: 10px 12px;
   margin-bottom: 6px; border-left: 3px solid #94a3b8;
@@ -1174,7 +1223,7 @@ body.mobile-mode #detail-area { display: none !important; }
 <div id="mobile-view">
   <div class="mv-header">
     <h1>📋 고객관리 (모바일)</h1>
-    <div class="mv-sub" id="mv-sub">로그인 후 데이터 로드 중...</div>
+    <div class="mv-sub" id="mv-sub">로그인 중...</div>
   </div>
   <div class="mv-tabs">
     <div class="mv-tab active" data-tab="customers" onclick="mvSwitchTab('customers')">고객</div>
@@ -8006,7 +8055,7 @@ function copyContact(el) {
       var u = document.getElementById('drive-user');
       if (u) u.textContent = _userEmail;
       var sub = document.getElementById('mv-sub');
-      if (sub) sub.textContent = _userEmail + ' · 읽기 전용';
+      if (sub) sub.textContent = _userEmail;
     }).catch(function(){});
   }
 
@@ -8272,6 +8321,7 @@ function copyContact(el) {
           custId: c.id,
           custName: c.name || '(이름없음)',
           date: s.date || '',
+          time: s.time || '',
           type: s.type || '',
           memo: s.memo || '',
           done: !!s.completed,
@@ -8415,10 +8465,15 @@ function copyContact(el) {
       if (dayScheds.length === 0) {
         detail += '<div class="mv-empty" style="padding:20px 0;">일정 없음</div>';
       } else {
+        // 시간순 정렬 (시간 없는 건 뒤로)
+        dayScheds.sort(function(a, b) {
+          var at = a.time || '99:99', bt = b.time || '99:99';
+          return at < bt ? -1 : (at > bt ? 1 : 0);
+        });
         for (var i = 0; i < dayScheds.length; i++) {
           var s = dayScheds[i];
           detail += '<div class="mv-sched-item ' + (s.done ? 'done' : '') + '" onclick="mvOpenDetail(' + s.custId + ')">' +
-            '<div class="mv-sched-date">' + escapeHtml(s.type || '') + (s.done ? ' ✓완료' : '') + '</div>' +
+            '<div class="mv-sched-date">' + escapeHtml(s.type || '') + (s.time ? ' · ⏰ ' + escapeHtml(s.time) : '') + (s.done ? ' ✓완료' : '') + '</div>' +
             '<div class="mv-sched-cust">' + escapeHtml(s.custName) + '</div>' +
             (s.memo ? '<div class="mv-sched-memo">' + escapeHtml(s.memo) + '</div>' : '') +
           '</div>';
@@ -8459,21 +8514,38 @@ function copyContact(el) {
     var html = '<button class="mv-back" onclick="mvCloseDetail()">← 목록으로</button>';
 
     // ─ 인적사항 (편집 가능) ─
+    // ★ PC 원본 코드는 resident_number/medical_history/notes를 쓰므로 양쪽 호환
+    var _jumin = c.jumin || c.resident_number || '';
+    var _history = c.history || c.medical_history || '';
+    var _memo = c.memo || c.notes || '';
+    // 상태 뱃지
+    var statusBadge = '';
+    if (c.status === '가입완료') statusBadge = '<span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#10b981;color:#fff;border-radius:10px;font-size:11px;font-weight:700;">✅ 가입완료</span>';
+    else if (c.status === '가망고객') statusBadge = '<span style="display:inline-block;margin-left:8px;padding:2px 8px;background:#f59e0b;color:#fff;border-radius:10px;font-size:11px;font-weight:700;">⭐ 가망고객</span>';
     html += '<div class="mv-section">'
-         +   '<div class="mv-section-title">👤 인적사항'
+         +   '<div class="mv-section-title">👤 인적사항' + statusBadge
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">✏️ 수정</button>'
          +   '</div>'
          +   '<div class="mv-detail">'
          +     row('이름', c.name)
-         +     row('전화', c.phone)
-         +     row('주민번호', c.jumin)
+         +     phoneRow(c.phone)
+         +     row('주민번호', _jumin)
          +     row('주소', c.address)
          +     row('직업', c.job)
          +     row('운전여부', c.driving)
-         +     row('병력', c.history)
-         +     row('메모', c.memo)
+         +     row('병력', _history)
+         +     row('메모', _memo)
          +   '</div>'
          + '</div>';
+
+    // ─ 제안서 PDF (있을 때만) ─
+    if (c.proposalFileId) {
+      html += '<div class="mv-section"><div class="mv-section-title">📎 제안서</div>'
+           + '<button class="mv-add-btn" style="width:100%;padding:12px;font-size:14px;" '
+           + 'onclick="window.open(\'https://drive.google.com/file/d/' + c.proposalFileId + '/view\', \'_blank\')">'
+           + '📄 ' + escapeHtml(c.proposalFileName || 'PDF 열기') + '</button>'
+           + '</div>';
+    }
 
     // ─ 스케줄 (편집 가능) ─
     var scheds = c.schedules || [];
@@ -8586,11 +8658,63 @@ function copyContact(el) {
     return '<div class="row"><div class="lbl">' + label + '</div><div class="val">' + escapeHtml(String(val)) + '</div></div>';
   }
 
+  // 전화번호 row — 옆에 📞 / 💬 액션 버튼
+  function phoneRow(phone) {
+    if (!phone) {
+      return '<div class="row"><div class="lbl">전화</div><div class="val">-</div></div>';
+    }
+    var safe = escapeHtml(phone);
+    var arg = safe.replace(/'/g, "&#39;");
+    return '<div class="row"><div class="lbl">전화</div>'
+         + '<div class="val mv-phone-val">'
+         +   '<span class="mv-phone-text">' + safe + '</span>'
+         +   '<span class="mv-phone-actions">'
+         +     '<button type="button" class="mv-phone-btn mv-call" onclick="mvCallPhone(\'' + arg + '\')" aria-label="전화">📞</button>'
+         +     '<button type="button" class="mv-phone-btn mv-sms" onclick="mvSmsPhone(\'' + arg + '\')" aria-label="문자">💬</button>'
+         +   '</span>'
+         + '</div></div>';
+  }
+
   // ─── 모바일 편집 헬퍼 ───
   function _todayYmd() {
     var d = new Date();
     return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
   }
+
+  // 전화번호 자동 하이픈 (입력 도중 형태 유지)
+  window.mvFormatPhone = function(v) {
+    var d = (v || '').replace(/\D/g, '').slice(0, 11);
+    if (!d) return '';
+    // 02로 시작 (서울)
+    if (d.charAt(0) === '0' && d.charAt(1) === '2') {
+      if (d.length < 3) return d;
+      if (d.length < 6) return d.slice(0,2) + '-' + d.slice(2);
+      if (d.length <= 9) return d.slice(0,2) + '-' + d.slice(2,5) + '-' + d.slice(5,9);
+      return d.slice(0,2) + '-' + d.slice(2,6) + '-' + d.slice(6,10);
+    }
+    // 휴대전화(010 등) / 지역(031, 070 등) — 3자리
+    if (d.length < 4) return d;
+    if (d.length < 7) return d.slice(0,3) + '-' + d.slice(3);
+    if (d.length <= 10) return d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6,10);
+    return d.slice(0,3) + '-' + d.slice(3,7) + '-' + d.slice(7,11);
+  };
+  // 주민번호 자동 하이픈 (6자리-7자리)
+  window.mvFormatJumin = function(v) {
+    var d = (v || '').replace(/\D/g, '').slice(0, 13);
+    if (d.length < 7) return d;
+    return d.slice(0,6) + '-' + d.slice(6,13);
+  };
+  // 전화 걸기 / 문자 보내기 (숫자만 추출해서 tel:/sms:)
+  window.mvCallPhone = function(p) {
+    var d = String(p || '').replace(/\D/g, '');
+    if (!d) return;
+    location.href = 'tel:' + d;
+  };
+  window.mvSmsPhone = function(p) {
+    var d = String(p || '').replace(/\D/g, '');
+    if (!d) return;
+    location.href = 'sms:' + d;
+  };
 
   // 편집 후: 페이지 데이터 태그 + 스케줄 캐시 동기화 + 자동 저장
   function mvCommit() {
@@ -8618,20 +8742,23 @@ function copyContact(el) {
     if (m) m.classList.remove('show');
   };
 
-  // ─ 인적사항 편집 ─
+  // ─ 인적사항 편집 ─ (PC 코드와 호환: resident_number/medical_history/notes 양쪽 저장)
   window.mvEditCustomer = function(id) {
     var c = _mvCustomers.find(function(x){return x.id === id;});
     if (!c) return;
+    var _j = c.jumin || c.resident_number || '';
+    var _h = c.history || c.medical_history || '';
+    var _m = c.memo || c.notes || '';
     var h = '<div class="mv-modal-content">'
          + '<h3>고객 정보 수정</h3>'
          + '<label class="mv-flbl">이름</label><input class="mv-input" id="mv-edit-name" value="' + escapeHtml(c.name || '') + '">'
-         + '<label class="mv-flbl">전화</label><input class="mv-input" id="mv-edit-phone" value="' + escapeHtml(c.phone || '') + '">'
-         + '<label class="mv-flbl">주민번호</label><input class="mv-input" id="mv-edit-jumin" value="' + escapeHtml(c.jumin || '') + '">'
+         + '<label class="mv-flbl">전화</label><input class="mv-input" id="mv-edit-phone" type="tel" inputmode="numeric" oninput="this.value=mvFormatPhone(this.value)" value="' + escapeHtml(c.phone || '') + '">'
+         + '<label class="mv-flbl">주민번호</label><input class="mv-input" id="mv-edit-jumin" inputmode="numeric" oninput="this.value=mvFormatJumin(this.value)" value="' + escapeHtml(_j) + '">'
          + '<label class="mv-flbl">주소</label><input class="mv-input" id="mv-edit-address" value="' + escapeHtml(c.address || '') + '">'
          + '<label class="mv-flbl">직업</label><input class="mv-input" id="mv-edit-job" value="' + escapeHtml(c.job || '') + '">'
          + '<label class="mv-flbl">운전여부</label><input class="mv-input" id="mv-edit-driving" value="' + escapeHtml(c.driving || '') + '">'
-         + '<label class="mv-flbl">병력</label><textarea class="mv-textarea" id="mv-edit-history">' + escapeHtml(c.history || '') + '</textarea>'
-         + '<label class="mv-flbl">메모</label><textarea class="mv-textarea" id="mv-edit-memo">' + escapeHtml(c.memo || '') + '</textarea>'
+         + '<label class="mv-flbl">병력</label><textarea class="mv-textarea" id="mv-edit-history">' + escapeHtml(_h) + '</textarea>'
+         + '<label class="mv-flbl">메모</label><textarea class="mv-textarea" id="mv-edit-memo">' + escapeHtml(_m) + '</textarea>'
          + '<div class="mv-modal-actions">'
          +   '<button class="mv-modal-cancel" onclick="mvHideModal()">취소</button>'
          +   '<button class="mv-modal-save" onclick="mvSaveCustomerEdit(' + id + ')">저장</button>'
@@ -8642,13 +8769,17 @@ function copyContact(el) {
     var c = _mvCustomers.find(function(x){return x.id === id;});
     if (!c) return;
     c.name = document.getElementById('mv-edit-name').value;
-    c.phone = document.getElementById('mv-edit-phone').value;
-    c.jumin = document.getElementById('mv-edit-jumin').value;
+    c.phone = window.mvFormatPhone(document.getElementById('mv-edit-phone').value);
+    // 양쪽 키 모두 저장 (PC 원본 + 모바일 호환)
+    var jv = window.mvFormatJumin(document.getElementById('mv-edit-jumin').value);
+    c.jumin = jv; c.resident_number = jv;
     c.address = document.getElementById('mv-edit-address').value;
     c.job = document.getElementById('mv-edit-job').value;
     c.driving = document.getElementById('mv-edit-driving').value;
-    c.history = document.getElementById('mv-edit-history').value;
-    c.memo = document.getElementById('mv-edit-memo').value;
+    var hv = document.getElementById('mv-edit-history').value;
+    c.history = hv; c.medical_history = hv;
+    var mv = document.getElementById('mv-edit-memo').value;
+    c.memo = mv; c.notes = mv;
     c._updated = Date.now();
     mvCommit();
     mvHideModal();
@@ -8794,45 +8925,42 @@ function copyContact(el) {
     }
   };
   if (IS_MOBILE) {
-    // 즉시 안전망: DOMContentLoaded 기다리지 않고 바로 더미 state 깔아둠
-    // (스크립트가 </body> 직전이라 history는 이미 사용 가능)
-    try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
-    // BFCache(뒤로가기 후 다시 들어옴) 복귀 시에도 안전망 재보강
-    window.addEventListener('pageshow', function() {
-      if (!history.state || (!history.state.mvBase && !history.state.mvDetail)) {
-        try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+    // 모바일 뒤로가기 = 절대 사이트에서 안 나가게 다겹 안전망
+    // 진입 즉시 30개 더미 state 깔기 (history.length=1로 시작해도 31됨)
+    try {
+      for (var _bi = 0; _bi < 30; _bi++) {
+        history.pushState({ mvBase: true, d: _bi }, '', location.href);
       }
+    } catch(e) {}
+    // BFCache 복귀 시에도 다시 쌓기
+    window.addEventListener('pageshow', function(ev) {
+      try {
+        for (var _bj = 0; _bj < 10; _bj++) {
+          history.pushState({ mvBase: true, d: _bj }, '', location.href);
+        }
+      } catch(e) {}
     });
-    var _lastBackTap = 0;
     window.addEventListener('popstate', function() {
-      // detail 열려있으면 detail만 닫기
+      // detail 열려있으면 detail만 닫고 다시 쌓기
       if (_mvDetailId !== null) {
         _mvDetailId = null;
         renderMobile();
         try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
         return;
       }
-      // 메인 화면에서 뒤로가기 — 한 번 더 누르면 종료 패턴
-      var now = Date.now();
-      if (now - _lastBackTap < 2000) {
-        // 2초 내 두 번 → 진짜 떠나기 (history.back으로 한 번 더 pop)
-        history.back();
-        return;
-      }
-      _lastBackTap = now;
-      // 토스트 표시
+      // 메인 화면 — 즉시 다시 state 채워서 절대 안 나감
+      try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+      // 안내 토스트
       var t = document.getElementById('mv-exit-toast');
       if (!t) {
         t = document.createElement('div');
         t.id = 'mv-exit-toast';
         t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,0.3);';
-        t.textContent = '한 번 더 누르면 종료됩니다';
         document.body.appendChild(t);
       }
+      t.textContent = '나가시려면 탭을 닫아주세요';
       t.style.display = 'block';
-      setTimeout(function(){ t.style.display = 'none'; }, 1800);
-      // 다시 state 추가해서 머무름
-      try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+      setTimeout(function(){ t.style.display = 'none'; }, 1500);
     });
   }
 
@@ -8887,6 +9015,165 @@ function copyContact(el) {
 
   // PC/모바일 모두 자동 저장 ON (1.5초 디바운스 후 Drive 업로드)
   window.scheduleAutoSave = scheduleAutoSave;
+
+  // ═══════════════════════════════════════════════════
+  // PC: 고객 카드에 상태 셀렉트 + 제안서 PDF 업로드 UI 주입
+  // ═══════════════════════════════════════════════════
+  if (!IS_MOBILE && typeof window.selectCustomer === 'function') {
+    var _origSelectCustomer = window.selectCustomer;
+    window.selectCustomer = function(id) {
+      _origSelectCustomer(id);
+      try { injectStatusAndProposalUI(id); } catch(e) { console.error('PC UI inject err:', e); }
+    };
+  }
+
+  function injectStatusAndProposalUI(id) {
+    var c = (window.customers || []).find(function(x){return x.id === id;});
+    if (!c) return;
+    var card = document.querySelector('.customer-card');
+    if (!card) return;
+
+    // (1) 카드 헤더에 상태 셀렉트 추가
+    var btnGroup = card.querySelector('.card-header .btn-group');
+    if (btnGroup && !btnGroup.querySelector('.status-select-wrap')) {
+      var wrap = document.createElement('span');
+      wrap.className = 'status-select-wrap';
+      wrap.style.cssText = 'display:inline-flex;align-items:center;margin-right:10px;';
+      var sel = document.createElement('select');
+      sel.style.cssText = 'padding:6px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;background:#fff;font-family:inherit;cursor:pointer;';
+      sel.innerHTML =
+        '<option value="">⚪ 상태 미설정</option>' +
+        '<option value="가입완료">✅ 가입완료</option>' +
+        '<option value="가망고객">⭐ 가망고객</option>';
+      sel.value = c.status || '';
+      // 현재 값에 따른 색 표시
+      var paintSel = function(v) {
+        if (v === '가입완료') { sel.style.background = '#d1fae5'; sel.style.borderColor = '#10b981'; sel.style.color = '#065f46'; }
+        else if (v === '가망고객') { sel.style.background = '#fef3c7'; sel.style.borderColor = '#f59e0b'; sel.style.color = '#92400e'; }
+        else { sel.style.background = '#fff'; sel.style.borderColor = '#cbd5e1'; sel.style.color = '#1a202c'; }
+      };
+      paintSel(sel.value);
+      sel.onchange = function() {
+        c.status = this.value;
+        c._updated = Date.now();
+        paintSel(this.value);
+        if (typeof autoSave === 'function') autoSave();
+        if (typeof renderList === 'function') renderList();
+      };
+      wrap.appendChild(sel);
+      btnGroup.insertBefore(wrap, btnGroup.firstChild);
+    }
+
+    // (2) 카드 바디에 제안서 섹션 추가
+    var cardBody = card.querySelector('.card-body');
+    if (cardBody && !cardBody.querySelector('.proposal-section')) {
+      var ps = document.createElement('div');
+      ps.className = 'proposal-section';
+      ps.style.cssText = 'margin-top:14px;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;';
+      renderProposalSection(ps, c);
+      // 스케줄 폼 다음에 삽입 (consult-form 직전)
+      var consultForm = cardBody.querySelector('.consult-form');
+      if (consultForm) cardBody.insertBefore(ps, consultForm);
+      else cardBody.appendChild(ps);
+    } else if (cardBody) {
+      var existing = cardBody.querySelector('.proposal-section');
+      if (existing) renderProposalSection(existing, c);
+    }
+  }
+
+  function renderProposalSection(container, c) {
+    var hasProposal = !!c.proposalFileId;
+    var html = '<div style="font-weight:700;font-size:14px;color:#1a3a5c;margin-bottom:10px;">📎 제안서 (PDF)</div>';
+    if (hasProposal) {
+      html += '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+           + '<div style="flex:1;min-width:200px;font-size:13px;color:#475569;background:#fff;padding:8px 12px;border-radius:6px;border:1px solid #e2e8f0;">📄 ' + escapeHtml(c.proposalFileName || '제안서.pdf') + '</div>'
+           + '<button class="pc-pdf-view" style="background:#2563eb;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📄 열기</button>'
+           + '<button class="pc-pdf-replace" style="background:#64748b;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📎 교체</button>'
+           + '<button class="pc-pdf-del" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🗑 삭제</button>'
+           + '</div>';
+    } else {
+      html += '<div style="display:flex;align-items:center;gap:8px;">'
+           + '<button class="pc-pdf-upload" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">📎 PDF 첨부</button>'
+           + '<span style="font-size:12px;color:#94a3b8;">고객이 받을 제안서 PDF를 Drive에 업로드합니다</span>'
+           + '</div>';
+    }
+    html += '<input type="file" class="pc-pdf-input" accept="application/pdf,.pdf" style="display:none;">';
+    html += '<div class="pc-pdf-status" style="font-size:12px;color:#64748b;margin-top:8px;"></div>';
+    container.innerHTML = html;
+    var input = container.querySelector('.pc-pdf-input');
+    var status = container.querySelector('.pc-pdf-status');
+    var btnUpload = container.querySelector('.pc-pdf-upload');
+    var btnView = container.querySelector('.pc-pdf-view');
+    var btnReplace = container.querySelector('.pc-pdf-replace');
+    var btnDel = container.querySelector('.pc-pdf-del');
+    if (btnUpload) btnUpload.onclick = function() { input.click(); };
+    if (btnReplace) btnReplace.onclick = function() { input.click(); };
+    if (btnView) btnView.onclick = function() {
+      window.open('https://drive.google.com/file/d/' + c.proposalFileId + '/view', '_blank');
+    };
+    if (btnDel) btnDel.onclick = function() { deleteProposalPdf(c, container); };
+    input.onchange = function() {
+      if (this.files && this.files[0]) uploadProposalPdf(c, this.files[0], container, status);
+    };
+  }
+
+  function uploadProposalPdf(c, file, container, status) {
+    if (!_accessToken) { alert('Google 로그인이 필요합니다'); return; }
+    if (!file.type.match(/pdf/i) && !/\.pdf$/i.test(file.name)) { alert('PDF 파일만 업로드할 수 있습니다'); return; }
+    if (file.size > 50 * 1024 * 1024) { alert('50MB 이하만 업로드 가능합니다'); return; }
+    status.textContent = '⬆️ 업로드 중... (' + Math.round(file.size/1024) + 'KB)';
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var b64 = ev.target.result.split(',')[1];
+      var boundary = '----proposal' + Date.now();
+      var meta = { name: 'proposal_' + c.id + '_' + file.name, mimeType: 'application/pdf' };
+      var body = '--' + boundary + '\r\n'
+               + 'Content-Type: application/json; charset=UTF-8\r\n\r\n'
+               + JSON.stringify(meta) + '\r\n'
+               + '--' + boundary + '\r\n'
+               + 'Content-Type: application/pdf\r\n'
+               + 'Content-Transfer-Encoding: base64\r\n\r\n'
+               + b64 + '\r\n'
+               + '--' + boundary + '--';
+      gapi.client.request({
+        path: '/upload/drive/v3/files',
+        method: 'POST',
+        params: { uploadType: 'multipart' },
+        headers: { 'Content-Type': 'multipart/related; boundary="' + boundary + '"' },
+        body: body
+      }).then(function(resp) {
+        // 새 파일 만들어졌으면 옛 파일 삭제
+        var oldId = c.proposalFileId;
+        c.proposalFileId = resp.result.id;
+        c.proposalFileName = file.name;
+        c._updated = Date.now();
+        if (oldId) {
+          gapi.client.drive.files.delete({ fileId: oldId }).then(function(){}, function(){});
+        }
+        if (typeof autoSave === 'function') autoSave();
+        renderProposalSection(container, c);
+        status.textContent = '✅ 업로드 완료';
+        setTimeout(function(){ status.textContent = ''; }, 2500);
+      }, function(err) {
+        console.error('PDF 업로드 실패:', err);
+        status.textContent = '❌ 실패: ' + (err.result && err.result.error ? err.result.error.message : '오류');
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function deleteProposalPdf(c, container) {
+    if (!confirm('제안서를 삭제할까요? (Drive에서도 함께 삭제됩니다)')) return;
+    var fid = c.proposalFileId;
+    c.proposalFileId = null;
+    c.proposalFileName = null;
+    c._updated = Date.now();
+    if (typeof autoSave === 'function') autoSave();
+    renderProposalSection(container, c);
+    if (fid) {
+      gapi.client.drive.files.delete({ fileId: fid }).then(function(){}, function(){});
+    }
+  }
 })();
 </script>
 
