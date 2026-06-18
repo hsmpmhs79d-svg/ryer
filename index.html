@@ -1050,6 +1050,81 @@ body.mobile-mode #detail-area { display: none !important; }
   border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;
 }
 
+/* === 모바일 편집 UI === */
+.mv-section {
+  background: #fff; border-radius: 12px; margin-bottom: 12px;
+  padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.mv-section-title {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; font-weight: 700; color: #1a3a5c;
+  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0;
+}
+.mv-edit-btn, .mv-add-btn {
+  background: #2563eb; color: #fff; border: none; border-radius: 6px;
+  padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit;
+}
+.mv-add-btn { background: #10b981; }
+.mv-consult-item {
+  background: #f8fafc; border-radius: 8px; padding: 10px 12px;
+  margin-bottom: 6px; border-left: 3px solid #94a3b8;
+}
+.mv-consult-item.done { opacity: 0.6; border-left-color: #64748b; }
+.mv-consult-content {
+  font-size: 13px; color: #334155; margin-top: 4px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.mv-item-actions {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.mv-item-actions button {
+  background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px;
+  padding: 4px 10px; font-size: 12px; cursor: pointer;
+  font-family: inherit; color: #475569;
+}
+.mv-item-actions button.mv-del { background: #fee2e2; border-color: #fecaca; color: #991b1b; }
+
+/* === 모바일 모달 (편집 폼) === */
+#mv-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 99996; display: none;
+  align-items: flex-end; justify-content: center;
+}
+#mv-modal.show { display: flex; }
+.mv-modal-content {
+  background: #fff; width: 100%; max-width: 500px;
+  border-radius: 16px 16px 0 0; padding: 20px 18px;
+  max-height: 85vh; overflow-y: auto;
+  animation: mvSlideUp 0.2s ease-out;
+}
+@keyframes mvSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.mv-modal-content h3 {
+  font-size: 16px; color: #1a3a5c; margin-bottom: 14px;
+}
+.mv-flbl {
+  display: block; font-size: 12px; color: #64748b;
+  font-weight: 600; margin: 10px 0 4px;
+}
+.mv-input, .mv-textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1;
+  border-radius: 8px; font-size: 14px; font-family: inherit;
+  background: #fff; color: #1a202c; box-sizing: border-box;
+}
+.mv-textarea { min-height: 80px; resize: vertical; }
+.mv-modal-actions {
+  display: flex; gap: 8px; margin-top: 18px;
+}
+.mv-modal-actions button {
+  flex: 1; padding: 12px; border: none; border-radius: 8px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.mv-modal-cancel { background: #f1f5f9; color: #475569; }
+.mv-modal-save { background: #2563eb; color: #fff; }
+
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -8166,11 +8241,27 @@ function copyContact(el) {
       var raw = data['customer-data'] || '[]';
       _mvCustomers = JSON.parse(raw);
     } catch(e) { _mvCustomers = []; }
+    // ★ window.customers와 같은 참조로 — buildSaveContent가 customers를 직렬화하므로
+    window.customers = _mvCustomers;
+    // 매니저 프로필도 로드 (요청 표시용)
+    try {
+      var mp = data['manager-profiles-data'] || '[]';
+      window.managerProfiles = JSON.parse(mp);
+    } catch(e) { window.managerProfiles = []; }
+    // 페이지의 data 태그도 갱신 (저장 시 정확한 데이터 직렬화 위해)
+    var _cdEl = document.getElementById('customer-data');
+    if (_cdEl) _cdEl.textContent = JSON.stringify(_mvCustomers);
+    var _mpEl = document.getElementById('manager-profiles-data');
+    if (_mpEl && data['manager-profiles-data']) _mpEl.textContent = data['manager-profiles-data'];
     // 최신순(ID 큰 순서) — 등록순 X
     _mvCustomers.sort(function(a, b) {
       return (b.id || 0) - (a.id || 0);
     });
-    // 스케줄은 고객 데이터 안에 있음 (customer.schedules 배열)
+    rebuildSchedCache();
+    renderMobile();
+  }
+
+  function rebuildSchedCache() {
     _mvSchedules = [];
     for (var i = 0; i < _mvCustomers.length; i++) {
       var c = _mvCustomers[i];
@@ -8183,12 +8274,11 @@ function copyContact(el) {
           date: s.date || '',
           type: s.type || '',
           memo: s.memo || '',
-          done: !!s.done,
+          done: !!s.completed,
           _idx: j
         });
       }
     }
-    renderMobile();
   }
 
   function renderMobile() {
@@ -8367,35 +8457,310 @@ function copyContact(el) {
     var c = _mvCustomers.find(function(x) { return x.id === _mvDetailId; });
     if (!c) { _mvDetailId = null; renderMobile(); return; }
     var html = '<button class="mv-back" onclick="mvCloseDetail()">← 목록으로</button>';
-    html += '<div class="mv-detail">' +
-      row('이름', c.name) +
-      row('전화', c.phone) +
-      row('생년월일', c.jumin || c.birthdate) +
-      row('주소', c.address) +
-      row('직업', c.job) +
-      row('운전여부', c.driving) +
-      row('병력', c.history) +
-      row('메모', c.memo) +
-    '</div>';
-    // 스케줄 표시
+
+    // ─ 인적사항 (편집 가능) ─
+    html += '<div class="mv-section">'
+         +   '<div class="mv-section-title">👤 인적사항'
+         +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">✏️ 수정</button>'
+         +   '</div>'
+         +   '<div class="mv-detail">'
+         +     row('이름', c.name)
+         +     row('전화', c.phone)
+         +     row('주민번호', c.jumin)
+         +     row('주소', c.address)
+         +     row('직업', c.job)
+         +     row('운전여부', c.driving)
+         +     row('병력', c.history)
+         +     row('메모', c.memo)
+         +   '</div>'
+         + '</div>';
+
+    // ─ 스케줄 (편집 가능) ─
     var scheds = c.schedules || [];
-    if (scheds.length) {
-      html += '<div style="margin-top:16px;font-weight:700;font-size:14px;color:#475569;margin-bottom:8px;">📅 스케줄</div>';
-      for (var i = 0; i < scheds.length; i++) {
-        var s = scheds[i];
-        html += '<div class="mv-sched-item ' + (s.done ? 'done' : '') + '">' +
-          '<div class="mv-sched-date">' + escapeHtml(s.date || '') + ' · ' + escapeHtml(s.type || '') + (s.done ? ' ✓' : '') + '</div>' +
-          (s.memo ? '<div class="mv-sched-memo">' + escapeHtml(s.memo) + '</div>' : '') +
-        '</div>';
+    var sortedScheds = scheds.map(function(s,i){return {s:s,i:i};}).sort(function(a,b){
+      return (a.s.date+(a.s.time||'')) < (b.s.date+(b.s.time||'')) ? -1 : 1;
+    });
+    html += '<div class="mv-section">'
+         +   '<div class="mv-section-title">📅 스케줄 (' + scheds.length + ')'
+         +     '<button class="mv-add-btn" onclick="mvOpenSchedModal(' + c.id + ', null)">+ 추가</button>'
+         +   '</div>';
+    if (!scheds.length) {
+      html += '<div class="mv-empty" style="padding:20px 0;">스케줄 없음</div>';
+    } else {
+      for (var i = 0; i < sortedScheds.length; i++) {
+        var s = sortedScheds[i].s, si = sortedScheds[i].i;
+        html += '<div class="mv-sched-item ' + (s.completed ? 'done' : '') + '">'
+             +   '<div class="mv-sched-date">' + escapeHtml(s.date || '') + (s.time ? ' ' + escapeHtml(s.time) : '') + ' · ' + escapeHtml(s.type || '') + (s.completed ? ' ✓완료' : '') + '</div>'
+             +   (s.memo ? '<div class="mv-sched-memo">' + escapeHtml(s.memo) + '</div>' : '')
+             +   '<div class="mv-item-actions">'
+             +     '<button onclick="mvToggleSched(' + c.id + ',' + si + ')">' + (s.completed ? '↻ 미완료' : '✓ 완료') + '</button>'
+             +     '<button onclick="mvOpenSchedModal(' + c.id + ',' + si + ')">✏️ 수정</button>'
+             +     '<button class="mv-del" onclick="mvDelSched(' + c.id + ',' + si + ')">🗑 삭제</button>'
+             +   '</div>'
+             + '</div>';
       }
     }
+    html += '</div>';
+
+    // ─ 상담이력 (편집 가능) ─
+    var cons = c.consultations || [];
+    html += '<div class="mv-section">'
+         +   '<div class="mv-section-title">💬 상담이력 (' + cons.length + ')'
+         +     '<button class="mv-add-btn" onclick="mvOpenConsultModal(' + c.id + ', null)">+ 새상담</button>'
+         +   '</div>';
+    if (!cons.length) {
+      html += '<div class="mv-empty" style="padding:20px 0;">상담이력 없음</div>';
+    } else {
+      for (var ci = 0; ci < cons.length; ci++) {
+        var con = cons[ci];
+        html += '<div class="mv-consult-item">'
+             +   '<div class="mv-sched-date">' + escapeHtml(con.date || '') + '</div>'
+             +   '<div class="mv-consult-content">' + escapeHtml(con.content || '') + '</div>'
+             +   '<div class="mv-item-actions">'
+             +     '<button onclick="mvOpenConsultModal(' + c.id + ',' + ci + ')">✏️ 수정</button>'
+             +     '<button class="mv-del" onclick="mvDelConsult(' + c.id + ',' + ci + ')">🗑 삭제</button>'
+             +   '</div>'
+             + '</div>';
+      }
+    }
+    html += '</div>';
+
+    // ─ 자동차 보험 (표시만) ─
+    var autos = c.autoIns || [];
+    if (autos.length) {
+      html += '<div class="mv-section"><div class="mv-section-title">🚗 자동차 보험 (' + autos.length + ')</div>';
+      for (var ai = 0; ai < autos.length; ai++) {
+        var a = autos[ai];
+        html += '<div class="mv-consult-item">'
+             +   '<div class="mv-sched-cust">' + escapeHtml(a.company || '') + '</div>'
+             +   '<div class="mv-sched-date">' + escapeHtml(a.startDate || '') + (a.premium ? ' · ' + escapeHtml(a.premium) : '') + '</div>'
+             +   (a.memo ? '<div class="mv-sched-memo">' + escapeHtml(a.memo) + '</div>' : '')
+             + '</div>';
+      }
+      html += '</div>';
+    }
+
+    // ─ 실손 보험 (표시만) ─
+    if (c.silsonIns || c.silsonDate || c.silsonMemo) {
+      html += '<div class="mv-section"><div class="mv-section-title">🏥 실손 보험</div>'
+           +   '<div class="mv-detail">'
+           +     row('보험사', c.silsonIns)
+           +     row('가입일', c.silsonDate)
+           +     row('2013형', c.silsonType2013)
+           +     row('수동입력', c.silsonManual)
+           +     row('메모', c.silsonMemo)
+           +   '</div>'
+           + '</div>';
+    }
+
+    // ─ 매니저 요청 (표시만) ─
+    var reqs = c.managerRequests || [];
+    if (reqs.length) {
+      html += '<div class="mv-section"><div class="mv-section-title">📨 매니저 요청 (' + reqs.length + ')</div>';
+      for (var ri = 0; ri < reqs.length; ri++) {
+        var r = reqs[ri];
+        var mgr = mvGetMgr(r.managerId);
+        var mgrName = mgr ? mgr.name : '(매니저 미지정)';
+        html += '<div class="mv-consult-item ' + (r.completed ? 'done' : '') + '">'
+             +   '<div class="mv-sched-date">' + escapeHtml(r.date || '') + ' · ' + escapeHtml(mgrName) + (r.completed ? ' ✓완료' : '') + '</div>'
+             +   (r.coverage ? '<div class="mv-sched-cust">' + escapeHtml(r.coverage) + '</div>' : '')
+             +   (r.memo ? '<div class="mv-sched-memo">' + escapeHtml(r.memo) + '</div>' : '')
+             + '</div>';
+      }
+      html += '</div>';
+    }
+
     content.innerHTML = html;
+  }
+
+  function mvGetMgr(pid) {
+    var profs = window.managerProfiles || [];
+    for (var i = 0; i < profs.length; i++) {
+      if (profs[i].id === pid) return profs[i];
+    }
+    return null;
   }
 
   function row(label, val) {
     if (!val) val = '-';
     return '<div class="row"><div class="lbl">' + label + '</div><div class="val">' + escapeHtml(String(val)) + '</div></div>';
   }
+
+  // ─── 모바일 편집 헬퍼 ───
+  function _todayYmd() {
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  // 편집 후: 페이지 데이터 태그 + 스케줄 캐시 동기화 + 자동 저장
+  function mvCommit() {
+    var el = document.getElementById('customer-data');
+    if (el) el.textContent = JSON.stringify(_mvCustomers);
+    window.customers = _mvCustomers;
+    rebuildSchedCache();
+    // 1.5초 디바운스 Drive 저장
+    if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+    banner('💾 저장 중...', '');
+  }
+
+  function mvShowModal(html) {
+    var m = document.getElementById('mv-modal');
+    if (!m) {
+      m = document.createElement('div');
+      m.id = 'mv-modal';
+      document.body.appendChild(m);
+    }
+    m.innerHTML = html;
+    m.classList.add('show');
+  }
+  window.mvHideModal = function() {
+    var m = document.getElementById('mv-modal');
+    if (m) m.classList.remove('show');
+  };
+
+  // ─ 인적사항 편집 ─
+  window.mvEditCustomer = function(id) {
+    var c = _mvCustomers.find(function(x){return x.id === id;});
+    if (!c) return;
+    var h = '<div class="mv-modal-content">'
+         + '<h3>고객 정보 수정</h3>'
+         + '<label class="mv-flbl">이름</label><input class="mv-input" id="mv-edit-name" value="' + escapeHtml(c.name || '') + '">'
+         + '<label class="mv-flbl">전화</label><input class="mv-input" id="mv-edit-phone" value="' + escapeHtml(c.phone || '') + '">'
+         + '<label class="mv-flbl">주민번호</label><input class="mv-input" id="mv-edit-jumin" value="' + escapeHtml(c.jumin || '') + '">'
+         + '<label class="mv-flbl">주소</label><input class="mv-input" id="mv-edit-address" value="' + escapeHtml(c.address || '') + '">'
+         + '<label class="mv-flbl">직업</label><input class="mv-input" id="mv-edit-job" value="' + escapeHtml(c.job || '') + '">'
+         + '<label class="mv-flbl">운전여부</label><input class="mv-input" id="mv-edit-driving" value="' + escapeHtml(c.driving || '') + '">'
+         + '<label class="mv-flbl">병력</label><textarea class="mv-textarea" id="mv-edit-history">' + escapeHtml(c.history || '') + '</textarea>'
+         + '<label class="mv-flbl">메모</label><textarea class="mv-textarea" id="mv-edit-memo">' + escapeHtml(c.memo || '') + '</textarea>'
+         + '<div class="mv-modal-actions">'
+         +   '<button class="mv-modal-cancel" onclick="mvHideModal()">취소</button>'
+         +   '<button class="mv-modal-save" onclick="mvSaveCustomerEdit(' + id + ')">저장</button>'
+         + '</div></div>';
+    mvShowModal(h);
+  };
+  window.mvSaveCustomerEdit = function(id) {
+    var c = _mvCustomers.find(function(x){return x.id === id;});
+    if (!c) return;
+    c.name = document.getElementById('mv-edit-name').value;
+    c.phone = document.getElementById('mv-edit-phone').value;
+    c.jumin = document.getElementById('mv-edit-jumin').value;
+    c.address = document.getElementById('mv-edit-address').value;
+    c.job = document.getElementById('mv-edit-job').value;
+    c.driving = document.getElementById('mv-edit-driving').value;
+    c.history = document.getElementById('mv-edit-history').value;
+    c.memo = document.getElementById('mv-edit-memo').value;
+    c._updated = Date.now();
+    mvCommit();
+    mvHideModal();
+    renderMobile();
+  };
+
+  // ─ 상담이력 편집 ─
+  window.mvOpenConsultModal = function(custId, idx) {
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c) return;
+    c.consultations = c.consultations || [];
+    var isNew = (idx === null || idx === undefined);
+    var con = isNew ? { date: _todayYmd(), content: '' } : c.consultations[idx];
+    if (!con) return;
+    var h = '<div class="mv-modal-content">'
+         + '<h3>' + (isNew ? '새 상담이력' : '상담이력 수정') + '</h3>'
+         + '<label class="mv-flbl">날짜</label><input type="date" class="mv-input" id="mv-con-date" value="' + escapeHtml(con.date || '') + '">'
+         + '<label class="mv-flbl">상담 내용</label><textarea class="mv-textarea" id="mv-con-content" rows="6" style="min-height:140px;">' + escapeHtml(con.content || '') + '</textarea>'
+         + '<div class="mv-modal-actions">'
+         +   '<button class="mv-modal-cancel" onclick="mvHideModal()">취소</button>'
+         +   '<button class="mv-modal-save" onclick="mvSaveConsult(' + custId + ',' + (isNew ? 'null' : idx) + ')">저장</button>'
+         + '</div></div>';
+    mvShowModal(h);
+  };
+  window.mvSaveConsult = function(custId, idx) {
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c) return;
+    c.consultations = c.consultations || [];
+    var date = document.getElementById('mv-con-date').value;
+    var content = document.getElementById('mv-con-content').value;
+    if (!content.trim()) { alert('내용을 입력하세요'); return; }
+    if (idx === null) {
+      c.consultations.unshift({date: date, content: content});
+    } else {
+      c.consultations[idx].date = date;
+      c.consultations[idx].content = content;
+    }
+    c._updated = Date.now();
+    mvCommit();
+    mvHideModal();
+    renderMobile();
+  };
+  window.mvDelConsult = function(custId, idx) {
+    if (!confirm('이 상담이력을 삭제할까요?')) return;
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c || !c.consultations) return;
+    c.consultations.splice(idx, 1);
+    c._updated = Date.now();
+    mvCommit();
+    renderMobile();
+  };
+
+  // ─ 스케줄 편집 ─
+  window.mvOpenSchedModal = function(custId, idx) {
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c) return;
+    c.schedules = c.schedules || [];
+    var isNew = (idx === null || idx === undefined);
+    var s = isNew ? { type: '', date: _todayYmd(), time: '', memo: '', simple: false, completed: false } : c.schedules[idx];
+    if (!s) return;
+    var h = '<div class="mv-modal-content">'
+         + '<h3>' + (isNew ? '새 스케줄' : '스케줄 수정') + '</h3>'
+         + '<label class="mv-flbl">유형</label><input class="mv-input" id="mv-sd-type" placeholder="예: 미팅, 계약, 통화" value="' + escapeHtml(s.type || '') + '">'
+         + '<label class="mv-flbl">날짜</label><input type="date" class="mv-input" id="mv-sd-date" value="' + escapeHtml(s.date || '') + '">'
+         + '<label class="mv-flbl">시간</label><input type="time" class="mv-input" id="mv-sd-time" value="' + escapeHtml(s.time || '') + '">'
+         + '<label class="mv-flbl">메모</label><textarea class="mv-textarea" id="mv-sd-memo" rows="4">' + escapeHtml(s.memo || '') + '</textarea>'
+         + '<div class="mv-modal-actions">'
+         +   '<button class="mv-modal-cancel" onclick="mvHideModal()">취소</button>'
+         +   '<button class="mv-modal-save" onclick="mvSaveSched(' + custId + ',' + (isNew ? 'null' : idx) + ')">저장</button>'
+         + '</div></div>';
+    mvShowModal(h);
+  };
+  window.mvSaveSched = function(custId, idx) {
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c) return;
+    c.schedules = c.schedules || [];
+    var type = document.getElementById('mv-sd-type').value;
+    var date = document.getElementById('mv-sd-date').value;
+    var time = document.getElementById('mv-sd-time').value;
+    var memo = document.getElementById('mv-sd-memo').value;
+    if (!date) { alert('날짜를 선택하세요'); return; }
+    if (idx === null) {
+      c.schedules.push({type: type, date: date, time: time, memo: memo, simple: false, completed: false});
+    } else {
+      c.schedules[idx].type = type;
+      c.schedules[idx].date = date;
+      c.schedules[idx].time = time;
+      c.schedules[idx].memo = memo;
+    }
+    c.schedules.sort(function(a,b){return (a.date+(a.time||''))<(b.date+(b.time||''))?-1:1;});
+    c._updated = Date.now();
+    mvCommit();
+    mvHideModal();
+    renderMobile();
+  };
+  window.mvDelSched = function(custId, idx) {
+    if (!confirm('이 스케줄을 삭제할까요?')) return;
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c || !c.schedules) return;
+    c.schedules.splice(idx, 1);
+    c._updated = Date.now();
+    mvCommit();
+    renderMobile();
+  };
+  window.mvToggleSched = function(custId, idx) {
+    var c = _mvCustomers.find(function(x){return x.id === custId;});
+    if (!c || !c.schedules || !c.schedules[idx]) return;
+    c.schedules[idx].completed = !c.schedules[idx].completed;
+    c._updated = Date.now();
+    mvCommit();
+    renderMobile();
+  };
 
   function escapeHtml(s) {
     if (s == null) return '';
@@ -8520,12 +8885,8 @@ function copyContact(el) {
     }
   });
 
-  // 모바일에선 자동 저장 OFF
-  if (IS_MOBILE) {
-    window.scheduleAutoSave = function() {};
-  } else {
-    window.scheduleAutoSave = scheduleAutoSave;
-  }
+  // PC/모바일 모두 자동 저장 ON (1.5초 디바운스 후 Drive 업로드)
+  window.scheduleAutoSave = scheduleAutoSave;
 })();
 </script>
 
