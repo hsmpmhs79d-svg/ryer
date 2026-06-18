@@ -7812,6 +7812,49 @@ function copyContact(el) {
     if (e) e.textContent = msg || '';
   }
 
+  // ─── 토큰 영속 저장 (로그인 유지) ───
+  var TOKEN_KEY = '__crm_drive_token__';
+  var TOKEN_FRESH_MS = 55 * 60 * 1000;  // 55분 — Google access_token은 1시간 유효
+  var _silentReauthCb = null;
+
+  function saveTokenToStorage() {
+    try {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({
+        token: _accessToken,
+        issuedAt: Date.now()
+      }));
+    } catch(e) {}
+  }
+  function loadTokenFromStorage() {
+    try {
+      var s = localStorage.getItem(TOKEN_KEY);
+      if (!s) return null;
+      var o = JSON.parse(s);
+      if (!o || !o.token) return null;
+      return o;
+    } catch(e) { return null; }
+  }
+  function clearTokenStorage() {
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem('__drive_token__');  // 옛 키 정리
+    } catch(e) {}
+  }
+  // 사용자 화면 없이 토큰만 재발급 (이미 동의된 경우 가능)
+  function silentReauth(done) {
+    if (!_tokenClient) {
+      setTimeout(function(){ silentReauth(done); }, 300);
+      return;
+    }
+    _silentReauthCb = done;
+    try {
+      _tokenClient.requestAccessToken({ prompt: '' });
+    } catch(e) {
+      _silentReauthCb = null;
+      if (done) done(false, e.message || 'silent reauth 실패');
+    }
+  }
+
   // ─── Google API 초기화 ───
   function initGapi() {
     if (!window.gapi) { setTimeout(initGapi, 200); return; }
@@ -7837,12 +7880,24 @@ function copyContact(el) {
       client_id: CFG.CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email',
       callback: function(resp) {
+        // silent reauth 흐름이면 별도 콜백으로만 응답
+        if (_silentReauthCb) {
+          var scb = _silentReauthCb; _silentReauthCb = null;
+          if (resp.error) { scb(false, resp.error); return; }
+          _accessToken = resp.access_token;
+          gapi.client.setToken({ access_token: _accessToken });
+          saveTokenToStorage();
+          scb(true);
+          return;
+        }
+        // 일반 로그인
         if (resp.error) {
           showLoginErr('로그인 오류: ' + resp.error);
           return;
         }
         _accessToken = resp.access_token;
         gapi.client.setToken({ access_token: _accessToken });
+        saveTokenToStorage();
         afterLogin();
       }
     });
@@ -7863,7 +7918,7 @@ function copyContact(el) {
     }
     _accessToken = null;
     _driveFileId = null;
-    sessionStorage.removeItem('__drive_token__');
+    clearTokenStorage();
     location.reload();
   }
 
@@ -7988,7 +8043,7 @@ function copyContact(el) {
 
   // ─── 로그인 후 처리 ───
   function afterLogin() {
-    sessionStorage.setItem('__drive_token__', _accessToken);
+    saveTokenToStorage();
     fetchUserInfo();
     banner('Drive에서 데이터 불러오는 중...', '');
 
@@ -8014,13 +8069,25 @@ function copyContact(el) {
           hideLogin();
           banner('데이터 로드 완료', 'ok');
         } else {
-          // PC는 데이터를 현재 페이지에 주입 후 기존 코드 트리거
+          // PC는 데이터를 현재 페이지에 주입 후 캐시된 전역 변수도 강제 재로드
           injectDataToPage(data);
-          // 기존 페이지의 init 함수 재호출 (있을 경우)
-          try { if (typeof loadCustomersFromTag === 'function') loadCustomersFromTag(); } catch(e) {}
-          try { if (typeof reloadAllFromDataTags === 'function') reloadAllFromDataTags(); } catch(e) {}
-          // 안전책: 페이지를 한 번 리로드해서 모든 init이 데이터를 읽고 시작하도록
-          // → 새로고침은 데이터 주입을 무효화하므로 안 함. 대신 핵심 init만 호출
+          // ★ 페이지 첫 로드 시 var customers = JSON.parse(...) 로 캐시됐기 때문에
+          //   <script id="customer-data"> textContent만 바꿔도 customers 변수는 안 바뀜.
+          //   직접 재할당해서 드래그/드롭/저장이 옛 데이터를 덮어쓰지 않게 한다.
+          try {
+            var _cd = document.getElementById('customer-data');
+            if (_cd) window.customers = JSON.parse(_cd.textContent || '[]');
+          } catch(e) { console.error('customers 재로드 실패:', e); }
+          try {
+            var _mp = document.getElementById('manager-profiles-data');
+            if (_mp) window.managerProfiles = JSON.parse(_mp.textContent || '[]');
+          } catch(e) { console.error('managerProfiles 재로드 실패:', e); }
+          // 핵심 렌더 함수 호출 → 새 데이터로 화면 다시 그림
+          try { if (typeof renderList === 'function') renderList(); } catch(e) {}
+          try { if (typeof renderSdMonth === 'function') renderSdMonth(); } catch(e) {}
+          try { if (typeof renderGiftPanel === 'function') renderGiftPanel(); } catch(e) {}
+          try { if (typeof updateGiftHeaderBadge === 'function') updateGiftHeaderBadge(); } catch(e) {}
+          try { if (typeof checkNotifications === 'function') checkNotifications(); } catch(e) {}
           hideLogin();
           banner('데이터 로드 완료', 'ok');
         }
@@ -8362,11 +8429,16 @@ function copyContact(el) {
     }
   };
   if (IS_MOBILE) {
-    // 페이지 로드 직후 더미 state로 뒤로가기 안전망
-    var _lastBackTap = 0;
-    document.addEventListener('DOMContentLoaded', function() {
-      try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+    // 즉시 안전망: DOMContentLoaded 기다리지 않고 바로 더미 state 깔아둠
+    // (스크립트가 </body> 직전이라 history는 이미 사용 가능)
+    try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+    // BFCache(뒤로가기 후 다시 들어옴) 복귀 시에도 안전망 재보강
+    window.addEventListener('pageshow', function() {
+      if (!history.state || (!history.state.mvBase && !history.state.mvDetail)) {
+        try { history.pushState({ mvBase: true }, '', location.href); } catch(e) {}
+      }
     });
+    var _lastBackTap = 0;
     window.addEventListener('popstate', function() {
       // detail 열려있으면 detail만 닫기
       if (_mvDetailId !== null) {
@@ -8415,17 +8487,36 @@ function copyContact(el) {
 
     initGapi();
 
-    // 이전 토큰 복원 시도 (탭 새로고침)
-    var saved = sessionStorage.getItem('__drive_token__');
+    // 이전 토큰 복원 (localStorage) — 55분 이내면 그대로, 초과면 silent reauth
+    var saved = loadTokenFromStorage();
     if (saved) {
-      _accessToken = saved;
-      var iv = setInterval(function() {
-        if (_gapiReady) {
-          clearInterval(iv);
-          gapi.client.setToken({ access_token: _accessToken });
-          afterLogin();
-        }
-      }, 200);
+      var age = Date.now() - (saved.issuedAt || 0);
+      if (age < TOKEN_FRESH_MS) {
+        _accessToken = saved.token;
+        var iv = setInterval(function() {
+          if (_gapiReady) {
+            clearInterval(iv);
+            gapi.client.setToken({ access_token: _accessToken });
+            afterLogin();
+          }
+        }, 200);
+      } else {
+        // 만료 가능성 → 사용자 모르게 새 토큰 재발급
+        var iv2 = setInterval(function() {
+          if (_gapiReady && _gisReady && _tokenClient) {
+            clearInterval(iv2);
+            silentReauth(function(ok, err) {
+              if (ok) {
+                afterLogin();
+              } else {
+                console.warn('silent reauth 실패:', err);
+                clearTokenStorage();
+                // 로그인 오버레이는 기본 보이는 상태 — 사용자가 직접 로그인
+              }
+            });
+          }
+        }, 200);
+      }
     }
   });
 
