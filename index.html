@@ -916,14 +916,8 @@
 #drive-banner.ok { background: #10b981; color: #fff; }
 #drive-banner.err { background: #ef4444; color: #fff; }
 #drive-toolbar {
-  position: fixed; bottom: 16px; right: 16px;
-  background: #fff; border-radius: 12px; padding: 10px 14px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  display: none; gap: 8px; align-items: center;
-  font-family: 'Malgun Gothic', sans-serif; font-size: 13px;
-  z-index: 99996;
+  display: none !important;
 }
-#drive-toolbar.show { display: flex; }
 #drive-toolbar .duser { color: #64748b; font-size: 12px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #drive-toolbar button {
   background: #2563eb; color: #fff; border: none; border-radius: 6px;
@@ -1003,6 +997,59 @@ body.mobile-mode #detail-area { display: none !important; }
 .mv-sched-item .mv-sched-cust { font-weight: 600; font-size: 14px; }
 .mv-sched-item .mv-sched-memo { font-size: 13px; color: #475569; margin-top: 4px; }
 
+/* 모바일 캘린더 */
+.mv-cal-head {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #fff; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.mv-cal-head button {
+  background: #f1f5f9; border: none; border-radius: 8px;
+  width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+  font-family: inherit; color: #1e293b;
+}
+.mv-cal-head .mv-cal-title { font-size: 16px; font-weight: 700; color: #1a3a5c; }
+.mv-cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px;
+  background: #fff; border-radius: 10px; padding: 8px; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.mv-cal-dow {
+  text-align: center; padding: 6px 0; font-size: 11px;
+  color: #64748b; font-weight: 600;
+}
+.mv-cal-dow.sun { color: #dc2626; }
+.mv-cal-dow.sat { color: #2563eb; }
+.mv-cal-cell {
+  aspect-ratio: 1/1; border-radius: 8px; padding: 4px;
+  display: flex; flex-direction: column; align-items: center;
+  font-size: 13px; cursor: pointer;
+  background: #fafafa; position: relative;
+}
+.mv-cal-cell.empty { background: transparent; cursor: default; }
+.mv-cal-cell.today { background: #dbeafe; font-weight: 700; }
+.mv-cal-cell.has-sched { background: #fef3c7; }
+.mv-cal-cell.has-sched.today { background: #fde68a; }
+.mv-cal-cell.selected { outline: 2px solid #2563eb; }
+.mv-cal-cell.sun .mv-cal-day { color: #dc2626; }
+.mv-cal-cell.sat .mv-cal-day { color: #2563eb; }
+.mv-cal-day { font-size: 13px; }
+.mv-cal-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #f59e0b; margin-top: 2px;
+}
+.mv-cal-cnt {
+  font-size: 9px; color: #b45309; font-weight: 700;
+}
+.mv-cal-day-detail {
+  background: #fff; border-radius: 10px; padding: 14px;
+  margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.mv-cal-day-detail h3 {
+  font-size: 14px; color: #1a3a5c; margin-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;
+}
+
 </style>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -1056,7 +1103,7 @@ body.mobile-mode #detail-area { display: none !important; }
   </div>
   <div class="mv-tabs">
     <div class="mv-tab active" data-tab="customers" onclick="mvSwitchTab('customers')">고객</div>
-    <div class="mv-tab" data-tab="schedules" onclick="mvSwitchTab('schedules')">스케줄</div>
+    <div class="mv-tab" data-tab="schedules" onclick="mvSwitchTab('schedules')">캘린더</div>
   </div>
   <div class="mv-content" id="mv-content">
     <div class="mv-empty">데이터 로딩 중...</div>
@@ -8052,31 +8099,32 @@ function copyContact(el) {
       var raw = data['customer-data'] || '[]';
       _mvCustomers = JSON.parse(raw);
     } catch(e) { _mvCustomers = []; }
+    // 최신순(ID 큰 순서) — 등록순 X
+    _mvCustomers.sort(function(a, b) {
+      return (b.id || 0) - (a.id || 0);
+    });
     // 스케줄은 고객 데이터 안에 있음 (customer.schedules 배열)
     _mvSchedules = [];
     for (var i = 0; i < _mvCustomers.length; i++) {
       var c = _mvCustomers[i];
       var scheds = c.schedules || [];
       for (var j = 0; j < scheds.length; j++) {
+        var s = scheds[j];
         _mvSchedules.push({
-          custId: c.id, custName: c.name || '(이름없음)',
-          ...scheds[j], _idx: j
+          custId: c.id,
+          custName: c.name || '(이름없음)',
+          date: s.date || '',
+          type: s.type || '',
+          memo: s.memo || '',
+          done: !!s.done,
+          _idx: j
         });
       }
     }
-    // 날짜순 정렬 (가까운 미래 → 먼 미래 → 과거)
-    var today = new Date(); today.setHours(0,0,0,0);
-    _mvSchedules.sort(function(a, b) {
-      var da = new Date(a.date || '2099-12-31');
-      var db = new Date(b.date || '2099-12-31');
-      return da - db;
-    });
     renderMobile();
   }
 
-  function renderMobile(filterText) {
-    var content = document.getElementById('mv-content');
-    if (!content) return;
+  function renderMobile() {
     if (_mvDetailId !== null) {
       renderMobileDetail();
       return;
@@ -8084,67 +8132,168 @@ function copyContact(el) {
     if (_mvTab === 'customers') {
       renderMobileCustomers();
     } else {
-      renderMobileSchedules();
+      renderMobileCalendar();
     }
   }
 
+  // ─ 검색 input은 한 번만 그리고, 리스트만 갱신 ─
   function renderMobileCustomers() {
     var content = document.getElementById('mv-content');
-    var html = '<input type="search" class="mv-search" placeholder="이름·전화·메모 검색" id="mv-search" value="' + escapeHtml(_mvFilter) + '">';
+    // 이미 검색 input이 있으면 리스트만 다시 그림 (focus 보존)
+    var existing = document.getElementById('mv-search');
+    if (!existing) {
+      content.innerHTML =
+        '<input type="search" class="mv-search" placeholder="이름·전화·메모 검색" id="mv-search">' +
+        '<div id="mv-list"></div>';
+      var s = document.getElementById('mv-search');
+      s.value = _mvFilter;
+      s.addEventListener('input', function() {
+        _mvFilter = this.value;
+        renderMobileCustomerList();  // 리스트만 갱신
+      });
+      // 한글 IME 조합 중에도 부드럽게
+      s.addEventListener('compositionend', function() {
+        _mvFilter = this.value;
+        renderMobileCustomerList();
+      });
+    }
+    renderMobileCustomerList();
+  }
+
+  function renderMobileCustomerList() {
+    var listEl = document.getElementById('mv-list');
+    if (!listEl) return;
     var filter = (_mvFilter || '').trim().toLowerCase();
     var list = _mvCustomers;
     if (filter) {
       list = list.filter(function(c) {
-        var blob = [c.name, c.phone, c.memo, c.address, c.job].join(' ').toLowerCase();
+        var blob = [c.name, c.phone, c.memo, c.address, c.job, c.jumin].join(' ').toLowerCase();
         return blob.indexOf(filter) >= 0;
       });
     }
+    var html = '';
     if (list.length === 0) {
-      html += '<div class="mv-empty">고객이 없습니다</div>';
+      html = '<div class="mv-empty">결과 없음</div>';
     } else {
       for (var i = 0; i < list.length; i++) {
         var c = list[i];
         html += '<div class="mv-card" onclick="mvOpenDetail(' + c.id + ')">' +
           '<div class="mv-name">' + escapeHtml(c.name || '(이름없음)') + '</div>' +
           '<div class="mv-meta">' +
-            (c.phone ? '<span class="mv-phone">' + escapeHtml(c.phone) + '</span> · ' : '') +
-            escapeHtml((c.memo || c.address || '').slice(0, 40)) +
+            (c.phone ? '<span class="mv-phone">' + escapeHtml(c.phone) + '</span>' : '') +
+            (c.memo || c.address ? ' · ' + escapeHtml((c.memo || c.address || '').slice(0, 40)) : '') +
           '</div>' +
         '</div>';
       }
     }
-    content.innerHTML = html;
-    var s = document.getElementById('mv-search');
-    if (s) {
-      s.addEventListener('input', function() {
-        _mvFilter = this.value;
-        renderMobileCustomers();
-      });
-    }
+    listEl.innerHTML = html;
   }
 
-  function renderMobileSchedules() {
+  // ─ 캘린더 ─
+  var _calYear = null, _calMonth = null, _calSelDate = null;
+
+  function renderMobileCalendar() {
     var content = document.getElementById('mv-content');
-    var today = new Date(); today.setHours(0,0,0,0);
-    var html = '';
-    if (_mvSchedules.length === 0) {
-      html = '<div class="mv-empty">스케줄이 없습니다</div>';
-    } else {
-      for (var i = 0; i < _mvSchedules.length; i++) {
-        var s = _mvSchedules[i];
-        var done = !!s.done;
-        var dateStr = s.date || '';
-        var typeStr = s.type || '';
-        var memo = s.memo || '';
-        html += '<div class="mv-sched-item ' + (done ? 'done' : '') + '" onclick="mvOpenDetail(' + s.custId + ')">' +
-          '<div class="mv-sched-date">' + escapeHtml(dateStr) + ' · ' + escapeHtml(typeStr) + (done ? ' ✓완료' : '') + '</div>' +
-          '<div class="mv-sched-cust">' + escapeHtml(s.custName) + '</div>' +
-          (memo ? '<div class="mv-sched-memo">' + escapeHtml(memo) + '</div>' : '') +
-        '</div>';
-      }
+    if (_calYear === null) {
+      var t = new Date();
+      _calYear = t.getFullYear();
+      _calMonth = t.getMonth();
+      _calSelDate = _ymd(t);
     }
-    content.innerHTML = html;
+    // 헤더 + 그리드 + 선택일 상세
+    var head =
+      '<div class="mv-cal-head">' +
+        '<button onclick="mvCalPrev()">‹</button>' +
+        '<div class="mv-cal-title">' + _calYear + '년 ' + (_calMonth + 1) + '월</div>' +
+        '<button onclick="mvCalNext()">›</button>' +
+      '</div>';
+
+    // 그날에 몇 개 스케줄 있는지 카운트
+    var countByDate = {};
+    for (var i = 0; i < _mvSchedules.length; i++) {
+      var d = _mvSchedules[i].date;
+      if (!d) continue;
+      countByDate[d] = (countByDate[d] || 0) + 1;
+    }
+
+    // 7행 캘린더 그리드
+    var dows = ['일','월','화','수','목','금','토'];
+    var grid = '<div class="mv-cal-grid">';
+    for (var w = 0; w < 7; w++) {
+      var cls = w === 0 ? 'sun' : (w === 6 ? 'sat' : '');
+      grid += '<div class="mv-cal-dow ' + cls + '">' + dows[w] + '</div>';
+    }
+    var first = new Date(_calYear, _calMonth, 1);
+    var firstDow = first.getDay();
+    var daysInMonth = new Date(_calYear, _calMonth + 1, 0).getDate();
+    var todayStr = _ymd(new Date());
+    // 앞쪽 빈칸
+    for (var i = 0; i < firstDow; i++) {
+      grid += '<div class="mv-cal-cell empty"></div>';
+    }
+    // 날짜 칸
+    for (var d = 1; d <= daysInMonth; d++) {
+      var dateStr = _ymd(new Date(_calYear, _calMonth, d));
+      var dow = new Date(_calYear, _calMonth, d).getDay();
+      var classes = ['mv-cal-cell'];
+      if (dow === 0) classes.push('sun');
+      if (dow === 6) classes.push('sat');
+      if (dateStr === todayStr) classes.push('today');
+      if (dateStr === _calSelDate) classes.push('selected');
+      var cnt = countByDate[dateStr];
+      if (cnt) classes.push('has-sched');
+      grid += '<div class="' + classes.join(' ') + '" onclick="mvCalSelect(\'' + dateStr + '\')">' +
+        '<div class="mv-cal-day">' + d + '</div>' +
+        (cnt ? '<div class="mv-cal-cnt">' + cnt + '</div>' : '') +
+      '</div>';
+    }
+    grid += '</div>';
+
+    // 선택일 상세
+    var detail = '';
+    if (_calSelDate) {
+      var dayScheds = _mvSchedules.filter(function(s) { return s.date === _calSelDate; });
+      detail = '<div class="mv-cal-day-detail">' +
+        '<h3>' + _calSelDate + ' 일정 (' + dayScheds.length + ')</h3>';
+      if (dayScheds.length === 0) {
+        detail += '<div class="mv-empty" style="padding:20px 0;">일정 없음</div>';
+      } else {
+        for (var i = 0; i < dayScheds.length; i++) {
+          var s = dayScheds[i];
+          detail += '<div class="mv-sched-item ' + (s.done ? 'done' : '') + '" onclick="mvOpenDetail(' + s.custId + ')">' +
+            '<div class="mv-sched-date">' + escapeHtml(s.type || '') + (s.done ? ' ✓완료' : '') + '</div>' +
+            '<div class="mv-sched-cust">' + escapeHtml(s.custName) + '</div>' +
+            (s.memo ? '<div class="mv-sched-memo">' + escapeHtml(s.memo) + '</div>' : '') +
+          '</div>';
+        }
+      }
+      detail += '</div>';
+    }
+
+    content.innerHTML = head + grid + detail;
   }
+
+  function _ymd(d) {
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var dd = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + dd;
+  }
+
+  window.mvCalPrev = function() {
+    _calMonth--;
+    if (_calMonth < 0) { _calMonth = 11; _calYear--; }
+    renderMobileCalendar();
+  };
+  window.mvCalNext = function() {
+    _calMonth++;
+    if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+    renderMobileCalendar();
+  };
+  window.mvCalSelect = function(dateStr) {
+    _calSelDate = dateStr;
+    renderMobileCalendar();
+  };
 
   function renderMobileDetail() {
     var content = document.getElementById('mv-content');
@@ -8197,8 +8346,29 @@ function copyContact(el) {
     }
     renderMobile();
   };
-  window.mvOpenDetail = function(id) { _mvDetailId = id; renderMobile(); };
-  window.mvCloseDetail = function() { _mvDetailId = null; renderMobile(); };
+  // ─ 뒤로가기 처리: detail 열 때 history pushState, popstate 이벤트로 detail 닫기 ─
+  window.mvOpenDetail = function(id) {
+    _mvDetailId = id;
+    try { history.pushState({ mvDetail: id }, '', '#cust-' + id); } catch(e) {}
+    renderMobile();
+  };
+  window.mvCloseDetail = function() {
+    // history.back을 호출하면 popstate가 트리거되어 detail이 닫힘
+    if (history.state && history.state.mvDetail) {
+      history.back();
+    } else {
+      _mvDetailId = null;
+      renderMobile();
+    }
+  };
+  if (IS_MOBILE) {
+    window.addEventListener('popstate', function() {
+      if (_mvDetailId !== null) {
+        _mvDetailId = null;
+        renderMobile();
+      }
+    });
+  }
 
   // ─── DOM 준비 후 초기화 ───
   document.addEventListener('DOMContentLoaded', function() {
