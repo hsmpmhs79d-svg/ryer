@@ -99,10 +99,11 @@
   .customer-card { background: white; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 22px; }
   /* ★ 카드 헤더+탭바 통째 상단 고정 래퍼 (2026-07-02). customer-card의 overflow:hidden이 sticky를 막아서 제거하고, 둥근 모서리는 이 래퍼가 담당 */
   .card-sticky { position: sticky; top: -22px; z-index: 30; border-radius: 14px 14px 0 0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); } /* top:-22px = right-panel 위 패딩만큼 올려 붙여 틈새 제거 */
-  .card-header { background: linear-gradient(135deg, #1a3a5c, #2563a8); color: white; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; }
+  /* ★ 2줄 구조로 변경 (2026-07-15): 1줄 = 이름·성별·나이·상령일, 2줄 = 상태+버튼 */
+  .card-header { background: linear-gradient(135deg, #1a3a5c, #2563a8); color: white; padding: 11px 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 
   .card-header .cbadge { padding: 3px 12px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-left: 10px; }
-  .card-header .btn-group { display: flex; gap: 6px; flex-wrap: nowrap; }
+  .card-header .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }  /* ★ 좁을 때 버튼 줄바꿈 허용 (2026-07-15) */
   /* ★ 카드 헤더 버튼들 — 세로 깨짐 방지 (2026-06-19) */
   .card-header .btn-group button { white-space: nowrap; font-size: 12.5px; padding: 6px 10px; }
   /* ★ 퀵메시지 버튼 (2026-06-20) */
@@ -1530,7 +1531,7 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
     <div class="add-btns-row">
       <button class="add-btn-mini" onclick="openAddModal()" title="새 고객 등록">+ 새고객</button>
       <button class="add-btn-mini green" onclick="xlsxImport()" title="엑셀 파일에서 고객 일괄 등록">📥 엑셀</button>
-      <button class="add-btn-mini" style="background:linear-gradient(135deg,#b45309,#f59e0b);" onclick="openConsultLib()" title="상담용 인포그래픽 자료 — 카테고리별 보기 (2026-07-15)">📚 상담자료</button>
+      <button class="add-btn-mini" style="background:#d97706;border:none;" onclick="openConsultLib()" title="상담용 인포그래픽 자료 — 카테고리별 보기 (2026-07-15)">📚 상담자료</button>
     </div>
     <div class="status-sort-row">
       <button class="status-sort-btn" id="ssort-done" onclick="toggleStatusSort('가입완료')" title="가입완료 고객을 리스트 상단으로">✅ 가입완료</button>
@@ -2548,8 +2549,10 @@ function selectCustomer(id) {
     '<div class="customer-card">'
     +'<div class="card-sticky">'
     +'<div class="card-header">'
-    +'<div><span class="cname" onclick="copyField(this,\'이름\')">'+(c.name||'(이름없음)')+'</span>'+getAgeTag(c)+getInsAgeTag(c)
-    +'<span class="cbadge" style="background:'+bg+';color:'+tc+'">'+(c.gender||'?')+'</span></div>'
+    /* ★ 1줄 순서: 이름 → 성별 → 만나이 → 보험나이 → 상령일 (2026-07-15) */
+    +'<div><span class="cname" onclick="copyField(this,\'이름\')">'+(c.name||'(이름없음)')+'</span>'
+    +'<span class="cbadge" style="background:'+bg+';color:'+tc+'">'+(c.gender||'?')+'</span>'
+    +getAgeTag(c)+getInsAgeTag(c)+'</div>'
     +'<div class="btn-group">'
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">💬 퀵메시지</button>'
     +'<button class="btn-copy-info" id="btn-copy-info" title="고객 기본 정보만 복사 (설계요청 제외)" onclick="copyCustomerInfo('+id+')">📋 Copy</button>'
@@ -11154,9 +11157,10 @@ function copyContact(el) {
     var _memo = c.memo || c.notes || '';
     // ★ 상태 셀렉트 (수정 가능, 2026-06-20) — 가입완료=초록 / 가망고객=노랑 / 거절=빨강 / 미설정=흰색
     var _sst = c.status || '';
-    var _selBg = _sst === '가입완료' ? '#d1fae5' : (_sst === '가망고객' ? '#fef3c7' : (_sst === '거절' ? '#fee2e2' : '#fff'));
-    var _selBd = _sst === '가입완료' ? '#10b981' : (_sst === '가망고객' ? '#f59e0b' : (_sst === '거절' ? '#ef4444' : '#cbd5e1'));
-    var _selCl = _sst === '가입완료' ? '#065f46' : (_sst === '가망고객' ? '#92400e' : (_sst === '거절' ? '#991b1b' : '#374151'));
+    /* ★ 부재중=회색 추가 (2026-07-15) */
+    var _selBg = _sst === '가입완료' ? '#d1fae5' : (_sst === '가망고객' ? '#fef3c7' : (_sst === '부재중' ? '#e2e8f0' : (_sst === '거절' ? '#fee2e2' : '#fff')));
+    var _selBd = _sst === '가입완료' ? '#10b981' : (_sst === '가망고객' ? '#f59e0b' : (_sst === '부재중' ? '#64748b' : (_sst === '거절' ? '#ef4444' : '#cbd5e1')));
+    var _selCl = _sst === '가입완료' ? '#065f46' : (_sst === '가망고객' ? '#92400e' : (_sst === '부재중' ? '#334155' : (_sst === '거절' ? '#991b1b' : '#374151')));
     var statusSelect = '<select onchange="mvSetStatus(' + c.id + ', this.value)" '
       + 'style="margin-left:8px;padding:4px 10px;border:1.5px solid ' + _selBd + ';border-radius:6px;'
       + 'font-size:12px;font-weight:700;background:' + _selBg + ';color:' + _selCl
@@ -11164,6 +11168,7 @@ function copyContact(el) {
       + '<option value=""' + (!_sst?' selected':'') + '>⚪ 상태</option>'
       + '<option value="가입완료"' + (_sst==='가입완료'?' selected':'') + '>✅ 가입완료</option>'
       + '<option value="가망고객"' + (_sst==='가망고객'?' selected':'') + '>⭐ 가망고객</option>'
+      + '<option value="부재중"' + (_sst==='부재중'?' selected':'') + '>📵 부재중</option>'  /* ★ 부재중 추가 (2026-07-15) */
       + '<option value="거절"' + (_sst==='거절'?' selected':'') + '>🚫 거절</option>'
       + '</select>';
     html += '<div class="mv-section">'
@@ -12312,17 +12317,20 @@ function copyContact(el) {
       wrap.className = 'status-select-wrap';
       wrap.style.cssText = 'display:inline-flex;align-items:center;margin-right:10px;';
       var sel = document.createElement('select');
-      sel.style.cssText = 'padding:6px 10px;border:1.5px solid #cbd5e1;border-radius:6px;font-size:13px;font-weight:600;background:#fff;font-family:inherit;cursor:pointer;';
+      /* ★ "상태 미설정"→"미설정" 축약 + 글자 축소 + 부재중 추가 (2026-07-15) */
+      sel.style.cssText = 'padding:5px 8px;border:1.5px solid #cbd5e1;border-radius:6px;font-size:12px;font-weight:600;background:#fff;font-family:inherit;cursor:pointer;';
       sel.innerHTML =
-        '<option value="">⚪ 상태 미설정</option>' +
+        '<option value="">⚪ 미설정</option>' +
         '<option value="가입완료">✅ 가입완료</option>' +
         '<option value="가망고객">⭐ 가망고객</option>' +
+        '<option value="부재중">📵 부재중</option>' +
         '<option value="거절">🚫 거절</option>';
       sel.value = c.status || '';
       // 현재 값에 따른 색 표시
       var paintSel = function(v) {
         if (v === '가입완료') { sel.style.background = '#d1fae5'; sel.style.borderColor = '#10b981'; sel.style.color = '#065f46'; }
         else if (v === '가망고객') { sel.style.background = '#fef3c7'; sel.style.borderColor = '#f59e0b'; sel.style.color = '#92400e'; }
+        else if (v === '부재중') { sel.style.background = '#e2e8f0'; sel.style.borderColor = '#64748b'; sel.style.color = '#334155'; }  /* ★ 부재중=회색 (2026-07-15) */
         else if (v === '거절') { sel.style.background = '#fee2e2'; sel.style.borderColor = '#ef4444'; sel.style.color = '#991b1b'; }
         else { sel.style.background = '#fff'; sel.style.borderColor = '#cbd5e1'; sel.style.color = '#1a202c'; }
       };
@@ -13654,7 +13662,7 @@ function restoreExcludedContact(phone8) {
 .consult-cat-ico{font-size:25px;display:block;margin-bottom:6px;}
 .consult-cat-name{font-size:13.5px;font-weight:800;color:#1e293b;display:block;line-height:1.3;}
 .consult-cat-cnt{font-size:11.5px;color:#94a3b8;font-weight:600;display:block;margin-top:3px;}
-.consult-thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:10px;}
+.consult-thumb-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}  /* ★ PC 한 줄 6개 고정 (2026-07-15) */
 .consult-thumb{border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;cursor:pointer;background:#fff;padding:0;font-family:inherit;}
 .consult-thumb:hover{border-color:#f59e0b;box-shadow:0 3px 10px rgba(0,0,0,0.14);}
 .consult-thumb img{width:100%;display:block;aspect-ratio:4/5;object-fit:cover;background:#f1f5f9;}
@@ -13670,18 +13678,32 @@ function restoreExcludedContact(phone8) {
 body.mobile-mode #consult-overlay{padding:0;}
 body.mobile-mode #consult-box{width:100vw;height:100%;border-radius:0;}
 body.mobile-mode .consult-cat-grid{grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px;}
-body.mobile-mode .consult-thumb-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;}
-body.mobile-mode .consult-nav{width:38px;height:54px;font-size:20px;opacity:0.85;}
+body.mobile-mode .consult-thumb-grid{grid-template-columns:repeat(2,1fr);gap:10px;}  /* ★ 모바 한 줄 2개 고정 (2026-07-15) */
+/* ★ 모바: 조작 버튼을 상단→하단 바로 이동, 좌우 화살표 숨김 (2026-07-15) */
+#consult-foot{display:none;}
+#consult-vfoot{display:none;}
+body.mobile-mode #consult-head .consult-hbtn{display:none;}
+body.mobile-mode #consult-foot{display:flex;gap:8px;padding:10px 12px 16px;flex-shrink:0;background:#f8fafc;border-top:1px solid #e2e8f0;}
+.consult-fbtn{flex:1;background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#fff;border-radius:10px;padding:13px 0;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
+body.mobile-mode #consult-vhead .consult-hbtn{display:none;}
+body.mobile-mode .consult-nav{display:none;}
+body.mobile-mode #consult-vfoot{display:flex;gap:8px;padding:10px 12px 18px;flex-shrink:0;}
+.consult-vfbtn{flex:1;background:rgba(255,255,255,0.16);border:none;color:#fff;border-radius:10px;padding:13px 0;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;}
 </style>
 
 <div id="consult-overlay" onclick="if(event.target===this)closeConsultLib()">
   <div id="consult-box">
     <div id="consult-head">
-      <button class="consult-hbtn" id="consult-back-btn" onclick="consultLibBack()" style="display:none;">← 뒤로</button>
+      <button class="consult-hbtn consult-back-el" id="consult-back-btn" onclick="consultLibBack()" style="display:none;">← 뒤로</button>
       <h2 id="consult-title">📚 상담자료</h2>
       <button class="consult-hbtn" onclick="closeConsultLib()">✕</button>
     </div>
     <div id="consult-body"></div>
+    <!-- ★ 모바 전용 하단 버튼 바 (2026-07-15) -->
+    <div id="consult-foot">
+      <button class="consult-fbtn consult-back-el" onclick="consultLibBack()" style="display:none;">← 뒤로</button>
+      <button class="consult-fbtn" onclick="closeConsultLib()">✕ 닫기</button>
+    </div>
   </div>
 </div>
 <div id="consult-viewer">
@@ -13693,6 +13715,13 @@ body.mobile-mode .consult-nav{width:38px;height:54px;font-size:20px;opacity:0.85
   <div id="consult-vimgwrap"><img id="consult-vimg" alt="상담자료" onclick="this.classList.toggle('zoomed')"></div>
   <button class="consult-nav" id="consult-prev" onclick="consultNav(-1)">◀</button>
   <button class="consult-nav" id="consult-next" onclick="consultNav(1)">▶</button>
+  <!-- ★ 모바 전용 하단 버튼 바 (2026-07-15) -->
+  <div id="consult-vfoot">
+    <button class="consult-vfbtn" onclick="consultCloseViewer()">← 목록</button>
+    <button class="consult-vfbtn" id="consult-fprev" onclick="consultNav(-1)">◀ 이전</button>
+    <button class="consult-vfbtn" id="consult-fnext" onclick="consultNav(1)">다음 ▶</button>
+    <button class="consult-vfbtn" onclick="closeConsultLib()">✕ 닫기</button>
+  </div>
 </div>
 
 <script>
@@ -13741,11 +13770,17 @@ body.mobile-mode .consult-nav{width:38px;height:54px;font-size:20px;opacity:0.85
     closeConsultLib();
   };
 
+  // ★ 뒤로 버튼 표시/숨김 — 상단(PC) + 하단(모바) 동시 적용 (2026-07-15)
+  function setBackVisible(show) {
+    var els = document.querySelectorAll('.consult-back-el');
+    for (var i = 0; i < els.length; i++) els[i].style.display = show ? '' : 'none';
+  }
+
   // ── 1단계: 카테고리 그리드 ──
   function showCats() {
     _cat = -1;
     el('consult-title').textContent = '📚 상담자료';
-    el('consult-back-btn').style.display = 'none';
+    setBackVisible(false);
     var h = '<div class="consult-cat-grid">';
     for (var i = 0; i < CATS.length; i++) {
       h += '<button class="consult-cat-btn" onclick="consultOpenCat(' + i + ')">'
@@ -13762,7 +13797,7 @@ body.mobile-mode .consult-nav{width:38px;height:54px;font-size:20px;opacity:0.85
     _cat = ci;
     var c = CATS[ci];
     el('consult-title').textContent = c.i + ' ' + c.n + ' (' + c.p.length + '장)';
-    el('consult-back-btn').style.display = '';
+    setBackVisible(true);
     var h = '<div class="consult-thumb-grid">';
     for (var k = 0; k < c.p.length; k++) {
       h += '<button class="consult-thumb" onclick="consultOpenViewer(' + ci + ',' + k + ')">'
@@ -13796,8 +13831,12 @@ body.mobile-mode .consult-nav{width:38px;height:54px;font-size:20px;opacity:0.85
     img.src = imgUrl(c.p[_idx]);
     el('consult-vimgwrap').scrollTop = 0;
     el('consult-vcount').textContent = c.n + '  ·  ' + (_idx + 1) + ' / ' + c.p.length;
-    el('consult-prev').style.visibility = (_idx > 0) ? 'visible' : 'hidden';
-    el('consult-next').style.visibility = (_idx < c.p.length - 1) ? 'visible' : 'hidden';
+    /* ★ 이전/다음 활성화 — 좌우 화살표(PC) + 하단 버튼(모바) 동시 적용 (2026-07-15) */
+    var hasPrev = (_idx > 0), hasNext = (_idx < c.p.length - 1);
+    el('consult-prev').style.visibility = hasPrev ? 'visible' : 'hidden';
+    el('consult-next').style.visibility = hasNext ? 'visible' : 'hidden';
+    el('consult-fprev').style.visibility = hasPrev ? 'visible' : 'hidden';
+    el('consult-fnext').style.visibility = hasNext ? 'visible' : 'hidden';
     // 옆 장 미리 로딩 (넘길 때 바로 뜨게)
     if (_idx + 1 < c.p.length) { (new Image()).src = imgUrl(c.p[_idx + 1]); }
     if (_idx - 1 >= 0) { (new Image()).src = imgUrl(c.p[_idx - 1]); }
