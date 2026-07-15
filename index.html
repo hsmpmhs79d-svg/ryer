@@ -1511,7 +1511,8 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
 <div class="container">
   <div class="left-panel">
     <!-- ★ 전체/남/여 통계 — 헤더에서 이동, 헤더 한 줄 유지 (2026-07-10) -->
-    <div class="side-stats"><span id="stat-total">전체 0명</span><span id="stat-male">남 0명</span><span id="stat-female">여 0명</span></div>
+    <!-- ★ 선택삭제 버튼 — bulk-bar에서 통계 줄로 이동, 칩 크기 통일 (2026-07-15) -->
+    <div class="side-stats"><span id="stat-total">전체 0명</span><span id="stat-male">남 0명</span><span id="stat-female">여 0명</span><button class="bulk-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" title="여러 고객을 한 번에 선택해서 삭제" style="background:#eef2f7;color:#334155;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:20px;border:none;cursor:pointer;">🗑 선택 삭제</button></div>
     <div class="search-box">
       <input type="text" id="search-input" placeholder="이름, 전화번호, 주소, 메모, 상담내용 검색..." oninput="renderList()">
       <div class="filter-row">
@@ -1536,10 +1537,11 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
     <div class="status-sort-row">
       <button class="status-sort-btn" id="ssort-done" onclick="toggleStatusSort('가입완료')" title="가입완료 고객을 리스트 상단으로">✅ 가입완료</button>
       <button class="status-sort-btn" id="ssort-prospect" onclick="toggleStatusSort('가망고객')" title="가망고객을 리스트 상단으로">⭐ 가망고객</button>
+      <button class="status-sort-btn" id="ssort-absent" onclick="toggleStatusSort('부재중')" title="부재중 고객만 표시">📵 부재중</button>
       <button class="status-sort-btn" id="ssort-reject" onclick="toggleStatusSort('거절')" title="거절 고객만 표시">🚫 거절</button>
     </div>
     <div class="bulk-bar">
-      <button class="bulk-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" title="여러 고객을 한 번에 선택해서 삭제">🗑 선택 삭제</button>
+      <!-- ★ 🗑 선택 삭제 토글 버튼은 상단 통계 줄로 이동 (2026-07-15) -->
       <div id="bulk-actions" style="display:none; gap:6px; flex-wrap:wrap; width:100%;">
         <button class="bulk-btn" onclick="bulkSelectAll()" title="현재 보이는 고객 전체 선택">전체</button>
         <button class="bulk-btn" onclick="bulkClearSelection()">해제</button>
@@ -2552,7 +2554,7 @@ function selectCustomer(id) {
     /* ★ 1줄 순서: 이름 → 성별 → 만나이 → 보험나이 → 상령일 (2026-07-15) */
     +'<div><span class="cname" onclick="copyField(this,\'이름\')">'+(c.name||'(이름없음)')+'</span>'
     +'<span class="cbadge" style="background:'+bg+';color:'+tc+'">'+(c.gender||'?')+'</span>'
-    +getAgeTag(c)+getInsAgeTag(c)+'</div>'
+    +getAgeTag(c,14)+getInsAgeTag(c,14)+'</div>'  /* ★ 카드 헤더는 나이 글자 14px (2026-07-15) */
     +'<div class="btn-group">'
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">💬 퀵메시지</button>'
     +'<button class="btn-copy-info" id="btn-copy-info" title="고객 기본 정보만 복사 (설계요청 제외)" onclick="copyCustomerInfo('+id+')">📋 Copy</button>'
@@ -3005,10 +3007,10 @@ function calcAge(residentNum) {
   if (!birthPassed) age--;
   return age >= 0 ? age : '';
 }
-function getAgeTag(c) {
+function getAgeTag(c, fs) {  /* ★ fs: 글자 크기(px, 기본 12) — 카드 헤더는 14로 호출 (2026-07-15) */
   var age = calcAge(c.resident_number || c.jumin);
   if (age === '') return '';
-  return '<span style="font-size:12px;color:#6b7280;margin-left:6px">만 ' + age + '세</span>';
+  return '<span style="font-size:' + (fs || 12) + 'px;color:#6b7280;margin-left:6px">만 ' + age + '세</span>';
 }
 // ★ 보험나이(상령) 계산 (2026-07-11) — 상령일 = 만 나이 생일 + 6개월, 이날부터 보험나이 = 만나이 + 1
 function getInsAgeInfo(residentNum) {
@@ -3043,17 +3045,18 @@ function getInsAgeInfo(residentNum) {
   var daysLeft = Math.round((nextSang - today) / 86400000);  // ★ 상령일까지 남은 일수 (2026-07-15)
   return { manAge: manAge, insAge: insAge, nextSang: ns, daysLeft: daysLeft };
 }
-function getInsAgeTag(c) {
+function getInsAgeTag(c, fs) {  /* ★ fs: 글자 크기(px, 기본 12) — 카드 헤더는 14로 호출 (2026-07-15) */
   var info = getInsAgeInfo(c.resident_number || c.jumin);
   if (!info) return '';
+  var _fs = (fs || 12) + 'px';
   // ★ 상령일 한 달(31일) 이내 → 빨간색 + ❗ + D-n 표시 (2026-07-15)
   var sangSpan;
   if (info.daysLeft <= 31) {
-    sangSpan = '<span style="font-size:12px;color:#f87171;margin-left:6px;font-weight:800;white-space:nowrap;display:inline-block;" title="⚠ 상령일까지 ' + info.daysLeft + '일 — 이날부터 보험나이가 올라 보험료가 오릅니다">❗상령일 ' + info.nextSang + ' (D-' + info.daysLeft + ')</span>';
+    sangSpan = '<span style="font-size:' + _fs + ';color:#f87171;margin-left:6px;font-weight:800;white-space:nowrap;display:inline-block;" title="⚠ 상령일까지 ' + info.daysLeft + '일 — 이날부터 보험나이가 올라 보험료가 오릅니다">❗상령일 ' + info.nextSang + ' (D-' + info.daysLeft + ')</span>';
   } else {
-    sangSpan = '<span style="font-size:12px;color:#94a3b8;margin-left:6px;white-space:nowrap;display:inline-block;" title="다음 상령일 — 이날부터 보험나이가 올라갑니다">상령일 ' + info.nextSang + '</span>';
+    sangSpan = '<span style="font-size:' + _fs + ';color:#94a3b8;margin-left:6px;white-space:nowrap;display:inline-block;" title="다음 상령일 — 이날부터 보험나이가 올라갑니다">상령일 ' + info.nextSang + '</span>';
   }
-  return '<span style="font-size:12px;color:#93c5fd;margin-left:6px;font-weight:700;white-space:nowrap;display:inline-block;" title="보험나이 (상령일 지나면 +1세)">보험 ' + info.insAge + '세</span>' + sangSpan;
+  return '<span style="font-size:' + _fs + ';color:#93c5fd;margin-left:6px;font-weight:700;white-space:nowrap;display:inline-block;" title="보험나이 (상령일 지나면 +1세)">보험 ' + info.insAge + '세</span>' + sangSpan;
 }
 function hasDueSchedule(c){
   var today=new Date().toISOString().split('T')[0];
@@ -4745,9 +4748,11 @@ function toggleStatusSort(v) {
   var b1 = document.getElementById('ssort-done');
   var b2 = document.getElementById('ssort-prospect');
   var b3 = document.getElementById('ssort-reject');
+  var b4 = document.getElementById('ssort-absent');  /* ★ 부재중 (2026-07-15) */
   if (b1) b1.classList.toggle('active', window._statusSortTop === '가입완료');
   if (b2) b2.classList.toggle('active', window._statusSortTop === '가망고객');
   if (b3) b3.classList.toggle('active', window._statusSortTop === '거절');
+  if (b4) b4.classList.toggle('active', window._statusSortTop === '부재중');
   if (typeof renderList === 'function') renderList();
 }
 
@@ -7480,7 +7485,8 @@ function buildSilsonForm(id) {
   // 보험사 옵션 - 선택된 값 표시 위해 JS에서 처리
   html += silsonInsOptions();
   html += '</select>';
-  html += '<input type="date" id="silson-date" value="'+selDate+'" onchange="silsonPreview('+id+')">';
+  /* ★ 달력 입력 → 숫자 텍스트 입력으로 변경. 20110728 치면 2011-07-28 자동 변환 (2026-07-15) */
+  html += '<input type="text" inputmode="numeric" id="silson-date" placeholder="가입일 — 예: 20110728" value="'+selDate+'" oninput="silsonDateFormat(this,'+id+')">';
   html += '<select id="silson-type" onchange="silsonPreview('+id+')">';
   html += '<option value="">가입형태 (자동)</option>';
   html += '<option value="단독형"'+(selType==='단독형'?' selected':'')+'>단독형→2세대후기</option>';
@@ -7508,6 +7514,17 @@ function buildSilsonForm(id) {
   return html;
 }
 
+// ★ 실손 가입일 자동 포맷 — 숫자만 입력하면 YYYY-MM-DD로 변환, 완성되면 미리보기 갱신 (2026-07-15)
+function silsonDateFormat(el, id) {
+  var d = el.value.replace(/[^0-9]/g, '').slice(0, 8);
+  var out = d;
+  if (d.length > 6) out = d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6);
+  else if (d.length > 4) out = d.slice(0, 4) + '-' + d.slice(4);
+  el.value = out;
+  if (out.length === 10) silsonPreview(id);
+  else { var p = document.getElementById('silson-preview'); if (p) p.innerHTML = ''; }
+}
+
 // 실손 미리보기 (입력 중 세대 표시)
 function silsonPreview(id) {
   var dateEl = document.getElementById('silson-date');
@@ -7532,6 +7549,8 @@ function silsonPreview(id) {
 function saveSilson(id) {
   var dateEl = document.getElementById('silson-date');
   if (!dateEl || !dateEl.value) { showToast('가입일을 입력해주세요.'); return; }
+  /* ★ 텍스트 입력으로 바뀌어 형식 검증 추가 (2026-07-15) */
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateEl.value)) { showToast('가입일 8자리를 입력해주세요. 예: 20110728'); return; }
   var c = customers.find(function(x){return x.id===id;});
   if (!c) return;
   var insEl = document.getElementById('silson-ins');
