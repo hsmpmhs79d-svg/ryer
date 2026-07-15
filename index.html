@@ -17,8 +17,9 @@
   .header .stats { font-size: 14px; opacity: 0.9; display: flex; gap: 6px; }
   .header .stats span { background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; }
   /* ★ 사이드바 상단 통계 — 헤더에서 이동 (2026-07-10) */
-  .side-stats { display: flex; gap: 5px; padding: 8px 12px 0; }
-  .side-stats span { background: #eef2f7; color: #334155; font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  /* ★ 칩 내부 줄바꿈 금지 — 좁으면 칩째로 다음 줄 (2026-07-15) */
+  .side-stats { display: flex; gap: 5px; padding: 8px 12px 0; flex-wrap: wrap; }
+  .side-stats span { background: #eef2f7; color: #334155; font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
   .save-btn { background: #f59e0b; color: #1a202c; border: none; padding: 8px 18px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .save-btn:hover { background: #d97706; color: white; }
   .save-btn-sub { background: rgba(255,255,255,0.2); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; }
@@ -1512,7 +1513,7 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
   <div class="left-panel">
     <!-- ★ 전체/남/여 통계 — 헤더에서 이동, 헤더 한 줄 유지 (2026-07-10) -->
     <!-- ★ 선택삭제 버튼 — bulk-bar에서 통계 줄로 이동, 칩 크기 통일 (2026-07-15) -->
-    <div class="side-stats"><span id="stat-total">전체 0명</span><span id="stat-male">남 0명</span><span id="stat-female">여 0명</span><button class="bulk-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" title="여러 고객을 한 번에 선택해서 삭제" style="background:#eef2f7;color:#334155;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:20px;border:none;cursor:pointer;">🗑 선택 삭제</button></div>
+    <div class="side-stats"><span id="stat-total">전체 0명</span><span id="stat-male">남 0명</span><span id="stat-female">여 0명</span><button class="bulk-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" title="여러 고객을 한 번에 선택해서 삭제" style="background:#eef2f7;color:#334155;font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;border:none;cursor:pointer;white-space:nowrap;">🗑 삭제</button></div>
     <div class="search-box">
       <input type="text" id="search-input" placeholder="이름, 전화번호, 주소, 메모, 상담내용 검색..." oninput="renderList()">
       <div class="filter-row">
@@ -11976,12 +11977,32 @@ function copyContact(el) {
     renderMobile();
   };
 
+  // ★ 가입완료 해제 시 자동 등록됐던 가입 알림(1주년/보장개시) 정리 — 확인 후 삭제 (2026-07-15)
+  //   다른 중요할일·선물은 절대 건드리지 않음. 완료 처리된 항목도 보존.
+  window._cleanupJoinAlerts = function(c) {
+    if (!c || !c.gifts || !c.gifts.length) return;
+    var targets = c.gifts.filter(function(g) {
+      return g && !g.completed && typeof g.content === 'string' &&
+        (g.content.indexOf('🎗 암 보장 개시:') === 0 || g.content.indexOf('🎉 가입 1년:') === 0);
+    });
+    if (!targets.length) return;
+    if (!confirm('가입완료 때 등록된 알림 ' + targets.length + '개(가입 1주년/암 보장개시)가 있습니다.\n같이 삭제할까요?')) return;
+    c.gifts = c.gifts.filter(function(g) { return targets.indexOf(g) < 0; });
+    c._updated = Date.now();
+    try { if (typeof renderGiftPanel === 'function') renderGiftPanel(); } catch(e) {}
+    try { if (typeof updateGiftHeaderBadge === 'function') updateGiftHeaderBadge(); } catch(e) {}
+    try { if (typeof checkNotifications === 'function') checkNotifications(); } catch(e) {}
+    if (typeof showToast === 'function') showToast('🗑 가입 알림 ' + targets.length + '개 삭제됨');
+  };
+
   // ★ 상태 변경 (가입완료/가망고객) — 인적사항 셀렉트에서 호출 (2026-06-20)
   window.mvSetStatus = function(cid, val) {
     var c = _mvCustomers.find(function(x){return x.id === cid;});
     if (!c) return;
+    var prev = c.status || '';  /* ★ 가입완료 해제 감지용 (2026-07-15) */
     c.status = val || '';
     c._updated = Date.now();
+    if (prev === '가입완료' && val !== '가입완료') { try { window._cleanupJoinAlerts(c); } catch(e) {} }
     mvCommit();
     renderMobile();
     // ★ 가입완료로 변경 시 알림 등록 모달 (2026-07-11)
@@ -12355,9 +12376,12 @@ function copyContact(el) {
       };
       paintSel(sel.value);
       sel.onchange = function() {
+        var prev = c.status || '';  /* ★ 가입완료 해제 감지용 (2026-07-15) */
         c.status = this.value;
         c._updated = Date.now();
         paintSel(this.value);
+        /* ★ 가입완료 → 다른 상태로 되돌리면 자동 등록된 가입 알림 정리 확인 (2026-07-15) */
+        if (prev === '가입완료' && this.value !== '가입완료') { try { window._cleanupJoinAlerts(c); } catch(e) {} }
         if (typeof autoSave === 'function') autoSave();
         if (typeof renderList === 'function') renderList();
         // ★ 가입완료로 변경 시 알림 등록 모달 (2026-07-11)
