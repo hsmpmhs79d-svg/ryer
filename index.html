@@ -3037,13 +3037,20 @@ function getInsAgeInfo(residentNum) {
   if (today >= sang) { insAge = manAge + 1; nextSang = addMonths(lastBirthYear + 1, mm - 1, dd, 6); }
   else { insAge = manAge; nextSang = sang; }
   var ns = (nextSang.getMonth() + 1) + '/' + nextSang.getDate();
-  return { manAge: manAge, insAge: insAge, nextSang: ns };
+  var daysLeft = Math.round((nextSang - today) / 86400000);  // ★ 상령일까지 남은 일수 (2026-07-15)
+  return { manAge: manAge, insAge: insAge, nextSang: ns, daysLeft: daysLeft };
 }
 function getInsAgeTag(c) {
   var info = getInsAgeInfo(c.resident_number || c.jumin);
   if (!info) return '';
-  return '<span style="font-size:12px;color:#93c5fd;margin-left:6px;font-weight:700;white-space:nowrap;display:inline-block;" title="보험나이 (상령일 지나면 +1세)">보험 ' + info.insAge + '세</span>'
-       + '<span style="font-size:12px;color:#94a3b8;margin-left:6px;white-space:nowrap;display:inline-block;" title="다음 상령일 — 이날부터 보험나이가 올라갑니다">상령일 ' + info.nextSang + '</span>';
+  // ★ 상령일 한 달(31일) 이내 → 빨간색 + ❗ + D-n 표시 (2026-07-15)
+  var sangSpan;
+  if (info.daysLeft <= 31) {
+    sangSpan = '<span style="font-size:12px;color:#f87171;margin-left:6px;font-weight:800;white-space:nowrap;display:inline-block;" title="⚠ 상령일까지 ' + info.daysLeft + '일 — 이날부터 보험나이가 올라 보험료가 오릅니다">❗상령일 ' + info.nextSang + ' (D-' + info.daysLeft + ')</span>';
+  } else {
+    sangSpan = '<span style="font-size:12px;color:#94a3b8;margin-left:6px;white-space:nowrap;display:inline-block;" title="다음 상령일 — 이날부터 보험나이가 올라갑니다">상령일 ' + info.nextSang + '</span>';
+  }
+  return '<span style="font-size:12px;color:#93c5fd;margin-left:6px;font-weight:700;white-space:nowrap;display:inline-block;" title="보험나이 (상령일 지나면 +1세)">보험 ' + info.insAge + '세</span>' + sangSpan;
 }
 function hasDueSchedule(c){
   var today=new Date().toISOString().split('T')[0];
