@@ -11992,6 +11992,8 @@ function copyContact(el) {
     try { if (typeof renderGiftPanel === 'function') renderGiftPanel(); } catch(e) {}
     try { if (typeof updateGiftHeaderBadge === 'function') updateGiftHeaderBadge(); } catch(e) {}
     try { if (typeof checkNotifications === 'function') checkNotifications(); } catch(e) {}
+    /* ★ 고객 카드의 중요할일 섹션도 즉시 새로고침 (2026-07-16) */
+    try { if (!IS_MOBILE && typeof selectedId !== 'undefined' && selectedId === c.id && typeof selectCustomer === 'function') selectCustomer(c.id); } catch(e) {}
     if (typeof showToast === 'function') showToast('🗑 가입 알림 ' + targets.length + '개 삭제됨');
   };
 
