@@ -11417,20 +11417,59 @@ function copyContact(el) {
     if (!d) return;
     location.href = 'tel:' + d;
   };
+  // ★ 문자 보내기 — 자동 채움 대신 템플릿 선택창 (카톡/문자 구분 없이 전체 + 빈 문자) (2026-07-16)
   window.mvSmsPhone = function(p, custName) {
     var d = String(p || '').replace(/\D/g, '');
     if (!d) return;
-    // 퀵메시지 템플릿 중 type='sms' 첫 번째 항목을 본문으로 자동 채움
-    var body = '';
+    var list = [];
     try {
-      if (typeof _dmGetSmsBody === 'function') body = _dmGetSmsBody(custName || '');
+      if (typeof _dmGetAllTemplates === 'function') list = _dmGetAllTemplates(custName || '');
     } catch(e) {}
-    if (body) {
+    if (!list.length) { location.href = 'sms:' + d; return; }  // 템플릿 없으면 바로 빈 문자
+
+    function openSms(body) {
       // iOS/Android 호환을 위해 ?& 둘 다 — iOS는 &body= 권장
-      location.href = 'sms:' + d + '?&body=' + encodeURIComponent(body);
-    } else {
-      location.href = 'sms:' + d;
+      if (body) location.href = 'sms:' + d + '?&body=' + encodeURIComponent(body);
+      else location.href = 'sms:' + d;
     }
+
+    // 선택창 (하단 시트)
+    var old = document.getElementById('mv-sms-pick');
+    if (old) old.remove();
+    var ov = document.createElement('div');
+    ov.id = 'mv-sms-pick';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:12000;display:flex;align-items:flex-end;';
+    ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#fff;width:100%;max-height:70vh;border-radius:16px 16px 0 0;padding:14px 14px 24px;box-sizing:border-box;overflow-y:auto;';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:15px;font-weight:800;color:#1e293b;margin-bottom:10px;';
+    title.textContent = '💬 보낼 메시지 선택';
+    box.appendChild(title);
+
+    function addBtn(label, preview, body, accent) {
+      var b = document.createElement('button');
+      b.style.cssText = 'display:block;width:100%;text-align:left;background:' + (accent ? '#eff6ff' : '#f8fafc') + ';border:1.5px solid ' + (accent ? '#93c5fd' : '#e2e8f0') + ';border-radius:10px;padding:11px 13px;margin-bottom:8px;font-family:inherit;cursor:pointer;';
+      var t1 = document.createElement('div');
+      t1.style.cssText = 'font-size:14px;font-weight:800;color:#1e293b;';
+      t1.textContent = label;
+      b.appendChild(t1);
+      if (preview) {
+        var t2 = document.createElement('div');
+        t2.style.cssText = 'font-size:12px;color:#64748b;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+        t2.textContent = preview;
+        b.appendChild(t2);
+      }
+      b.addEventListener('click', function() { ov.remove(); openSms(body); });
+      box.appendChild(b);
+    }
+
+    addBtn('✏ 빈 문자로 열기', '', '', true);
+    for (var i = 0; i < list.length; i++) {
+      addBtn(list[i].title, (list[i].body || '').replace(/\n/g, ' ').slice(0, 40), list[i].body, false);
+    }
+    ov.appendChild(box);
+    document.body.appendChild(ov);
   };
 
   // 편집 후: 페이지 데이터 태그 + 스케줄 캐시 동기화 + 자동 저장
@@ -13441,22 +13480,12 @@ function copyContact(el) {
       } else {
         var bodyShown = applyVars(t.body, window._dmCtxName);
         var typeLabel = t.type === 'sms' ? 'SMS 문자' : 'DM';
-        // ★ SMS 타입 카드만 기본 SMS 배지/설정 버튼 표시 (2026-06-20)
-        var defaultBadge = (t.type === 'sms' && t._isDefault)
-          ? ' <span style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:700;margin-left:4px;">⭐ 기본</span>'
-          : '';
-        var defaultBtn = '';
-        if (t.type === 'sms') {
-          defaultBtn = t._isDefault
-            ? '<button class="dm-btn" onclick="dmUnsetDefaultSms(' + t.id + ')" style="background:#fef3c7;color:#92400e;border:1px solid #fcd34d;">⭐ 기본 해제</button>'
-            : '<button class="dm-btn" onclick="dmSetDefaultSms(' + t.id + ')">⭐ 기본 설정</button>';
-        }
+        /* ★ ⭐기본 설정/해제 버튼·배지 제거 — 문자 보내기가 선택창 방식으로 변경되어 불필요 (2026-07-16) */
         html += '<div class="dm-item">'
-          + '<div class="ti">' + esc(t.title) + ' <span class="ty ' + (t.type==='sms'?'sms':'') + '">' + typeLabel + '</span>' + defaultBadge + '</div>'
+          + '<div class="ti">' + esc(t.title) + ' <span class="ty ' + (t.type==='sms'?'sms':'') + '">' + typeLabel + '</span></div>'
           + '<div class="bd">' + esc(bodyShown) + '</div>'
           + '<div class="acts">'
           +   '<button class="dm-btn primary" onclick="dmCopyTemplate(' + t.id + ')">📋 복사</button>'
-          +   defaultBtn
           +   '<button class="dm-btn" onclick="dmEditTemplate(' + t.id + ')">✏️ 편집</button>'
           +   '<button class="dm-btn danger" onclick="dmDeleteTemplate(' + t.id + ')">🗑 삭제</button>'
           + '</div>'
@@ -13566,6 +13595,13 @@ function copyContact(el) {
     getList().unshift({ id: nid, title: '새 템플릿', type: 'dm', body: '여기에 메시지 내용을 입력하세요.', _isNew: true });
     window._dmEditingId = nid;
     render();
+  };
+
+  // ★ 문자 선택창용 — 카톡/문자 구분 없이 전체 템플릿, 변수 치환 적용 (2026-07-16)
+  window._dmGetAllTemplates = function(custName) {
+    return getList().map(function(t) {
+      return { title: t.title, type: t.type, body: applyVars(t.body, custName || '') };
+    });
   };
 
   // 모바일 mvSmsPhone가 사용 — _isDefault=true sms 우선, 없으면 첫 번째 sms fallback (2026-06-20)
