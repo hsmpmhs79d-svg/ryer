@@ -10207,7 +10207,9 @@ function copyContact(el) {
         }
       }, 30000);
     }
-    _tokenClient.requestAccessToken({ prompt: 'consent' });
+    /* ★ 'consent' → '' 변경 (2026-07-26): 매번 동의 화면 3단계를 강제로 띄우던 원인.
+       ''이면 최초 1회만 동의 화면이 나오고, 이후엔 이미 허용된 사용자는 화면 없이 바로 로그인됨. */
+    _tokenClient.requestAccessToken({ prompt: '' });
   }
 
   function doLogout() {
