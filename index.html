@@ -1012,42 +1012,50 @@
   display: flex; align-items: center; justify-content: center;
   font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
 }
+/* ★ 카드 1.5배 확대 (2026-07-26, Ryer 요청) */
 #login-overlay .login-card {
-  background: #fff; border-radius: 18px; padding: 30px 26px 32px;
+  background: #fff; border-radius: 22px; padding: 42px 38px 44px;
   box-shadow: 0 20px 60px rgba(120, 53, 15, 0.35);
-  border-top: 6px solid #e8833a;
-  max-width: 380px; width: 88%; text-align: center;
+  border-top: 7px solid #e8833a;
+  max-width: 540px; width: 90%; text-align: center;
   word-break: keep-all;  /* 한국어 단어 단위 줄바꿈 — 글자 잘림 방지 */
 }
+/* ★ 브랜딩 v2 (2026-07-26): SALGU 큰 제목 → CRM 풀네임 → 슬로건 → 부제 순서 */
 #login-overlay .login-brand {
-  color: #e8833a; font-size: 11.5px; font-weight: 800;
-  letter-spacing: 2.5px; margin-bottom: 8px;
+  color: #e8833a; font-size: 13.5px; font-weight: 800;
+  letter-spacing: 2px; margin: 4px 0 20px;
 }
 #login-overlay .login-slogan {
-  color: #b45309; font-size: 12.5px; font-weight: 600;
-  margin-bottom: 14px;
+  color: #78716c; font-size: 20px; font-weight: 700;
+  margin-bottom: 5px;
 }
-#login-overlay h1 { font-size: 25px; color: #7c2d12; margin-bottom: 6px; word-break: keep-all; }
-#login-overlay p { color: #64748b; font-size: 13.5px; margin-bottom: 18px; line-height: 1.55; word-break: keep-all; }
+/* ★ A안 (2026-07-26): 살·구 두 글자만 살구색으로 강조 — 이름 유래가 한눈에 */
+#login-overlay .login-slogan .sal-gu { color: #e8833a; font-size: 25px; }
+#login-overlay .login-sub {
+  color: #92600b; font-size: 16px; font-weight: 600;
+  margin-bottom: 20px;
+}
+#login-overlay h1 { font-size: 38px; letter-spacing: 1.5px; color: #7c2d12; margin-bottom: 2px; word-break: keep-all; }  /* ★ 간격 4px→1.5px (2026-07-26, B안) */
+#login-overlay p { color: #64748b; font-size: 16.5px; margin-bottom: 24px; line-height: 1.55; word-break: keep-all; }
 #login-overlay .login-tip {
-  background: #f1f5f9; color: #475569; font-size: 12px;
-  padding: 10px 12px; border-radius: 8px; margin-top: 16px;
-  line-height: 1.5; text-align: left; word-break: keep-all;
+  background: #f1f5f9; color: #475569; font-size: 14.5px;
+  padding: 14px 16px; border-radius: 10px; margin-top: 22px;
+  line-height: 1.6; text-align: left; word-break: keep-all;
 }
 #login-overlay .login-tip b { color: #0f766e; }
 #login-overlay .gbtn {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: #fff; border: 1px solid #dadce0; border-radius: 8px;
-  padding: 12px 20px; font-size: 15px; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid #dadce0; border-radius: 10px;
+  padding: 15px 28px; font-size: 18px; font-weight: 600;
   color: #3c4043; cursor: pointer; transition: background .15s;
   font-family: inherit;
 }
 #login-overlay .gbtn:hover { background: #f8f9fa; }
 #login-overlay .gicon {
-  width: 20px; height: 20px;
+  width: 24px; height: 24px;
 }
 #login-overlay .login-err {
-  margin-top: 14px; color: #dc2626; font-size: 13px; min-height: 18px;
+  margin-top: 16px; color: #dc2626; font-size: 14px; min-height: 18px;
 }
 #drive-banner {
   position: fixed; bottom: 14px; left: 14px;
@@ -1424,24 +1432,35 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
 <!-- 로그인 오버레이 -->
 <div id="login-overlay">
   <div class="login-card">
-    <!-- ★ 살구(Salgu) 브랜딩 (2026-07-26) -->
-    <div class="login-brand">SALGU · CUSTOMER CARE</div>
-    <h1>🍑 살구 고객관리</h1>
-    <div class="login-slogan">"살리고, 구해준다" — 보험 전문가의 고객관리</div>
+    <!-- ★ 살구(Salgu) 브랜딩 v2 (2026-07-26, Ryer 확정 문구) -->
+    <h1>🍑 SALGU</h1>
+    <div class="login-brand">CUSTOMER RELATIONSHIP MANAGEMENT</div>
+    <div class="login-slogan">"<span class="sal-gu">살</span>리고 <span class="sal-gu">구</span>해준다"</div>
+    <div class="login-sub">보험 전문가의 고객관리</div>
     <p>본인 Google Drive에만 저장됩니다.<br>안전하며 다른 사람은 볼 수 없습니다.</p>
     <button class="gbtn" id="login-btn" type="button">
       <svg class="gicon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Google로 시작
     </button>
     <div class="login-err" id="login-err"></div>
-    <div class="login-tip">
-      <b>✓ 안전합니다.</b> 다음 화면이 길어 보여도 걱정 마세요.<br>
+    <!-- ★ 안내 박스 (2026-07-26): 처음 방문자에게만 표시 — 로그인 성공 이력 있으면 아래 스크립트가 숨김 -->
+    <div class="login-tip" id="login-tip">
+      <b>✓ 안전합니다.</b> 다음 화면은 <b>처음 1회만</b> 나와요.<br>
       <b>① "확인되지 않은 앱"</b> 화면 → <b>계속</b><br>
       <b>② 권한 선택</b> 화면 → <b>모두 선택</b> → <b>계속</b><br>
-      이렇게 하셔야 사용할 수 있어요.
+      그다음부터는 버튼만 누르면 <b>바로 로그인</b>됩니다.
     </div>
   </div>
 </div>
+<script>
+/* ★ 처음/재방문 화면 분리 (2026-07-26): 이 브라우저에서 로그인 성공한 적 있으면 안내 박스 숨김 */
+try {
+  if (localStorage.getItem('__salgu_visited__')) {
+    var _tipEl = document.getElementById('login-tip');
+    if (_tipEl) _tipEl.style.display = 'none';
+  }
+} catch(e) {}
+</script>
 
 <!-- 상단 상태 배너 -->
 <div id="drive-banner"></div>
@@ -10190,6 +10209,8 @@ function copyContact(el) {
         _accessToken = resp.access_token;
         gapi.client.setToken({ access_token: _accessToken });
         saveTokenToStorage();
+        /* ★ 로그인 성공 이력 저장 (2026-07-26) — 재방문 시 로그인 화면 안내 박스 숨김용 */
+        try { localStorage.setItem('__salgu_visited__', '1'); } catch(e) {}
         afterLogin();
       }
     });
