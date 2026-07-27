@@ -10186,7 +10186,11 @@ function copyContact(el) {
     }
     _silentReauthCb = done;
     try {
-      _tokenClient.requestAccessToken({ prompt: '' });
+      /* ★ login_hint 추가 (2026-07-26): 브라우저에 구글 계정이 여러 개면 갱신 때마다
+         계정 선택창이 뜨던 문제 — 로그인했던 이메일을 알려줘서 조용히 갱신 */
+      var _hint = '';
+      try { _hint = localStorage.getItem('__salgu_email__') || ''; } catch(e2) {}
+      _tokenClient.requestAccessToken(_hint ? { prompt: '', login_hint: _hint } : { prompt: '' });
     } catch(e) {
       _silentReauthCb = null;
       if (done) done(false, e.message || 'silent reauth 실패');
@@ -10274,8 +10278,11 @@ function copyContact(el) {
       }, 30000);
     }
     /* ★ 'consent' → '' 변경 (2026-07-26): 매번 동의 화면 3단계를 강제로 띄우던 원인.
-       ''이면 최초 1회만 동의 화면이 나오고, 이후엔 이미 허용된 사용자는 화면 없이 바로 로그인됨. */
-    _tokenClient.requestAccessToken({ prompt: '' });
+       ''이면 최초 1회만 동의 화면이 나오고, 이후엔 이미 허용된 사용자는 화면 없이 바로 로그인됨.
+       ★ login_hint 추가: 재방문 시 계정 선택창도 건너뛰고 지난번 계정으로 바로 로그인 */
+    var _hint = '';
+    try { _hint = localStorage.getItem('__salgu_email__') || ''; } catch(e) {}
+    _tokenClient.requestAccessToken(_hint ? { prompt: '', login_hint: _hint } : { prompt: '' });
   }
 
   function doLogout() {
@@ -10285,6 +10292,8 @@ function copyContact(el) {
     _accessToken = null;
     _driveFileId = null;
     clearTokenStorage();
+    /* ★ 로그아웃 시 기억한 계정도 삭제 (2026-07-26) — 다른 계정으로 로그인할 수 있게 */
+    try { localStorage.removeItem('__salgu_email__'); } catch(e) {}
     location.reload();
   }
 
@@ -10294,6 +10303,8 @@ function copyContact(el) {
       headers: { 'Authorization': 'Bearer ' + _accessToken }
     }).then(function(r){ return r.json(); }).then(function(d){
       _userEmail = d.email || '';
+      /* ★ 로그인 계정 기억 (2026-07-26) — 토큰 갱신 시 계정 선택창 방지용 login_hint */
+      try { if (_userEmail) localStorage.setItem('__salgu_email__', _userEmail); } catch(e) {}
       var u = document.getElementById('drive-user');
       if (u) u.textContent = _userEmail;
       var sub = document.getElementById('mv-sub');
