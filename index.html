@@ -2477,13 +2477,13 @@ function renderList() {
       var _checked = _sel ? 'checked' : '';
       var _selClass = _sel ? ' bulk-selected' : '';
       return '<div class="customer-item'+_selClass+'" onclick="toggleBulkSelect('+c.id+', event)">'
-        +'<div class="c-name"><input type="checkbox" class="bulk-cb" '+_checked+' onclick="event.stopPropagation(); toggleBulkSelect('+c.id+')">'+(c.name||'(이름없음)')+getAgeTag(c)+dot+'<span class="c-badge '+bc+'">'+(c.gender||'?')+'</span></div>'
+        +'<div class="c-name"><input type="checkbox" class="bulk-cb" '+_checked+' onclick="event.stopPropagation(); toggleBulkSelect('+c.id+')">'+(c.name||'(이름없음)')+getAgeTag(c)+dot+'<span class="c-badge '+bc+'">'+(c.gender||'?')+'</span>'+getStatusTag(c)+'</div>'
         +'<div class="c-sub">'+(c.phone||'전화번호 없음')+'</div>'
         +'<div class="c-sub">'+(c.job||'')+(c.address?' · '+c.address.substring(0,14)+'…':'')+'</div>'
         +'</div>';
     }
     return '<div class="customer-item'+(c.id===selectedId?' active':'')+'" onclick="selectCustomer('+c.id+')">'
-      +'<div class="c-name">'+(c.name||'(이름없음)')+getAgeTag(c)+dot+'<span class="c-badge '+bc+'">'+(c.gender||'?')+'</span></div>'
+      +'<div class="c-name">'+(c.name||'(이름없음)')+getAgeTag(c)+dot+'<span class="c-badge '+bc+'">'+(c.gender||'?')+'</span>'+getStatusTag(c)+'</div>'
       +'<div class="c-sub">'+(c.phone||'전화번호 없음')+'</div>'
       +'<div class="c-sub">'+(c.job||'')+(c.address?' · '+c.address.substring(0,14)+'…':'')+'</div>'
       +(snippet?'<div class="c-snippet">'+snippet+'</div>':'')
@@ -3042,6 +3042,21 @@ function calcAge(residentNum) {
   if (!birthPassed) age--;
   return age >= 0 ? age : '';
 }
+/* ★ 사이드바 리스트용 상태 배지 (2026-07-26) — 가입완료/가망/부재중/거절을 이름 옆에 표시 */
+function getStatusTag(c) {
+  var s = c.status || '';
+  if (!s) return '';
+  var m = {
+    '가입완료': ['✅', '가입', '#d1fae5', '#065f46'],
+    '가망고객': ['⭐', '가망', '#fef3c7', '#92400e'],
+    '부재중':   ['📵', '부재중', '#e2e8f0', '#334155'],
+    '거절':     ['🚫', '거절', '#fee2e2', '#991b1b']
+  };
+  var v = m[s];
+  if (!v) return '';
+  return '<span style="display:inline-block;margin-left:5px;padding:1px 7px;background:' + v[2] + ';color:' + v[3] + ';border-radius:10px;font-size:10.5px;font-weight:700;white-space:nowrap;vertical-align:middle;">' + v[0] + ' ' + v[1] + '</span>';
+}
+
 function getAgeTag(c, fs) {  /* ★ fs: 글자 크기(px, 기본 12) — 카드 헤더는 14로 호출 (2026-07-15) */
   var age = calcAge(c.resident_number || c.jumin);
   if (age === '') return '';
