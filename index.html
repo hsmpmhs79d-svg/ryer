@@ -3758,7 +3758,13 @@ function buildGiftEditForm(id, idx, g) {
 
 function setGiftNewKind(kind, cid) {
   _giftNewKind = kind;
+  /* ★ 스크롤 위치 보존 (2026-07-26) — 카드 재렌더 시 맨 위로 튀는 문제 해결 */
+  var rp = document.getElementById('right-panel');
+  var st = rp ? rp.scrollTop : 0;
+  var wy = window.scrollY || window.pageYOffset || 0;
   selectCustomer(cid); // 폼을 종류에 맞춰 다시 렌더
+  if (rp) rp.scrollTop = st;
+  window.scrollTo(0, wy);
 }
 
 function setGiftEditKind(kind, idx) {
