@@ -13854,6 +13854,11 @@ function restoreExcludedContact(phone8) {
 .consult-notice{display:flex;align-items:center;gap:12px;background:#fef3c7;border:2px solid #f59e0b;color:#92400e;font-size:15px;font-weight:600;padding:13px 16px;border-radius:12px;margin-bottom:14px;line-height:1.6;word-break:keep-all;}
 .consult-notice .cn-icon{font-size:26px;flex-shrink:0;}
 .consult-notice b{color:#b91c1c;}
+/* ★ 상담자료 잠시 중단 안내 카드 (2026-07-30) — 저작권 이슈로 카테고리·이미지 대신 표시 */
+.consult-paused{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:100%;padding:20px;box-sizing:border-box;word-break:keep-all;}
+.consult-paused .cp-icon{font-size:52px;margin-bottom:14px;}
+.consult-paused h3{margin:0 0 12px;font-size:20px;font-weight:800;color:#92400e;}
+.consult-paused p{margin:0 0 8px;font-size:15px;line-height:1.7;color:#475569;font-weight:600;}
 .consult-cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
 .consult-cat-btn{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:15px 8px;cursor:pointer;text-align:center;font-family:inherit;}
 .consult-cat-btn:hover{box-shadow:0 4px 14px rgba(0,0,0,0.12);border-color:#f59e0b;}
@@ -13946,6 +13951,14 @@ body.mobile-mode #consult-vfoot{display:flex;gap:8px;padding:10px 12px 18px;flex
   var _cat = -1, _idx = 0;   // 현재 카테고리 index / 카테고리 내 이미지 index
   /* ★ 저작권 안내 (2026-07-26, A안) — 카테고리 화면 + 썸네일 화면 공통 표시 */
   var CONSULT_NOTICE = '<div class="consult-notice"><span class="cn-icon">🔒</span><span>이 자료는 유료 구독 자료입니다. 고객과의 <b>상담 화면으로만</b> 사용해주세요.<br>블로그·SNS 등 외부에 올리면 <b>저작권 문제로 불이익</b>을 받을 수 있습니다.</span></div>';
+  /* ★ 상담자료 잠시 중단 (2026-07-30) — 저작권 이슈로 전체 숨김. 재오픈 준비되면 false로 바꾸면 원래대로 복구됨 */
+  var CONSULT_SUSPENDED = true;
+  var CONSULT_PAUSED_HTML = '<div class="consult-paused">'
+    + '<span class="cp-icon">🙏</span>'
+    + '<h3>상담자료, 잠시 쉬어갑니다</h3>'
+    + '<p>제공해 드리던 상담자료에 저작권 관련 문제가 확인되어,<br>안전한 사용을 위해 <b style="color:#b91c1c;">서비스를 잠시 중단</b>하게 되었습니다.</p>'
+    + '<p>더 좋은 자료로 꼼꼼히 준비해서 <b style="color:#b45309;">새롭게 오픈</b>하겠습니다.<br>조금만 기다려 주세요. 감사합니다 😊</p>'
+    + '</div>';
 
   function el(id) { return document.getElementById(id); }
   function pad(n) { return ('00' + n).slice(-3); }
@@ -13981,6 +13994,12 @@ body.mobile-mode #consult-vfoot{display:flex;gap:8px;padding:10px 12px 18px;flex
     _cat = -1;
     el('consult-title').textContent = '📚 상담자료';
     setBackVisible(false);
+    /* ★ 잠시 중단 (2026-07-30) — 안내 문구만 표시하고 카테고리·이미지는 숨김 */
+    if (CONSULT_SUSPENDED) {
+      el('consult-body').innerHTML = CONSULT_PAUSED_HTML;
+      el('consult-body').scrollTop = 0;
+      return;
+    }
     var h = CONSULT_NOTICE + '<div class="consult-cat-grid">';
     for (var i = 0; i < CATS.length; i++) {
       h += '<button class="consult-cat-btn" onclick="consultOpenCat(' + i + ')">'
