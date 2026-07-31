@@ -1478,8 +1478,12 @@ try {
     <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:9px;">
       <input type="checkbox" id="join-alert-anniv" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 🎉 가입 1주년 알림 (1년 후 같은 날)
     </label>
-    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:16px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:9px;">
       <input type="checkbox" id="join-alert-cancer" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 🎗 암 보장 포함 — 보장개시 알림 (가입 91일째)
+    </label>
+    <!-- ★ 카드납 알림 (2026-07-30) — 매월 15일, 자동 연장 -->
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:16px;">
+      <input type="checkbox" id="join-alert-card" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 💳 카드납 — 매월 15일 카드결제 알림 (자동 연장)
     </label>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button onclick="if(window.closeJoinAlert)window.closeJoinAlert()" style="background:#f1f5f9;color:#374151;border:1px solid #e2e8f0;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">건너뛰기</button>
@@ -3115,6 +3119,7 @@ function hasDueSchedule(c){
   return (c.schedules||[]).some(function(s){return s.date<=today && !s.completed;});
 }
 function checkNotifications(){
+  try { if (window._cardPayTopUpAll) window._cardPayTopUpAll(); } catch(e) {}  /* ★ 카드납 알림 자동 연장 (2026-07-30) */
   var today=new Date().toISOString().split('T')[0];
   var due=[];
   customers.forEach(function(c){
@@ -12132,13 +12137,14 @@ function copyContact(el) {
   // ★ 가입완료 해제 시 자동 등록됐던 가입 알림(1주년/보장개시) 정리 — 확인 후 삭제 (2026-07-15)
   //   다른 중요할일·선물은 절대 건드리지 않음. 완료 처리된 항목도 보존.
   window._cleanupJoinAlerts = function(c) {
+    if (c && c.cardPay) { c.cardPay = false; }  /* ★ 가입완료 해제 시 카드납 자동 연장도 중지 (2026-07-30) */
     if (!c || !c.gifts || !c.gifts.length) return;
     var targets = c.gifts.filter(function(g) {
       return g && !g.completed && typeof g.content === 'string' &&
-        (g.content.indexOf('🎗 암 보장 개시:') === 0 || g.content.indexOf('🎉 가입 1년:') === 0);
+        (g.content.indexOf('🎗 암 보장 개시:') === 0 || g.content.indexOf('🎉 가입 1년:') === 0 || g.content.indexOf('💳 카드결제:') === 0);
     });
     if (!targets.length) return;
-    if (!confirm('가입완료 때 등록된 알림 ' + targets.length + '개(가입 1주년/암 보장개시)가 있습니다.\n같이 삭제할까요?')) return;
+    if (!confirm('가입완료 때 등록된 알림 ' + targets.length + '개(가입 1주년/암 보장개시/카드결제)가 있습니다.\n같이 삭제할까요?')) return;
     c.gifts = c.gifts.filter(function(g) { return targets.indexOf(g) < 0; });
     c._updated = Date.now();
     try { if (typeof renderGiftPanel === 'function') renderGiftPanel(); } catch(e) {}
@@ -12179,6 +12185,7 @@ function copyContact(el) {
     }
     var a = document.getElementById('join-alert-anniv'); if (a) a.checked = true;
     var k = document.getElementById('join-alert-cancer'); if (k) k.checked = false;
+    var cc = document.getElementById('join-alert-card'); if (cc) cc.checked = !!c.cardPay;  /* ★ 카드납 현재 상태 반영 (2026-07-30) */
     ov.style.display = 'block';
   };
   window.closeJoinAlert = function() {
@@ -12219,6 +12226,16 @@ function copyContact(el) {
       c.gifts.push({ kind:'task', content:'🎉 가입 1년: ' + c.name + ' — 가입일 ' + date, memo:'', payDate: ad, time:'', promisedAt: (typeof _giftToday === 'function' ? _giftToday() : date), completed:false, completedAt:null });
       added.push('가입 1주년 ' + ad);
     }
+    /* ★ 카드납 (2026-07-30) — 체크 시 자동 연장 시작, 해제 시 중지 + 미완료 카드결제 알림 제거 */
+    var wantCard = !!(document.getElementById('join-alert-card') || {}).checked;
+    if (wantCard) {
+      c.cardPay = true;
+      window._ensureCardPayAlerts(c);
+      added.push('카드결제 매월 15일 (자동 연장)');
+    } else if (c.cardPay) {
+      c.cardPay = false;
+      window._removeCardPayAlerts(c);
+    }
     c._updated = Date.now();
     if (IS_MOBILE) {
       mvCommit();
@@ -12233,6 +12250,58 @@ function copyContact(el) {
     }
     window.closeJoinAlert();
     if (typeof showToast === 'function' && added.length) showToast('✅ 알림 등록됨: ' + added.join(' · '), 'green');
+  };
+
+  // ★ 카드납 알림 자동 연장 (2026-07-30) — c.cardPay 플래그가 있으면 다가오는 3개월치
+  //   매월 15일 알림을 항상 유지. 다른 중요할일·선물·일정은 절대 건드리지 않음.
+  var CARD_PAY_PREFIX = '💳 카드결제: ';
+  window._ensureCardPayAlerts = function(c) {
+    if (!c || !c.cardPay) return false;
+    c.gifts = c.gifts || [];
+    var t = new Date();
+    var today = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+    var changed = false;
+    for (var i = 0; i < 3; i++) {
+      var dt = new Date(t.getFullYear(), t.getMonth() + i, 15);
+      if (dt < today) continue;  // 이번 달 15일이 이미 지났으면 다음 달부터
+      var ymd = dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-15';
+      var exists = c.gifts.some(function(g) {
+        return g && g.payDate === ymd && typeof g.content === 'string' && g.content.indexOf(CARD_PAY_PREFIX) === 0;
+      });
+      if (!exists) {
+        c.gifts.push({ kind:'task', content: CARD_PAY_PREFIX + c.name + ' — 매월 15일 카드 결제일', memo:'', payDate: ymd, time:'', promisedAt: (typeof _giftToday === 'function' ? _giftToday() : ymd), completed:false, completedAt:null });
+        changed = true;
+      }
+    }
+    return changed;
+  };
+  window._removeCardPayAlerts = function(c) {
+    if (!c || !c.gifts) return;
+    c.gifts = c.gifts.filter(function(g) {
+      return !(g && !g.completed && typeof g.content === 'string' && g.content.indexOf(CARD_PAY_PREFIX) === 0);
+    });
+  };
+  // 전체 고객 top-up — checkNotifications 시작 시 호출됨, 1시간에 1번만 실제 실행 (재진입·중복 방지)
+  var _cardTopUpLast = 0;
+  window._cardPayTopUpAll = function() {
+    var now = Date.now();
+    if (now - _cardTopUpLast < 3600000) return;
+    _cardTopUpLast = now;
+    var list = window.customers || [];
+    var changed = false;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].cardPay) {
+        if (window._ensureCardPayAlerts(list[i])) { list[i]._updated = now; changed = true; }
+      }
+    }
+    if (changed) {
+      if (window.__IS_MOBILE__) {
+        try { if (typeof mvCommit === 'function') mvCommit(); } catch(e) {}
+      } else {
+        try { if (typeof autoSave === 'function') autoSave(); } catch(e) {}
+        try { if (typeof scheduleAutoSave === 'function') scheduleAutoSave(); } catch(e) {}
+      }
+    }
   };
 
   // ─ 상담이력 편집 ─
