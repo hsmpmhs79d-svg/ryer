@@ -1471,7 +1471,7 @@ try {
 <!-- ★ 가입완료 알림 등록 모달 (2026-07-11) — 가입 1주년 + 암 보장개시(면책 90일) 알림 -->
 <div id="join-alert-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:10500;" onclick="if(event.target===this&&window.closeJoinAlert)window.closeJoinAlert()">
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;border-radius:14px;padding:22px;width:360px;max-width:92vw;box-shadow:0 16px 48px rgba(0,0,0,.3);font-family:inherit;">
-    <h3 style="font-size:16px;font-weight:800;margin-bottom:4px;color:#1a202c;">✅ 가입완료 — 알림 등록</h3>
+    <h3 id="join-alert-title" style="font-size:16px;font-weight:800;margin-bottom:4px;color:#1a202c;">✅ 가입완료 — 알림 등록</h3>
     <div id="join-alert-name" style="font-size:13px;color:#64748b;margin-bottom:14px;"></div>
     <label style="display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:4px;">가입일</label>
     <input type="date" id="join-alert-date" style="width:100%;padding:8px 10px;border:1.5px solid #c8d6e5;border-radius:8px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;box-sizing:border-box;">
@@ -2598,6 +2598,8 @@ function selectCustomer(id) {
     +getAgeTag(c,14)+getInsAgeTag(c,14)+'</div>'  /* ★ 카드 헤더는 나이 글자 14px (2026-07-15) */
     +'<div class="btn-group">'
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">💬 퀵메시지</button>'
+    /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
+    +(c.status==='가입완료' ? '<button class="btn-quick-msg" style="background:#16a34a;" title="추가 계약 알림 등록 (1주년·암 보장개시·카드납)" onclick="openJoinAlertModal('+id+',true)">➕ 추가가입</button>' : '')
     +'<button class="btn-copy-info" id="btn-copy-info" title="고객 기본 정보만 복사 (설계요청 제외)" onclick="copyCustomerInfo('+id+')">📋 Copy</button>'
     +'<button class="btn-copy-info" id="btn-copy-info-dr" title="고객 정보 + 설계요청 함께 복사" onclick="copyCustomerInfoWithDr('+id+')">📋 정보+설계요청</button>'
     +'<button class="btn-edit" onclick="openEditModal('+id+')">수정</button>'
@@ -11311,6 +11313,8 @@ function copyContact(el) {
       + '</select>';
     html += '<div class="mv-section">'
          +   '<div class="mv-section-title">👤 인적사항' + statusSelect
+         /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
+         +     ((_sst === '가입완료') ? '<button class="mv-edit-btn" onclick="openJoinAlertModal(' + c.id + ',true)" style="background:#d1fae5;color:#065f46;border:1px solid #10b981;margin-right:6px;">➕ 추가가입</button>' : '')
          +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">📋 Copy</button>'
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">✏️ 수정</button>'
          +   '</div>'
@@ -12171,13 +12175,19 @@ function copyContact(el) {
 
   // ★ 가입완료 알림 등록 (2026-07-11) — 가입 1주년 + 암 보장개시(약관상 계약일부터 90일이 지난 날의 다음 날 = 91일째)
   var _joinAlertCid = null;
-  window.openJoinAlertModal = function(cid) {
+  var _joinAlertExtra = false;  /* ★ 추가가입 모드 (2026-07-30) — 최초 가입일(joinDate) 덮어쓰기 방지용 */
+  window.openJoinAlertModal = function(cid, isExtra) {
     var c = (window.customers || []).find(function(x){ return x.id === cid; });
     var ov = document.getElementById('join-alert-overlay');
     if (!ov || !c) return;
     _joinAlertCid = cid;
+    _joinAlertExtra = !!isExtra;
+    var tt = document.getElementById('join-alert-title');
+    if (tt) tt.textContent = isExtra ? '➕ 추가가입 — 알림 등록' : '✅ 가입완료 — 알림 등록';
     var nm = document.getElementById('join-alert-name');
-    if (nm) nm.textContent = c.name + '님 — 필요한 알림을 선택하세요 (건너뛰어도 가입완료 상태는 저장됩니다)';
+    if (nm) nm.textContent = isExtra
+      ? (c.name + '님 — 새 계약의 가입일을 선택하고 필요한 알림을 체크하세요')
+      : (c.name + '님 — 필요한 알림을 선택하세요 (건너뛰어도 가입완료 상태는 저장됩니다)');
     var d = document.getElementById('join-alert-date');
     if (d) {
       var t = new Date();
@@ -12192,6 +12202,7 @@ function copyContact(el) {
     var ov = document.getElementById('join-alert-overlay');
     if (ov) ov.style.display = 'none';
     _joinAlertCid = null;
+    _joinAlertExtra = false;
   };
   function _joinAddDays(ymd, days) {
     var p = ymd.split('-');
@@ -12213,7 +12224,7 @@ function copyContact(el) {
     if (!date) { alert('가입일을 선택해주세요'); return; }
     var wantAnniv = !!(document.getElementById('join-alert-anniv') || {}).checked;
     var wantCancer = !!(document.getElementById('join-alert-cancer') || {}).checked;
-    c.joinDate = date;  // 가입일 기록
+    if (!_joinAlertExtra || !c.joinDate) c.joinDate = date;  // 가입일 기록 — 추가가입은 최초 가입일 유지 (2026-07-30)
     c.gifts = c.gifts || [];
     var added = [];
     if (wantCancer) {
