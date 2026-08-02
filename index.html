@@ -13948,7 +13948,8 @@ function restoreExcludedContact(phone8) {
 .consult-thumb-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}  /* ★ PC 한 줄 6개 고정 (2026-07-15) */
 .consult-thumb{border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;cursor:pointer;background:#fff;padding:0;font-family:inherit;}
 .consult-thumb:hover{border-color:#f59e0b;box-shadow:0 3px 10px rgba(0,0,0,0.14);}
-.consult-thumb img{width:100%;display:block;aspect-ratio:4/5;object-fit:cover;background:#f1f5f9;}
+/* ★ 새 상담카드는 세로 비율이 제각각 — cover로 자르지 말고 contain으로 전체 표시 (2026-08-02) */
+.consult-thumb img{width:100%;display:block;aspect-ratio:0.64;object-fit:contain;background:#fff;}
 #consult-viewer{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.95);z-index:99992;flex-direction:column;}
 #consult-vhead{display:flex;align-items:center;gap:8px;padding:9px 12px;flex-shrink:0;}
 #consult-vcount{color:#e2e8f0;font-size:14px;font-weight:700;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
