@@ -13956,6 +13956,8 @@ function restoreExcludedContact(phone8) {
 #consult-vimgwrap{flex:1;overflow:auto;text-align:center;-webkit-overflow-scrolling:touch;}
 #consult-vimg{max-width:100%;max-height:100%;object-fit:contain;cursor:zoom-in;vertical-align:top;}
 #consult-vimg.zoomed{max-width:none;max-height:none;width:175%;cursor:zoom-out;}
+/* ★ PC 확대 배율 완화 (2026-08-02) — 새 카드는 세로로 길어 width 175%면 너무 커짐. 화면 높이 기준 1.7배로 */
+body:not(.mobile-mode) #consult-vimg.zoomed{width:auto;height:170%;}
 .consult-nav{position:fixed;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;width:44px;height:62px;border-radius:10px;cursor:pointer;z-index:99993;font-family:inherit;}
 .consult-nav:hover{background:rgba(255,255,255,0.3);}
 #consult-prev{left:8px;}#consult-next{right:8px;}
