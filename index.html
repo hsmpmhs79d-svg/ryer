@@ -14012,27 +14012,30 @@ body.mobile-mode #consult-vfoot{display:flex;gap:8px;padding:10px 12px 18px;flex
   // 카테고리 정의 — consult/NNN.webp 페이지 번호 (상담북 PDF 원본 순서, 보험사 연락처 7장 제외)
   function _rng(a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; }
   var CATS = [
-    { n: '보험 기초',            i: '📌', p: [1, 2, 119, 120] },
-    { n: '실손보험',             i: '🏥', p: _rng(3, 11) },
-    { n: '암',                   i: '🎗️', p: _rng(12, 31) },
-    { n: '뇌혈관질환',           i: '🧠', p: _rng(32, 40) },
-    { n: '심장질환',             i: '❤️', p: _rng(41, 47) },
-    { n: '수술비',               i: '🩺', p: _rng(48, 59) },
-    { n: '후유장해',             i: '🦽', p: _rng(60, 65) },
-    { n: '사망·종신·CI',         i: '🕊️', p: _rng(66, 78) },
-    { n: '치매·간병·장기요양',   i: '👵', p: _rng(79, 89) },
-    { n: '운전자·자동차',        i: '🚗', p: _rng(90, 103) },
-    { n: '배상책임',             i: '⚖️', p: _rng(104, 113) },
-    { n: '치아·태아·연금·화재·펫', i: '🦷', p: _rng(114, 118) },
+    /* ★ SALGU 자체제작 상담카드로 전면 교체 (2026-08-02) — 새 PDF 순서에 맞춰 페이지 범위 재배치 */
+    { n: '보험 기초',            i: '📌', p: _rng(1, 4) },
+    { n: '실손보험',             i: '🏥', p: _rng(5, 13) },
+    { n: '암',                   i: '🎗️', p: _rng(14, 33) },
+    { n: '뇌혈관질환',           i: '🧠', p: _rng(34, 42) },
+    { n: '심장질환',             i: '❤️', p: _rng(43, 49) },
+    { n: '수술비',               i: '🩺', p: _rng(50, 61) },
+    { n: '후유장해',             i: '🦽', p: _rng(62, 67) },
+    { n: '사망·종신·CI',         i: '🕊️', p: _rng(68, 80) },
+    { n: '치매·간병·장기요양',   i: '👵', p: _rng(81, 91) },
+    { n: '운전자·자동차',        i: '🚗', p: _rng(92, 105) },
+    { n: '배상책임',             i: '⚖️', p: _rng(106, 115) },
+    { n: '치아·태아·연금·화재·펫', i: '🦷', p: _rng(116, 120) },
     { n: '고지의무·가입심사',    i: '📋', p: _rng(121, 128) },
     { n: '청구 꿀팁',            i: '💡', p: _rng(129, 136) }
   ];
   var BASE = 'consult/';
   var _cat = -1, _idx = 0;   // 현재 카테고리 index / 카테고리 내 이미지 index
   /* ★ 저작권 안내 (2026-07-26, A안) — 카테고리 화면 + 썸네일 화면 공통 표시 */
-  var CONSULT_NOTICE = '<div class="consult-notice"><span class="cn-icon">🔒</span><span>이 자료는 유료 구독 자료입니다. 고객과의 <b>상담 화면으로만</b> 사용해주세요.<br>블로그·SNS 등 외부에 올리면 <b>저작권 문제로 불이익</b>을 받을 수 있습니다.</span></div>';
+  /*   → SALGU 자체 제작으로 바뀌어 문구 교체 (2026-08-02) */
+  var CONSULT_NOTICE = '<div class="consult-notice"><span class="cn-icon">📘</span><span><b>SALGU</b>가 직접 만든 상담자료입니다. 고객과의 <b>상담에는 편하게</b> 써주세요.<br>블로그·SNS 공유는 살짝 자제 부탁드려요 🙏</span></div>';
   /* ★ 상담자료 잠시 중단 (2026-07-30) — 저작권 이슈로 전체 숨김. 재오픈 준비되면 false로 바꾸면 원래대로 복구됨 */
-  var CONSULT_SUSPENDED = true;
+  /*   → SALGU 자체제작 카드로 교체 완료, 재오픈 (2026-08-02) */
+  var CONSULT_SUSPENDED = false;
   var CONSULT_PAUSED_HTML = '<div class="consult-paused">'
     + '<span class="cp-icon">🙏</span>'
     + '<h3>상담자료, 잠시 쉬어갑니다</h3>'
