@@ -387,6 +387,15 @@
   .qm-info { font-size:12px; color:#78350f; margin-left:auto; font-weight:600; }
   #quick-memo-textarea { flex:1; padding:14px 18px; border:none; outline:none; font-family:inherit; font-size:15px; line-height:1.7; resize:none; background:#fffdf5; color:#1e293b; }
   #quick-memo-textarea::placeholder { color:#c4b08a; }
+  /* ★ 메모 폴더 바 (2026-08-05) */
+  .qm-folder-bar { padding:6px 10px; background:#fef3c7; border-bottom:1px solid #fde68a; display:flex; gap:5px; align-items:center; flex-wrap:wrap; flex-shrink:0; }
+  .qm-folder-chip { padding:4px 11px; border:1.5px solid #fbbf24; border-radius:14px; background:#fff; color:#854d0e; font-size:12px; font-weight:600; cursor:pointer; user-select:none; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .qm-folder-chip:hover { background:#fef9c3; }
+  .qm-folder-chip.active { background:#f59e0b; border-color:#d97706; color:#fff; }
+  .qm-folder-chip .qm-folder-ico { font-size:11px; opacity:.85; cursor:pointer; }
+  .qm-folder-chip .qm-folder-ico:hover { opacity:1; transform:scale(1.15); }
+  .qm-folder-add { padding:4px 10px; border:1.5px dashed #d97706; border-radius:14px; background:transparent; color:#b45309; font-size:12px; font-weight:700; cursor:pointer; }
+  .qm-folder-add:hover { background:#fde68a; }
 
   /* 등록/수정 폼 종류 토글 */
   .gift-kind-row { display:flex; gap:6px; margin-bottom:9px; }
@@ -2104,7 +2113,8 @@ function buildSaveContent() {
   var qmTa = document.getElementById('quick-memo-textarea');
   var clonedQm = doc.querySelector('#quick-memo-data');
   // ★ 모바일에서는 quick-memo-textarea가 안 보이는 PC 전용이며 빈 값 → 메모 리셋 버그 fix (2026-06-23)
-  if (qmTa && clonedQm && !window.__IS_MOBILE__) clonedQm.textContent = JSON.stringify(qmTa.value || '');
+  // ★ 폴더 구조로 직렬화 (2026-08-05)
+  if (qmTa && clonedQm && !window.__IS_MOBILE__) clonedQm.textContent = (typeof _qmSerialize === 'function') ? _qmSerialize() : JSON.stringify(qmTa.value || '');
 
   // 💬 퀵메시지(DM 템플릿) 저장
   var clonedDm = doc.querySelector('#dm-templates-data');
@@ -2517,6 +2527,10 @@ function scrollToCardTab(selector) {
 window.scrollToCardTab = scrollToCardTab;
 
 function selectCustomer(id) {
+  /* ★ 같은 고객 재렌더 시 스크롤 위치 유지 (2026-08-05) — 저장/수정 후 맨 위로 튀는 문제 해결 */
+  var _scSame = (selectedId === id);
+  var _scRp = document.getElementById('right-panel');
+  var _scPrevScroll = (_scSame && _scRp) ? _scRp.scrollTop : 0;
   selectedId = id; renderList();
   var c = customers.find(function(x){return x.id===id;});
   if (!c) return;
@@ -2663,8 +2677,9 @@ function selectCustomer(id) {
     +(typeof buildDesignRequestSection==='function'?buildDesignRequestSection(id):'')
     +'</div></div>';
   // ★ 새 고객 선택 시 카드 영역 맨 위로 자동 스크롤 (2026-06-20)
+  // ★ 같은 고객 재렌더(저장/수정 후)면 보던 자리 그대로 유지 (2026-08-05)
   var _rpScroll = document.getElementById('right-panel');
-  if (_rpScroll) _rpScroll.scrollTop = 0;
+  if (_rpScroll) _rpScroll.scrollTop = _scSame ? _scPrevScroll : 0;
 }
 function renderCustomer(id){
   if(id===selectedId)selectCustomer(id);
@@ -7243,6 +7258,8 @@ function sdGoToEdit(cid, idx) {
     <button class="qm-btn" onclick="qmSearch()" title="메모에서 검색 — 누를 때마다 다음 결과">🔍</button>
     <span class="qm-info" id="qm-info">자동 저장</span>
   </div>
+  <!-- ★ 메모 폴더 바 (2026-08-05) -->
+  <div class="qm-folder-bar" id="qm-folder-bar"></div>
   <textarea id="quick-memo-textarea" placeholder="여기에 메모를 빠르게 적으세요…
 
 • 고객과 무관한 메모도 자유롭게
@@ -7913,6 +7930,9 @@ function _ensureMemoTabContent() {
     qmToolbar.style.borderRadius = '0';
     b3.appendChild(qmToolbar);
   }
+  /* ★ 메모 폴더 바도 함께 이동 (2026-08-05) */
+  var qmFolderBar = document.getElementById('qm-folder-bar');
+  if (qmFolderBar) b3.appendChild(qmFolderBar);
   if (qmTa) {
     qmTa.style.minHeight = '300px';
     qmTa.style.flex = '1 1 auto';
@@ -8578,7 +8598,7 @@ function closeMrProf() {
   _mrEditProfId = null;
   if (_mrProfReturnToList) {
     _mrProfReturnToList = false;
-    openMrList();
+    openMrList(_mrListForCid == null ? undefined : _mrListForCid); /* ★ cid 유지 — 수정 후에도 목록 클릭 선택 가능 (2026-08-05) */
   }
 }
 
@@ -8611,7 +8631,7 @@ function saveMrProf() {
   document.getElementById('mr-prof-overlay').classList.remove('show');
   _mrEditProfId = null;
   _mrProfReturnToList = false;
-  if (wasReturn) openMrList();
+  if (wasReturn) openMrList(_mrListForCid == null ? undefined : _mrListForCid); /* ★ cid 유지 (2026-08-05) */
 
   if (typeof selectedId !== 'undefined' && selectedId && typeof selectCustomer === 'function') selectCustomer(selectedId);
   if (typeof showToast === 'function') showToast(isAdd ? '매니저 추가됨' : '매니저 수정됨', 'green');
@@ -8630,7 +8650,7 @@ function delMrProfFromModal() {
   document.getElementById('mr-prof-overlay').classList.remove('show');
   _mrEditProfId = null;
   _mrProfReturnToList = false;
-  if (wasReturn) openMrList();
+  if (wasReturn) openMrList(_mrListForCid == null ? undefined : _mrListForCid); /* ★ cid 유지 (2026-08-05) */
   if (typeof selectedId !== 'undefined' && selectedId && typeof selectCustomer === 'function') selectCustomer(selectedId);
   if (typeof showToast === 'function') showToast('매니저 삭제됨', 'green');
 }
@@ -9527,6 +9547,121 @@ function toggleQuickMemo() {
   }
 }
 
+/* ═══ ★ 메모 폴더 (2026-08-05) — 폴더별 독립 메모장, 추가/이름변경/삭제 ═══ */
+var _qmFolders = [{id:1, name:'기본', content:''}];
+var _qmActiveFolderId = 1;
+
+function _qmEsc(s) {
+  return String(s==null?'':s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+}
+
+function _qmActiveFolder() {
+  for (var i = 0; i < _qmFolders.length; i++) if (_qmFolders[i].id === _qmActiveFolderId) return _qmFolders[i];
+  return _qmFolders[0];
+}
+
+/* 현재 textarea 내용을 활성 폴더에 반영 */
+function _qmFlushToState() {
+  var ta = document.getElementById('quick-memo-textarea');
+  var f = _qmActiveFolder();
+  if (ta && f) f.content = ta.value || '';
+}
+
+/* 저장용 직렬화 — buildSaveContent와 qmOnInput이 공용 사용 */
+function _qmSerialize() {
+  _qmFlushToState();
+  return JSON.stringify({v:2, folders:_qmFolders, activeId:_qmActiveFolderId});
+}
+
+function _qmPersist() {
+  var data = document.getElementById('quick-memo-data');
+  if (data) {
+    data.textContent = _qmSerialize();
+    if (typeof markUnsaved === 'function') markUnsaved();
+    if (typeof autoSave === 'function') autoSave();
+  }
+}
+
+function _qmRenderFolderBar() {
+  var bar = document.getElementById('qm-folder-bar');
+  if (!bar) return;
+  var h = '';
+  for (var i = 0; i < _qmFolders.length; i++) {
+    var f = _qmFolders[i];
+    var active = (f.id === _qmActiveFolderId);
+    h += '<span class="qm-folder-chip' + (active ? ' active' : '') + '" onclick="qmSwitchFolder(' + f.id + ')">';
+    h += '📁 ' + _qmEsc(f.name);
+    if (active) {
+      h += '<span class="qm-folder-ico" onclick="event.stopPropagation();qmRenameFolder(' + f.id + ')" title="이름 변경">✏️</span>';
+      h += '<span class="qm-folder-ico" onclick="event.stopPropagation();qmDelFolder(' + f.id + ')" title="폴더 삭제">✕</span>';
+    }
+    h += '</span>';
+  }
+  h += '<button type="button" class="qm-folder-add" onclick="qmAddFolder()" title="새 폴더 추가">+ 폴더</button>';
+  bar.innerHTML = h;
+}
+
+function qmSwitchFolder(id) {
+  if (id === _qmActiveFolderId) return;
+  _qmFlushToState();
+  _qmActiveFolderId = id;
+  var ta = document.getElementById('quick-memo-textarea');
+  var f = _qmActiveFolder();
+  if (ta) ta.value = (f && f.content) || '';
+  _qmRenderFolderBar();
+  _qmPersist();
+  if (ta) ta.focus();
+}
+
+function qmAddFolder() {
+  var name = prompt('새 폴더 이름을 입력하세요. (예: 업무, 고객, 개인)');
+  if (name == null) return;
+  name = name.trim();
+  if (!name) return;
+  var newId = 1;
+  for (var i = 0; i < _qmFolders.length; i++) if (_qmFolders[i].id >= newId) newId = _qmFolders[i].id + 1;
+  _qmFlushToState();
+  _qmFolders.push({id:newId, name:name, content:''});
+  _qmActiveFolderId = newId;
+  var ta = document.getElementById('quick-memo-textarea');
+  if (ta) ta.value = '';
+  _qmRenderFolderBar();
+  _qmPersist();
+  if (typeof showToast === 'function') showToast('📁 "' + name + '" 폴더 추가됨', 'green');
+  if (ta) ta.focus();
+}
+
+function qmRenameFolder(id) {
+  var f = null;
+  for (var i = 0; i < _qmFolders.length; i++) if (_qmFolders[i].id === id) f = _qmFolders[i];
+  if (!f) return;
+  var name = prompt('폴더 이름을 변경합니다.', f.name);
+  if (name == null) return;
+  name = name.trim();
+  if (!name || name === f.name) return;
+  f.name = name;
+  _qmRenderFolderBar();
+  _qmPersist();
+}
+
+function qmDelFolder(id) {
+  if (_qmFolders.length <= 1) { alert('마지막 폴더는 삭제할 수 없습니다.'); return; }
+  var f = null;
+  for (var i = 0; i < _qmFolders.length; i++) if (_qmFolders[i].id === id) f = _qmFolders[i];
+  if (!f) return;
+  if (!confirm('"' + f.name + '" 폴더를 삭제할까요?\n\n⚠️ 폴더 안의 메모도 함께 삭제됩니다. (되돌릴 수 없음)')) return;
+  _qmFolders = _qmFolders.filter(function(x){ return x.id !== id; });
+  if (_qmActiveFolderId === id) {
+    _qmActiveFolderId = _qmFolders[0].id;
+    var ta = document.getElementById('quick-memo-textarea');
+    if (ta) ta.value = _qmFolders[0].content || '';
+  }
+  _qmRenderFolderBar();
+  _qmPersist();
+  if (typeof showToast === 'function') showToast('폴더 삭제됨', 'green');
+}
+/* ═══ 메모 폴더 끝 ═══ */
+
 function qmInsertTimestamp() {
   var ta = document.getElementById('quick-memo-textarea');
   if (!ta) return;
@@ -9573,7 +9708,7 @@ function qmCopyAll() {
 }
 
 function qmClearConfirm() {
-  if (!confirm('빠른 메모를 모두 지울까요?\n(되돌릴 수 없습니다)')) return;
+  if (!confirm('현재 폴더의 메모를 모두 지울까요?\n(되돌릴 수 없습니다)')) return;
   var ta = document.getElementById('quick-memo-textarea');
   if (ta) { ta.value = ''; qmOnInput(); ta.focus(); }
 }
@@ -9611,7 +9746,7 @@ function qmOnInput() {
     var ta = document.getElementById('quick-memo-textarea');
     var data = document.getElementById('quick-memo-data');
     if (ta && data) {
-      data.textContent = JSON.stringify(ta.value || '');
+      data.textContent = _qmSerialize(); /* ★ 폴더 구조로 저장 (2026-08-05) */
       if (typeof markUnsaved === 'function') markUnsaved();
       if (typeof autoSave === 'function') autoSave();
     }
@@ -9623,24 +9758,32 @@ function qmOnInput() {
 }
 
 // 페이지 로드 시 저장된 메모 복원
+// ★ 폴더 구조 지원 (2026-08-05) — 구버전 문자열 메모는 "기본" 폴더로 자동 이전
 function _qmRestoreFromTag() {
   var data = document.getElementById('quick-memo-data');
   var ta = document.getElementById('quick-memo-textarea');
   if (!data || !ta) return;
+  ta.addEventListener('input', qmOnInput); // 같은 함수 참조라 중복 등록 안 됨
   var raw = (data.textContent || '').trim();
-  if (!raw) return;
-  try {
-    var parsed = JSON.parse(raw);
-    if (typeof parsed === 'string' && parsed.length > 0) {
-      ta.value = parsed;
-      // 텍스트 영역 oninput을 통한 저장이 발생하지 않도록 — listener 직접 연결
-      ta.addEventListener('input', qmOnInput);
-    } else {
-      ta.addEventListener('input', qmOnInput);
-    }
-  } catch(_e) {
-    ta.addEventListener('input', qmOnInput);
+  if (raw) {
+    try {
+      var parsed = JSON.parse(raw);
+      if (typeof parsed === 'string') {
+        // 구버전(문자열 한 장) → 폴더 구조로 마이그레이션
+        _qmFolders = [{id:1, name:'기본', content:parsed}];
+        _qmActiveFolderId = 1;
+      } else if (parsed && Array.isArray(parsed.folders) && parsed.folders.length > 0) {
+        _qmFolders = parsed.folders;
+        _qmActiveFolderId = parsed.activeId;
+        var ok = false;
+        for (var i = 0; i < _qmFolders.length; i++) if (_qmFolders[i].id === _qmActiveFolderId) ok = true;
+        if (!ok) _qmActiveFolderId = _qmFolders[0].id;
+      }
+    } catch(_e) {}
   }
+  var f = _qmActiveFolder();
+  ta.value = (f && f.content) || '';
+  _qmRenderFolderBar();
 }
 window.addEventListener('DOMContentLoaded', function() {
   setTimeout(_qmRestoreFromTag, 200);
