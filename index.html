@@ -1576,6 +1576,12 @@ try {
           <option value="name">이름순</option>
         </select>
       </div>
+      <!-- ★ 등록월 필터 (2026-08-05) — 등록일 없는 기존 고객은 첫 상담일로 추정 -->
+      <div class="filter-row">
+        <select id="filter-regmonth" onchange="renderList()">
+          <option value="">📅 등록월 전체</option>
+        </select>
+      </div>
     </div>
     <!-- ★ 청구서·약관·동기화 3종은 헤더 둘째 줄로 이동 — 사이드바엔 5개만, 크기·간격 통일 (2026-07-10) -->
     <div class="add-btns-row">
@@ -2448,10 +2454,59 @@ function getSearchSnippet(c, q) {
   }
   return '';
 }
+/* ★ 등록월 필터 (2026-08-05) — _created(등록일) 없으면 첫 상담이력 날짜로 추정 */
+function _todayLocalStr() {
+  var t = new Date();
+  return t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+}
+function _getRegDate(c) {
+  if (c._created) return c._created;
+  var earliest = null;
+  (c.consultations || []).forEach(function(con){
+    if (con.date && (!earliest || con.date < earliest)) earliest = con.date;
+  });
+  return earliest; // 'YYYY-MM-DD' 또는 null(미상)
+}
+function _getRegMonth(c) {
+  var d = _getRegDate(c);
+  return d ? String(d).slice(0, 7) : null; // 'YYYY-MM'
+}
+var _regMonthOptsCache = '';
+function _populateRegMonthFilter() {
+  var sel = document.getElementById('filter-regmonth');
+  if (!sel) return;
+  var counts = {}, noneCount = 0;
+  customers.forEach(function(c){
+    if (c._personal) return;
+    var m = _getRegMonth(c);
+    if (m) counts[m] = (counts[m] || 0) + 1;
+    else noneCount++;
+  });
+  var months = Object.keys(counts).sort().reverse();
+  var key = months.join(',') + '|' + months.map(function(m){return counts[m];}).join(',') + '|' + noneCount;
+  if (key === _regMonthOptsCache) return; // 변동 없으면 재구성 생략
+  _regMonthOptsCache = key;
+  var cur = sel.value;
+  var h = '<option value="">📅 등록월 전체</option>';
+  months.forEach(function(m){
+    var label = m.slice(0, 4) + '년 ' + parseInt(m.slice(5, 7), 10) + '월 (' + counts[m] + '명)';
+    h += '<option value="' + m + '">' + label + '</option>';
+  });
+  if (noneCount > 0) h += '<option value="__none__">등록일 미상 (' + noneCount + '명)</option>';
+  sel.innerHTML = h;
+  // 기존 선택값 유지 (사라진 월이면 전체로)
+  sel.value = cur;
+  if (sel.value !== cur) sel.value = '';
+}
+
 function renderList() {
   var q = document.getElementById('search-input').value.toLowerCase();
   var gf = document.getElementById('filter-gender').value;
   var sort = document.getElementById('filter-sort').value;
+  /* ★ 등록월 필터 (2026-08-05) */
+  _populateRegMonthFilter();
+  var _rmSel = document.getElementById('filter-regmonth');
+  var _rm = _rmSel ? _rmSel.value : '';
   // ★ 실손 세대 검색 — "1세대" ~ "5세대" 정확한 한국어 패턴 (2026-06-20)
   var _genMatch = q.match(/^([1-5])세대$/);
   var _genQ = _genMatch ? _genMatch[1] : null;
@@ -2473,6 +2528,13 @@ function renderList() {
     var m = basic || inNotes || inMedical || inConsult || inSched;
     return m && (!gf || c.gender===gf);
   });
+  /* ★ 등록월 필터 적용 (2026-08-05) */
+  if (_rm) {
+    filtered = filtered.filter(function(c){
+      var cm = _getRegMonth(c);
+      return _rm === '__none__' ? cm === null : cm === _rm;
+    });
+  }
   if (sort==='name') filtered.sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ko');});
   else if (sort==='id') filtered.sort(function(a,b){return a.id-b.id;});
   else filtered.sort(function(a,b){return (b._updated||b.id)-(a._updated||a.id);});
@@ -4679,7 +4741,7 @@ function saveCustomer() {
       closeModal(); renderList(); selectCustomer(editingId);}
   } else {
     var nid=customers.length>0?Math.max.apply(null,customers.map(function(c){return c.id;}))+1:1;
-    customers.push(Object.assign({id:nid,consultations:[],_updated:Date.now()},data));
+    customers.push(Object.assign({id:nid,consultations:[],_updated:Date.now(),_created:_todayLocalStr()},data)); /* ★ 등록일 기록 (2026-08-05) */
     showToast('등록됨','green'); autoSave();
     closeModal(); renderList(); selectCustomer(nid);
   }
@@ -5151,7 +5213,8 @@ function _xlsxProcessRows(rows) {
         gender: gender,
         notes: memo0,
         consultations: [],
-        _updated: Date.now()
+        _updated: Date.now(),
+        _created: _todayLocalStr() /* ★ 등록일 기록 (2026-08-05) */
       };
       customers.push(target);
       newCount++;
@@ -13065,6 +13128,7 @@ function copyContact(el) {
               phone: c.phone,
               consultations: [],
               _updated: Date.now(),
+              _created: (typeof _todayLocalStr === 'function') ? _todayLocalStr() : undefined, /* ★ 등록일 기록 (2026-08-05) */
               _resourceName: c.resourceName
             };
             // ★ "/ 뒤" 정보가 있으면 메모(notes)에 저장 (2026-06-23)
