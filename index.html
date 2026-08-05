@@ -9778,6 +9778,7 @@ function qmClearConfirm() {
 
 var _qmSaveTimer = null;
 // ★ 메모 내 검색 (2026-07-26) — 같은 검색어로 반복 실행 시 다음 결과로 순환 이동
+// ★ 전체 폴더 통합 검색 (2026-08-05) — 현재 폴더에 없으면 다른 폴더까지 찾아서 자동 전환
 var _qmSearchLast = '', _qmSearchPos = 0;
 function qmSearch() {
   var inp = document.getElementById('qm-search');
@@ -9785,22 +9786,36 @@ function qmSearch() {
   if (!inp || !ta) return;
   var q = (inp.value || '').trim();
   if (!q) { if (typeof showToast === 'function') showToast('검색어를 입력해주세요.'); return; }
-  var text = ta.value || '';
-  var lowerText = text.toLowerCase(), lowerQ = q.toLowerCase();
+  var lowerQ = q.toLowerCase();
   if (q !== _qmSearchLast) { _qmSearchLast = q; _qmSearchPos = 0; }  // 새 검색어면 처음부터
-  var idx = lowerText.indexOf(lowerQ, _qmSearchPos);
-  if (idx < 0 && _qmSearchPos > 0) { idx = lowerText.indexOf(lowerQ, 0); }  // 끝이면 처음부터 다시
-  if (idx < 0) { if (typeof showToast === 'function') showToast('"' + q + '" — 메모에 없습니다.', 'red'); return; }
-  _qmSearchPos = idx + lowerQ.length;
-  ta.focus();
-  ta.setSelectionRange(idx, idx + q.length);
-  // 해당 위치로 스크롤 (줄 수 기반 근사)
-  var lineNum = text.slice(0, idx).split('\n').length;
-  var lineH = 25.5;  // font 15px * line-height 1.7
-  ta.scrollTop = Math.max(0, (lineNum - 3) * lineH);
+  _qmFlushToState(); // 현재 입력 내용까지 검색 대상에 포함
+  // 검색 순서: 현재 폴더(현재 위치부터) → 다음 폴더들 → 한 바퀴 돌아 현재 폴더 처음부터
+  var startIdx = 0;
+  for (var i = 0; i < _qmFolders.length; i++) if (_qmFolders[i].id === _qmActiveFolderId) startIdx = i;
+  for (var step = 0; step <= _qmFolders.length; step++) {
+    var f = _qmFolders[(startIdx + step) % _qmFolders.length];
+    var text = f.content || '';
+    var from = (step === 0) ? _qmSearchPos : 0;
+    var idx = text.toLowerCase().indexOf(lowerQ, from);
+    if (idx < 0) continue;
+    var switched = (f.id !== _qmActiveFolderId);
+    if (switched) qmSwitchFolder(f.id);
+    _qmSearchPos = idx + lowerQ.length;
+    ta.focus();
+    ta.setSelectionRange(idx, idx + q.length);
+    // 해당 위치로 스크롤 (줄 수 기반 근사)
+    var lineNum = text.slice(0, idx).split('\n').length;
+    var lineH = 25.5;  // font 15px * line-height 1.7
+    ta.scrollTop = Math.max(0, (lineNum - 3) * lineH);
+    if (switched && typeof showToast === 'function') showToast('📁 "' + f.name + '" 폴더에서 찾음', 'green');
+    return;
+  }
+  _qmSearchPos = 0;
+  if (typeof showToast === 'function') showToast('"' + q + '" — 모든 폴더에 없습니다.', 'red');
 }
 
 function qmOnInput() {
+  _qmSearchLast = ''; _qmSearchPos = 0; /* ★ 실제 편집이 시작되면 검색 세션 종료 (2026-08-05) */
   var info = document.getElementById('qm-info');
   if (info) info.textContent = '입력 중…';
   window.__qmQuietUntil__ = Date.now() + 5000;  /* ★ 메모 입력 중엔 저장 배너 숨김 (2026-07-26) */
@@ -9850,6 +9865,21 @@ function _qmRestoreFromTag() {
 }
 window.addEventListener('DOMContentLoaded', function() {
   setTimeout(_qmRestoreFromTag, 200);
+  // ★ 검색 직후 Enter → 검색어가 지워지는 사고 방지: 다음 결과로 이동 (2026-08-05)
+  //   검색 결과로 선택된 단어가 그대로 선택돼 있는 상태의 Enter만 가로챔. 일반 입력은 그대로.
+  var _qmTaGuard = document.getElementById('quick-memo-textarea');
+  if (_qmTaGuard) {
+    _qmTaGuard.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter' || !_qmSearchLast) return;
+      var ta = e.target;
+      if (ta.selectionStart === ta.selectionEnd) return;
+      var sel = ta.value.slice(ta.selectionStart, ta.selectionEnd);
+      if (sel.toLowerCase() === _qmSearchLast.toLowerCase()) {
+        e.preventDefault();
+        qmSearch();
+      }
+    });
+  }
   // 드래그 가능하게
   setTimeout(function() {
     var hdr = document.getElementById('quick-memo-panel-header');
