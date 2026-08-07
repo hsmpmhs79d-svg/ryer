@@ -1425,7 +1425,8 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
   window.__DRIVE_CONFIG__ = {
     CLIENT_ID: "491677189712-agtga4sn5ed3gje4n0lk02veoj3ttl2c.apps.googleusercontent.com",
     BACKUP_FILE_NAME: "고객관리_백업.html",
-    APP_NAME: "Incar-CRM"
+    APP_NAME: "Incar-CRM",
+    PICKER_API_KEY: ""  /* ★ 백업 연결(피커)용 API 키 — 구글 콘솔에서 발급 후 입력 (2026-08-06) */
   };
   // 모바일 감지 (UA + 화면폭)
   window.__IS_MOBILE__ = (function() {
@@ -10490,7 +10491,7 @@ function copyContact(el) {
     _gisReady = true;
     _tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CFG.CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/contacts https://www.googleapis.com/auth/calendar.events',
+      scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/contacts https://www.googleapis.com/auth/calendar.events',
       callback: function(resp) {
         // silent reauth 흐름이면 별도 콜백으로만 응답
         if (_silentReauthCb) {
@@ -10749,6 +10750,45 @@ function copyContact(el) {
     return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
   }
 
+  // ─── 백업 파일 다시 연결 (Google Picker) — ★ drive.file 전환 안전망 (2026-08-06) ───
+  /* 권한을 drive.file(앱이 만든 파일만)로 좁히면, 예전에 백업 파일을 손으로 Drive에
+     올렸던 사용자는 파일이 검색에 안 잡힘 → 피커로 한 번 선택하면 접근 권한이 생겨
+     이후 정상 검색됨. */
+  function openBackupPicker() {
+    function _resume() { window.__pickerRetried__ = true; afterLogin(); }
+    if (!CFG.PICKER_API_KEY) {
+      alert('백업 연결 기능이 아직 준비 중입니다.\n관리자(팀장 여상현 010-6226-5359)에게 연락해주세요.\n\n[확인]을 누르면 빈 상태로 시작합니다. (기존 백업 파일은 Drive에 안전하게 남아 있습니다)');
+      _resume();
+      return;
+    }
+    gapi.load('picker', function() {
+      try {
+        var view = new google.picker.DocsView()
+          .setIncludeFolders(true)
+          .setQuery(CFG.BACKUP_FILE_NAME);
+        var picker = new google.picker.PickerBuilder()
+          .setOAuthToken(_accessToken)
+          .setDeveloperKey(CFG.PICKER_API_KEY)
+          .setTitle('백업 파일(고객관리_백업.html)을 선택하세요')
+          .addView(view)
+          .setCallback(function(data) {
+            if (data.action === google.picker.Action.PICKED) {
+              banner('✅ 백업 파일 연결됨! 데이터 불러오는 중...', '');
+              _resume();
+            } else if (data.action === google.picker.Action.CANCEL) {
+              _resume();
+            }
+          })
+          .build();
+        picker.setVisible(true);
+      } catch(e) {
+        console.error('picker err:', e);
+        _resume();
+      }
+    });
+  }
+  window.salguLinkBackup = openBackupPicker;  /* 콘솔/원격 안내용 수동 호출 */
+
   // ─── 로그인 후 처리 ───
   function afterLogin() {
     saveTokenToStorage();
@@ -10757,6 +10797,17 @@ function copyContact(el) {
 
     findBackupFile().then(function(file) {
       if (!file) {
+        /* ★ drive.file 전환 안전망 (2026-08-06): 이 브라우저에 로그인 이력이 있는데
+           백업이 안 보이면 = 손으로 올린 백업일 가능성 → 새로 시작 전에 '백업 연결' 제안 */
+        try {
+          if (!window.__pickerRetried__ && localStorage.getItem('__salgu_visited__')) {
+            if (confirm('Google Drive에서 백업 파일을 찾지 못했습니다.\n\n📌 예전부터 살구를 쓰시던 계정이라면 [확인]을 눌러\n백업 파일(고객관리_백업.html)을 직접 선택해 다시 연결하세요.\n\n처음 사용하시는 분은 [취소]를 누르면 새로 시작합니다.')) {
+              openBackupPicker();
+              return;
+            }
+            window.__pickerRetried__ = true;
+          }
+        } catch(e) {}
         // 백업 파일이 없으면 → 현재 상태로 첫 업로드
         // ★★ 안전망: 다른 사람 데이터 유출 방지 — 새 사용자는 무조건 빈 상태로 시작 (2026-06-20)
         //   GitHub 배포본 index.html에 데이터가 박혀 있어도, 새 계정 로그인 시 강제로 비움.

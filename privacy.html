@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>개인정보처리방침 — 살구(SALGU) CRM</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+         color: #1e293b; line-height: 1.8; background: #fdf8f3; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+  header { text-align: center; padding: 28px 0 22px; border-bottom: 3px solid #e8833a; margin-bottom: 34px; }
+  header .logo { font-size: 34px; }
+  header h1 { font-size: 24px; color: #7c2d12; margin-top: 6px; letter-spacing: -0.5px; }
+  header .sub { font-size: 13px; color: #a06a42; margin-top: 4px; }
+  h2 { font-size: 17px; color: #7c2d12; margin: 34px 0 10px; padding-left: 10px; border-left: 4px solid #e8833a; }
+  p, li { font-size: 14.5px; color: #334155; margin-bottom: 8px; }
+  ul { padding-left: 22px; margin-bottom: 10px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 13.5px; }
+  th { background: #fff6ed; color: #b45309; text-align: left; padding: 9px 12px; border-bottom: 2px solid #e8833a; }
+  td { padding: 9px 12px; border-bottom: 1px solid #f1e5d8; vertical-align: top; background: #fff; }
+  .hl { background: #fff6ed; border: 1px solid #f5d9bd; border-radius: 10px; padding: 14px 18px; margin: 14px 0; font-size: 14px; }
+  .hl b { color: #7c2d12; }
+  footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid #e8d5c3; font-size: 13px; color: #8a6a4e; text-align: center; }
+  code { background: #f4ece3; padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="logo">🍑</div>
+  <h1>개인정보처리방침</h1>
+  <div class="sub">살구(SALGU) CRM — 보험 전문가의 고객관리 · 시행일 2026년 8월 7일</div>
+</header>
+
+<p>살구(SALGU) CRM(이하 "서비스", https://salgu.pages.dev)은 보험설계사가 본인의 고객 정보를 관리하기 위한 웹 기반 도구입니다. 본 방침은 서비스가 어떤 정보를 다루며, 그 정보가 어디에 저장되고, 어떻게 보호되는지를 설명합니다.</p>
+
+<div class="hl">
+<b>핵심 요약:</b> 서비스에는 중앙 서버(데이터베이스)가 없습니다. 사용자가 입력한 모든 데이터는 <b>사용자 본인의 Google Drive에만</b> 저장되며, 개발자를 포함한 제3자는 이에 접근할 수 없습니다.
+</div>
+
+<h2>1. 처리하는 정보와 목적</h2>
+<p>서비스는 사용자가 직접 입력하는 다음 정보를 다룹니다. 이 정보는 모두 사용자 본인의 Google Drive 내 백업 파일(<code>고객관리_백업.html</code>)에 저장됩니다.</p>
+<table>
+  <tr><th>정보</th><th>이용 목적</th></tr>
+  <tr><td>고객 정보 (이름, 연락처, 주소, 메모 등)</td><td>사용자의 고객 관리 업무 (사용자가 직접 입력)</td></tr>
+  <tr><td>일정·상담 기록</td><td>사용자의 일정 및 상담 이력 관리</td></tr>
+  <tr><td>사용자 Google 계정 이메일</td><td>로그인 상태 표시 및 본인 Drive 연결</td></tr>
+</table>
+
+<h2>2. Google 계정 권한의 사용</h2>
+<p>서비스는 Google 로그인 시 아래 권한을 요청하며, 각 권한은 명시된 목적으로만 사용됩니다.</p>
+<table>
+  <tr><th>권한</th><th>사용 목적</th></tr>
+  <tr><td>Drive 파일 접근<br><code>drive.file</code></td><td>서비스가 생성한 백업 파일의 저장·불러오기에만 사용됩니다. 이 권한은 <b>서비스가 만들었거나 사용자가 직접 선택한 파일에만</b> 접근할 수 있으며, Drive의 다른 파일은 보거나 수정할 수 없습니다.</td></tr>
+  <tr><td>이메일 주소 확인<br><code>userinfo.email</code></td><td>로그인한 계정 표시 및 본인 Drive 연결 확인.</td></tr>
+  <tr><td>연락처<br><code>contacts</code></td><td>사용자가 "연락처 동기화" 버튼을 누른 경우에만, 사용자의 휴대폰 연락처와 서비스 내 고객 목록을 양방향으로 맞추는 데 사용됩니다.</td></tr>
+  <tr><td>캘린더 일정<br><code>calendar.events</code></td><td>사용자가 "캘린더 동기화" 버튼을 누른 경우에만, 서비스에 등록한 일정을 사용자의 Google 캘린더에 반영하는 데 사용됩니다.</td></tr>
+</table>
+
+<h2>3. 저장 위치와 보관 — 서버가 없습니다</h2>
+<ul>
+  <li>서비스는 정적 웹페이지로 제공되며, <b>운영자가 관리하는 서버나 데이터베이스에 사용자 데이터를 전송·저장하지 않습니다.</b></li>
+  <li>모든 데이터는 사용자 본인의 Google Drive와 사용 중인 브라우저 안에서만 처리됩니다.</li>
+  <li>데이터의 보관·삭제는 전적으로 사용자 본인이 결정합니다. Google Drive에서 백업 파일을 삭제하면 데이터가 완전히 삭제됩니다.</li>
+</ul>
+
+<h2>4. 제3자 제공 및 위탁</h2>
+<p>서비스는 사용자 데이터를 제3자에게 제공, 판매, 위탁하지 않습니다. 웹페이지 호스팅은 Cloudflare Pages를 통해 이루어지나, 이는 화면(코드)의 전달만을 담당하며 사용자 데이터는 경유하지 않습니다.</p>
+
+<h2>5. Google API 데이터 사용에 관한 고지 (Limited Use)</h2>
+<div class="hl">
+살구 CRM이 Google API로부터 받는 정보의 사용은 <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API Services User Data Policy</a>의 <b>Limited Use 요구사항을 포함하여</b> 해당 정책을 준수합니다. (SALGU CRM's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.)
+</div>
+<ul>
+  <li>Google API로 받은 데이터를 광고 목적으로 사용하지 않습니다.</li>
+  <li>Google API로 받은 데이터를 제3자에게 판매·이전하지 않습니다.</li>
+  <li>사람이 해당 데이터를 열람하지 않습니다 (사용자 본인 제외).</li>
+</ul>
+
+<h2>6. 권한 철회 및 삭제 방법</h2>
+<ul>
+  <li>사용자는 언제든 <a href="https://myaccount.google.com/permissions" target="_blank">Google 계정 → 보안 → 제3자 액세스</a>에서 서비스의 접근 권한을 철회할 수 있습니다.</li>
+  <li>데이터를 완전히 삭제하려면 본인 Google Drive에서 <code>고객관리_백업.html</code> 및 관련 백업 파일을 삭제하면 됩니다.</li>
+</ul>
+
+<h2>7. 문의처</h2>
+<p>본 방침이나 서비스 이용에 관한 문의는 아래로 연락해 주세요.</p>
+<p><b>운영자:</b> 살구(SalGu) — 담당 팀장 여상현<br>
+<b>연락처:</b> 010-6226-5359<br>
+<b>이메일:</b> wmmryer@gmail.com</p>
+
+<h2>8. 방침의 변경</h2>
+<p>본 방침이 변경되는 경우 이 페이지를 통해 공지하며, 시행일을 함께 표시합니다.</p>
+
+<footer>
+  © 2026 살구(SALGU) CRM · https://salgu.pages.dev/privacy.html
+</footer>
+
+</div>
+</body>
+</html>
