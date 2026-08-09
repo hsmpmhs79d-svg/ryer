@@ -1446,7 +1446,6 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
     <!-- ★ 살구(Salgu) 브랜딩 v2 (2026-07-26, Ryer 확정 문구) -->
     <h1>🍑 SALGU</h1>
     <div class="login-brand">CUSTOMER RELATIONSHIP MANAGEMENT</div>
-    <div style="font-size:16px;font-weight:800;color:#7c2d12;margin:3px 0 2px;">살구(SALGU) CRM</div>
     <div class="login-slogan">"<span class="sal-gu">살</span>리고 <span class="sal-gu">구</span>해준다"</div>
     <div class="login-sub">보험 전문가의 고객관리</div>
     <!-- ★ 구글 브랜딩 인증 대응 (2026-08-08): 정식 앱 이름 + 서비스 목적 명시 -->
@@ -1456,6 +1455,14 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
       <svg class="gicon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Google로 시작
     </button>
+    <!-- ★ 이 컴퓨터 기억하기 (2026-08-09) — 체크 안 하면 창 닫을 때 로그인 해제 (공용 PC 보안) -->
+    <label id="remember-wrap" style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:14px;cursor:pointer;user-select:none;">
+      <input type="checkbox" id="remember-me" style="width:17px;height:17px;cursor:pointer;accent-color:#e8833a;">
+      <span style="font-size:14px;color:#475569;">이 컴퓨터 기억하기</span>
+    </label>
+    <div id="remember-hint" style="font-size:12px;color:#94a3b8;margin-top:5px;line-height:1.5;">
+      내 PC만 체크하세요.<br>체크 안 하면 <b style="color:#c2703a;">창을 닫을 때 자동 로그아웃</b>됩니다.
+    </div>
     <!-- ★ 다른 계정 선택 (2026-07-26) — 기억된 계정을 지우고 계정 선택창을 띄움 -->
     <div style="margin-top:11px;"><a href="#" onclick="if(window.doLoginOther)doLoginOther();return false;" style="color:#94a3b8;font-size:14px;text-decoration:underline;">다른 계정으로 로그인</a></div>
     <div class="login-err" id="login-err"></div>
@@ -1478,6 +1485,13 @@ try {
   if (localStorage.getItem('__salgu_visited__')) {
     var _tipEl = document.getElementById('login-tip');
     if (_tipEl) _tipEl.style.display = 'none';
+  }
+} catch(e) {}
+/* ★ 2026-08-09: 이전에 "이 컴퓨터 기억하기"를 켰던 브라우저면 체크 상태 복원 */
+try {
+  if (localStorage.getItem('__salgu_remember__') === '1') {
+    var _rcEl = document.getElementById('remember-me');
+    if (_rcEl) _rcEl.checked = true;
   }
 } catch(e) {}
 </script>
@@ -10430,17 +10444,40 @@ function copyContact(el) {
   var TOKEN_FRESH_MS = 55 * 60 * 1000;  // 55분 — Google access_token은 1시간 유효
   var _silentReauthCb = null;
 
-  function saveTokenToStorage() {
+  /* ★ 공용 PC 보안 (2026-08-09)
+     "이 컴퓨터 기억하기" 체크 → localStorage (브라우저 닫아도 유지)
+     체크 안 함              → sessionStorage (탭/창 닫으면 즉시 소멸)
+     이메일 기억(__salgu_email__)도 동일 규칙을 따름 */
+  var REMEMBER_KEY = '__salgu_remember__';
+  function _isRemember() {
+    try { return localStorage.getItem(REMEMBER_KEY) === '1'; } catch(e) { return false; }
+  }
+  function _setRemember(on) {
     try {
-      localStorage.setItem(TOKEN_KEY, JSON.stringify({
-        token: _accessToken,
-        issuedAt: Date.now()
-      }));
+      if (on) localStorage.setItem(REMEMBER_KEY, '1');
+      else localStorage.removeItem(REMEMBER_KEY);
+    } catch(e) {}
+  }
+  window.__salguIsRemember__ = _isRemember;
+  window.__salguSetRemember__ = _setRemember;
+
+  function saveTokenToStorage() {
+    var payload = JSON.stringify({ token: _accessToken, issuedAt: Date.now() });
+    try {
+      if (_isRemember()) {
+        localStorage.setItem(TOKEN_KEY, payload);
+        try { sessionStorage.removeItem(TOKEN_KEY); } catch(e2) {}
+      } else {
+        sessionStorage.setItem(TOKEN_KEY, payload);
+        try { localStorage.removeItem(TOKEN_KEY); } catch(e2) {}
+      }
     } catch(e) {}
   }
   function loadTokenFromStorage() {
     try {
-      var s = localStorage.getItem(TOKEN_KEY);
+      var s = null;
+      try { s = sessionStorage.getItem(TOKEN_KEY); } catch(e2) {}
+      if (!s && _isRemember()) s = localStorage.getItem(TOKEN_KEY);
       if (!s) return null;
       var o = JSON.parse(s);
       if (!o || !o.token) return null;
@@ -10450,6 +10487,7 @@ function copyContact(el) {
   function clearTokenStorage() {
     try {
       localStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);           /* ★ 2026-08-09 */
       sessionStorage.removeItem('__drive_token__');  // 옛 키 정리
     } catch(e) {}
   }
@@ -10555,6 +10593,11 @@ function copyContact(el) {
     /* ★ 'consent' → '' 변경 (2026-07-26): 매번 동의 화면 3단계를 강제로 띄우던 원인.
        ''이면 최초 1회만 동의 화면이 나오고, 이후엔 이미 허용된 사용자는 화면 없이 바로 로그인됨.
        ★ login_hint 추가: 재방문 시 계정 선택창도 건너뛰고 지난번 계정으로 바로 로그인 */
+    /* ★ 2026-08-09: 로그인 직전에 "이 컴퓨터 기억하기" 선택을 반영 */
+    try {
+      var _rc = document.getElementById('remember-me');
+      _setRemember(!!(_rc && _rc.checked));
+    } catch(e) {}
     var _hint = '';
     try { _hint = localStorage.getItem('__salgu_email__') || ''; } catch(e) {}
     _tokenClient.requestAccessToken(_hint ? { prompt: '', login_hint: _hint } : { prompt: '' });
@@ -10578,6 +10621,7 @@ function copyContact(el) {
     _accessToken = null;
     _driveFileId = null;
     clearTokenStorage();
+    try { _setRemember(false); } catch(e) {}  /* ★ 2026-08-09: 로그아웃 시 기억하기 해제 */
     /* ★ 로그아웃 시 기억한 계정도 삭제 (2026-07-26) — 다른 계정으로 로그인할 수 있게 */
     try { localStorage.removeItem('__salgu_email__'); } catch(e) {}
     location.reload();
@@ -10590,7 +10634,11 @@ function copyContact(el) {
     }).then(function(r){ return r.json(); }).then(function(d){
       _userEmail = d.email || '';
       /* ★ 로그인 계정 기억 (2026-07-26) — 토큰 갱신 시 계정 선택창 방지용 login_hint */
-      try { if (_userEmail) localStorage.setItem('__salgu_email__', _userEmail); } catch(e) {}
+      /* ★ 2026-08-09: 기억하기 체크한 경우에만 이메일 저장 (공용 PC 흔적 방지) */
+      try {
+        if (_userEmail && _isRemember()) localStorage.setItem('__salgu_email__', _userEmail);
+        else localStorage.removeItem('__salgu_email__');
+      } catch(e) {}
       var u = document.getElementById('drive-user');
       if (u) u.textContent = _userEmail;
       var sub = document.getElementById('mv-sub');
