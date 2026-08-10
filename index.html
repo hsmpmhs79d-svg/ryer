@@ -10849,35 +10849,76 @@ function copyContact(el) {
   }
   window.salguLinkBackup = openBackupPicker;  /* 콘솔/원격 안내용 수동 호출 */
 
-  // ─── 승인 대기 화면 (2026-08-10) ───
-  function showPendingScreen(email) {
+  // ─── 가입 상태별 화면 (2026-08-10, B안) ───
+  function showPendingScreen(email, status) {
     try {
       var ov = document.getElementById('login-overlay');
       if (!ov) { afterLogin(); return; }
       ov.style.display = 'flex';
       var card = ov.querySelector('.login-card');
       if (!card) { afterLogin(); return; }
-      card.innerHTML =
-        '<div style="font-size:52px;line-height:1;margin-bottom:10px;">🔒</div>' +
-        '<h1 style="font-size:26px;color:#7c2d12;margin-bottom:6px;">승인 대기 중</h1>' +
-        '<div style="font-size:14px;color:#64748b;margin-bottom:18px;">살구(SALGU) CRM</div>' +
-        '<p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">' +
-          '살구는 <b style="color:#7c2d12;">승인된 분만</b> 이용하실 수 있습니다.<br>' +
-          '아래 이메일로 이용 신청을 해주세요.</p>' +
-        '<div style="background:#fff6ed;border:1.5px solid #f5d9bd;border-radius:10px;padding:12px 14px;margin-bottom:18px;">' +
-          '<div style="font-size:12px;color:#a06a42;margin-bottom:4px;">신청하신 계정</div>' +
-          '<div style="font-size:15px;font-weight:800;color:#7c2d12;word-break:break-all;">' + (email || '') + '</div>' +
-        '</div>' +
-        '<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;font-size:14.5px;color:#334155;line-height:1.8;">' +
-          '<b style="color:#0f172a;">📞 이용 신청 · 문의</b><br>' +
-          '담당 팀장 <b>여상현</b><br>' +
-          '<b style="font-size:17px;color:#7c2d12;">010-6226-5359</b><br>' +
-          '<span style="font-size:13px;color:#64748b;">위 이메일 주소와 함께 연락 주세요.</span>' +
-        '</div>' +
-        '<div style="margin-top:16px;"><a href="#" onclick="if(window.salguLogout)window.salguLogout();return false;" style="color:#94a3b8;font-size:13.5px;text-decoration:underline;">다른 계정으로 로그인</a></div>';
+      var contact = '<div style="background:#f8fafc;border-radius:10px;padding:13px 15px;font-size:14px;color:#334155;line-height:1.8;margin-top:14px;">' +
+          '<b style="color:#0f172a;">📞 문의</b> — 담당 팀장 <b>여상현</b> <b style="color:#7c2d12;">010-6226-5359</b></div>';
+      var other = '<div style="margin-top:14px;"><a href="#" onclick="if(window.doLoginOther)doLoginOther();return false;" style="color:#94a3b8;font-size:13.5px;text-decoration:underline;">다른 계정으로 로그인</a></div>';
+      var emailBox = '<div style="background:#fff6ed;border:1.5px solid #f5d9bd;border-radius:10px;padding:10px 13px;margin-bottom:14px;">' +
+          '<div style="font-size:12px;color:#a06a42;">내 계정</div>' +
+          '<div style="font-size:14.5px;font-weight:800;color:#7c2d12;word-break:break-all;">' + (email||'') + '</div></div>';
+
+      if (status === 'none') {
+        card.innerHTML =
+          '<div style="font-size:46px;line-height:1;margin-bottom:8px;">📝</div>' +
+          '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">살구 이용 신청</h1>' +
+          '<p style="color:#64748b;font-size:14px;margin-bottom:14px;">살구는 승인된 분만 이용하실 수 있습니다.<br>아래 정보를 입력해 신청해 주세요.</p>' +
+          emailBox +
+          '<input id="sg-name" placeholder="이름 (필수)" style="width:100%;padding:11px 13px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:8px;box-sizing:border-box;">' +
+          '<input id="sg-phone" placeholder="전화번호 (필수)" inputmode="tel" style="width:100%;padding:11px 13px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:12px;box-sizing:border-box;">' +
+          '<button onclick="window.salguApply()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;">이용 신청하기</button>' +
+          contact + other;
+      } else if (status === 'pending') {
+        card.innerHTML =
+          '<div style="font-size:46px;line-height:1;margin-bottom:8px;">⏳</div>' +
+          '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">승인 대기 중</h1>' +
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">신청이 접수되었습니다.<br>관리자 확인 후 이용하실 수 있습니다.</p>' +
+          emailBox + contact + other;
+      } else if (status === 'expired') {
+        card.innerHTML =
+          '<div style="font-size:46px;line-height:1;margin-bottom:8px;">⌛</div>' +
+          '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">이용 기간 만료</h1>' +
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">이용 기간이 만료되었습니다.<br>연장을 원하시면 연락해 주세요.</p>' +
+          emailBox + contact + other;
+      } else {
+        card.innerHTML =
+          '<div style="font-size:46px;line-height:1;margin-bottom:8px;">🔒</div>' +
+          '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">이용이 제한된 계정</h1>' +
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">이 계정은 현재 이용하실 수 없습니다.<br>문의가 필요하시면 연락해 주세요.</p>' +
+          emailBox + contact + other;
+      }
+      window.__pendingEmail__ = email || '';
       banner('', '');
     } catch(e) { afterLogin(); }   /* 화면 그리기 실패해도 막지 않음 */
   }
+
+  /* 이용 신청 전송 */
+  window.salguApply = function() {
+    var name = (document.getElementById('sg-name') || {}).value || '';
+    var phone = (document.getElementById('sg-phone') || {}).value || '';
+    name = name.trim(); phone = phone.trim();
+    if (!name || !phone) { alert('이름과 전화번호를 모두 입력해주세요.'); return; }
+    fetch('https://salgu-api.wmmryer.workers.dev/apply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: window.__pendingEmail__ || '', name: name, phone: phone })
+    }).then(function(r){ return r.json(); })
+      .then(function(j){
+        if (j && j.ok) {
+          alert('✅ 신청이 접수되었습니다!\n관리자 승인 후 이용하실 수 있습니다.');
+          showPendingScreen(window.__pendingEmail__ || '', 'pending');
+        } else {
+          alert('신청 실패: ' + ((j && j.error) || '잠시 후 다시 시도해주세요'));
+        }
+      })
+      .catch(function(){ alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'); });
+  };
 
   // ─── 로그인 후 처리 ───
   function afterLogin() {
@@ -10908,19 +10949,26 @@ function copyContact(el) {
           var _visited = false;
           try { _visited = !!localStorage.getItem('__salgu_visited__'); } catch(e) {}
           if (!_visited) {
-            fetch('allowlist.json?t=' + Date.now())
-              .then(function(r){ return r.ok ? r.json() : null; })
-              .then(function(j){
-                var list = (j && Array.isArray(j.approved)) ? j.approved : null;
-                if (!list) { afterLogin(); return; }            // 목록 못 읽음 → 통과
-                var me = String(_userEmail || '').trim().toLowerCase();
-                if (!me) { afterLogin(); return; }               // 이메일 모름 → 통과
-                var ok = list.some(function(e){ return String(e).trim().toLowerCase() === me; });
-                if (ok) { afterLogin(); return; }                // 승인됨 → 통과
-                showPendingScreen(me);                           // 미승인 → 대기 화면
-              })
-              .catch(function(){ afterLogin(); });               // 오류 → 통과
-            return;
+            /* ★ B안 (2026-08-10): 승인 여부를 salgu-api(D1 DB)에서 조회.
+               오류·타임아웃 시 무조건 통과(fail-open) — 기존 사용자 보호 최우선 */
+            var _me = String(_userEmail || '').trim().toLowerCase();
+            if (!_me && (window.__gateWait__|0) < 5) {
+              /* 이메일이 아직 안 왔으면 잠깐 기다렸다 재시도 (최대 5회) */
+              window.__gateWait__ = (window.__gateWait__|0) + 1;
+              window.__gateChecked__ = false;
+              setTimeout(function(){ afterLogin(); }, 700);
+              return;
+            }
+            if (_me) {
+              fetch('https://salgu-api.wmmryer.workers.dev/check?email=' + encodeURIComponent(_me) + '&t=' + Date.now())
+                .then(function(r){ return r.ok ? r.json() : null; })
+                .then(function(j){
+                  if (!j || !j.status || j.status === 'approved') { afterLogin(); return; }  /* 승인 또는 응답 이상 → 통과 */
+                  showPendingScreen(_me, j.status);   /* none=신청 폼 / pending=대기 / expired=만료 / rejected=중지 */
+                })
+                .catch(function(){ afterLogin(); });   /* 서버 오류 → 통과 */
+              return;
+            }
           }
         }
         // 백업 파일이 없으면 → 현재 상태로 첫 업로드
@@ -10987,6 +11035,19 @@ function copyContact(el) {
       }
       _driveFileId = file.id;
       _lastKnownDriveTime = file.modifiedTime || null;  // ★ 충돌 감지 기준 시각 (2026-07-07)
+      /* ★ 기존 사용자 명단 자동 수집 (2026-08-10, B안) — 백업이 있다 = 기존 사용자.
+         브라우저당 1회만, 실패해도 무시(사용에 아무 영향 없음) */
+      try {
+        if (!localStorage.getItem('__salgu_census__') && _userEmail) {
+          var _cname = '';
+          try { _cname = (typeof window._getUserName === 'function' && window._getUserName()) || ''; } catch(e2) {}
+          fetch('https://salgu-api.wmmryer.workers.dev/census', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: _userEmail, name: _cname })
+          }).then(function(){ try { localStorage.setItem('__salgu_census__','1'); } catch(e3) {} })
+            .catch(function(){});
+        }
+      } catch(e) {}
       return downloadBackup(file.id).then(function(html) {
         var data = extractDataFromHtml(html);
         if (IS_MOBILE) {
