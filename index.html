@@ -10884,19 +10884,28 @@ function copyContact(el) {
         card.innerHTML =
           '<div style="font-size:46px;line-height:1;margin-bottom:8px;">⌛</div>' +
           '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">이용 기간 만료</h1>' +
-          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">이용 기간이 만료되었습니다.<br>연장을 원하시면 연락해 주세요.</p>' +
-          emailBox + contact + other;
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">이용 기간이 만료되었습니다.<br>연장을 원하시면 아래에서 다시 신청해 주세요.</p>' +
+          emailBox +
+          '<button onclick="if(window.salguReapplyForm)window.salguReapplyForm()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;">다시 이용 신청하기</button>' +
+          contact + other;
       } else {
         card.innerHTML =
           '<div style="font-size:46px;line-height:1;margin-bottom:8px;">🔒</div>' +
           '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">이용이 제한된 계정</h1>' +
-          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">이 계정은 현재 이용하실 수 없습니다.<br>문의가 필요하시면 연락해 주세요.</p>' +
-          emailBox + contact + other;
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">이 계정은 현재 이용하실 수 없습니다.<br>다시 이용하시려면 아래에서 신청해 주세요.</p>' +
+          emailBox +
+          '<button onclick="if(window.salguReapplyForm)window.salguReapplyForm()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;">다시 이용 신청하기</button>' +
+          contact + other;
       }
       window.__pendingEmail__ = email || '';
       banner('', '');
     } catch(e) { afterLogin(); }   /* 화면 그리기 실패해도 막지 않음 */
   }
+
+  /* 중지·만료 화면에서 "다시 이용 신청하기" → 신청 폼으로 전환 (2026-08-10) */
+  window.salguReapplyForm = function() {
+    showPendingScreen(window.__pendingEmail__ || '', 'none');
+  };
 
   /* 이용 신청 전송 */
   window.salguApply = function() {
@@ -11049,6 +11058,22 @@ function copyContact(el) {
             body: JSON.stringify({ email: _cmail, name: _cname })
           }).then(function(){ try { localStorage.setItem('__salgu_census__', _csent + '|' + _cmail); } catch(e3) {} })
             .catch(function(){});
+        }
+      } catch(e) {}
+      /* ★ 이용 중지 강제 적용 (2026-08-10) — 서버가 명시적으로 '중지(rejected)' 또는
+         '만료(expired)'라고 답한 계정만 차단 화면 표시. 그 외 모든 경우(미등록·대기·승인·
+         서버 오류·응답 없음)는 전부 통과 → 기존 사용자에게 영향 없음 (fail-open) */
+      try {
+        var _bmail = String(_userEmail || '').trim().toLowerCase();
+        if (_bmail) {
+          fetch('https://salgu-api.wmmryer.workers.dev/check?email=' + encodeURIComponent(_bmail) + '&t=' + Date.now())
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .then(function(j){
+              if (j && (j.status === 'rejected' || j.status === 'expired') && !window.__blockShown__) {
+                window.__blockShown__ = true;   /* 반복 표시 방지 */
+                try { showPendingScreen(_bmail, j.status); } catch(e6) {}
+              }
+            }).catch(function(){});
         }
       } catch(e) {}
       return downloadBackup(file.id).then(function(html) {
