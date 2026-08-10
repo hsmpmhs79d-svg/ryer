@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>살구 CRM — 가입 관리</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background:#fdf8f3; color:#1e293b; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 28px 16px 80px; }
+  header { display:flex; align-items:center; justify-content:space-between; padding-bottom:16px; border-bottom:3px solid #e8833a; margin-bottom:20px; flex-wrap:wrap; gap:10px; }
+  header h1 { font-size:21px; color:#7c2d12; }
+  header .me { font-size:13px; color:#64748b; }
+  .btn { border:none; border-radius:8px; padding:9px 16px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .btn-g { background:#fff; border:1.5px solid #cbd5e1; color:#334155; }
+  .btn-blue { background:#2563eb; color:#fff; }
+  .btn-green { background:#16a34a; color:#fff; }
+  .btn-red { background:#ef4444; color:#fff; }
+  .btn-sm { padding:6px 12px; font-size:13px; border-radius:6px; }
+  .tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .tab { padding:8px 16px; border-radius:20px; font-size:14px; font-weight:700; cursor:pointer; background:#fff; border:1.5px solid #e2e8f0; color:#64748b; }
+  .tab.on { background:#7c2d12; color:#fff; border-color:#7c2d12; }
+  .tab .n { font-weight:900; margin-left:4px; }
+  .card { background:#fff; border:1px solid #f0e4d6; border-radius:12px; padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .card .info { flex:1; min-width:220px; }
+  .card .name { font-size:16px; font-weight:800; color:#0f172a; }
+  .card .sub { font-size:13px; color:#64748b; margin-top:3px; word-break:break-all; }
+  .card .memo { font-size:12.5px; color:#a06a42; margin-top:3px; }
+  .badge { font-size:11.5px; font-weight:800; padding:3px 9px; border-radius:10px; }
+  .b-pending { background:#fef3c7; color:#b45309; }
+  .b-approved { background:#dcfce7; color:#15803d; }
+  .b-rejected { background:#fee2e2; color:#b91c1c; }
+  .b-expired { background:#f1f5f9; color:#64748b; }
+  .acts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .acts input[type=date] { padding:6px 8px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; }
+  .empty { text-align:center; color:#94a3b8; padding:40px 0; font-size:14.5px; }
+  #login-box { text-align:center; padding:70px 20px; }
+  #login-box .peach { font-size:56px; }
+  #login-box h2 { color:#7c2d12; margin:10px 0 6px; }
+  #login-box p { color:#64748b; font-size:14px; margin-bottom:22px; }
+  .addbox { background:#fff6ed; border:1.5px solid #f5d9bd; border-radius:12px; padding:14px 16px; margin-bottom:18px; }
+  .addbox b { color:#7c2d12; font-size:14px; }
+  .addrow { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+  .addrow input { padding:8px 11px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:14px; font-family:inherit; flex:1; min-width:140px; }
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f172a; color:#fff; padding:11px 22px; border-radius:10px; font-size:14px; display:none; z-index:99; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="login-box">
+    <div class="peach">🍑</div>
+    <h2>살구 CRM 가입 관리</h2>
+    <p>관리자(팀장 여상현)만 접근할 수 있습니다.</p>
+    <button class="btn btn-blue" onclick="doLogin()">Google로 관리자 로그인</button>
+  </div>
+
+  <div id="main" style="display:none;">
+    <header>
+      <h1>🍑 살구 가입 관리</h1>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="me" id="me"></span>
+        <button class="btn btn-g btn-sm" onclick="load()">↻ 새로고침</button>
+      </div>
+    </header>
+
+    <div class="addbox">
+      <b>➕ 직접 등록 (즉시 승인)</b> — 기존 사용자를 명단에 넣거나, 급하게 승인할 때
+      <div class="addrow">
+        <input id="a-email" placeholder="이메일 (필수)">
+        <input id="a-name" placeholder="이름">
+        <input id="a-phone" placeholder="전화번호">
+        <input id="a-memo" placeholder="메모 (입금자명 등)">
+        <button class="btn btn-green" onclick="addUser()">등록</button>
+      </div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+    <div id="list"></div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+var API = 'https://salgu-api.wmmryer.workers.dev';
+var CLIENT_ID = '491677189712-agtga4sn5ed3gje4n0lk02veoj3ttl2c.apps.googleusercontent.com';
+var _token = null, _users = [], _tab = 'pending', _tc = null;
+
+function toast(m) {
+  var t = document.getElementById('toast');
+  t.textContent = m; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display='none'; }, 2200);
+}
+
+function doLogin() {
+  if (!window.google || !google.accounts) { toast('구글 모듈 로딩 중… 잠시 후 다시 눌러주세요'); return; }
+  if (!_tc) {
+    _tc = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/userinfo.email',
+      callback: function(resp) {
+        if (resp && resp.access_token) { _token = resp.access_token; afterLogin(); }
+      }
+    });
+  }
+  _tc.requestAccessToken({ prompt: '' });
+}
+
+function api(path, opt) {
+  opt = opt || {};
+  opt.headers = Object.assign({ 'Authorization': 'Bearer ' + _token, 'Content-Type': 'application/json' }, opt.headers || {});
+  return fetch(API + path, opt).then(function(r){ return r.json(); });
+}
+
+function afterLogin() {
+  api('/admin/list').then(function(r) {
+    if (!r.ok) { toast(r.error === '권한 없음' ? '⛔ 관리자 계정이 아닙니다' : '오류: ' + (r.error||'')); return; }
+    document.getElementById('login-box').style.display = 'none';
+    document.getElementById('main').style.display = 'block';
+    _users = r.users || [];
+    render();
+  }).catch(function(){ toast('서버 연결 실패'); });
+}
+
+function load() {
+  api('/admin/list').then(function(r) {
+    if (r.ok) { _users = r.users || []; render(); toast('갱신됨'); }
+  });
+}
+
+function statusOf(u) {
+  if (u.status === 'approved' && u.expires_at) {
+    var today = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+    if (u.expires_at < today) return 'expired';
+  }
+  return u.status;
+}
+var LBL = { pending:'⏳ 대기', approved:'✅ 승인', rejected:'🚫 거절', expired:'⌛ 만료' };
+var CLS = { pending:'b-pending', approved:'b-approved', rejected:'b-rejected', expired:'b-expired' };
+
+function render() {
+  var counts = { pending:0, approved:0, rejected:0, expired:0 };
+  _users.forEach(function(u){ counts[statusOf(u)] = (counts[statusOf(u)]||0)+1; });
+  var tabs = ['pending','approved','expired','rejected'];
+  document.getElementById('tabs').innerHTML = tabs.map(function(t){
+    return '<div class="tab' + (_tab===t?' on':'') + '" onclick="_tab=\'' + t + '\';render()">' + LBL[t] + '<span class="n">' + (counts[t]||0) + '</span></div>';
+  }).join('');
+
+  var rows = _users.filter(function(u){ return statusOf(u) === _tab; });
+  if (!rows.length) { document.getElementById('list').innerHTML = '<div class="empty">해당하는 사람이 없습니다</div>'; return; }
+  document.getElementById('list').innerHTML = rows.map(function(u) {
+    var st = statusOf(u);
+    var acts = '';
+    if (st === 'pending' || st === 'rejected' || st === 'expired') {
+      acts += '<input type="date" id="exp-' + esc(u.email) + '" title="만료일 (비우면 무기한)">'
+           + '<button class="btn btn-green btn-sm" onclick="approve(\'' + esc(u.email) + '\')">승인</button>';
+    }
+    if (st === 'pending') {
+      acts += '<button class="btn btn-red btn-sm" onclick="reject(\'' + esc(u.email) + '\')">거절</button>';
+    }
+    if (st === 'approved') {
+      acts += '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
+    }
+    return '<div class="card">'
+      + '<div class="info">'
+      +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span></div>'
+      +   '<div class="sub">' + esc(u.email) + (u.phone ? ' · ' + esc(u.phone) : '') + '</div>'
+      +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : '') + '</div>'
+      +   (u.memo ? '<div class="memo">📝 ' + esc(u.memo) + '</div>' : '')
+      + '</div>'
+      + '<div class="acts">' + acts + '</div>'
+      + '</div>';
+  }).join('');
+}
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+function approve(email) {
+  var expEl = document.getElementById('exp-' + email);
+  var exp = expEl && expEl.value ? expEl.value : null;
+  if (!confirm(email + ' 님을 승인할까요?' + (exp ? '\n만료일: ' + exp : '\n(만료일 없음 — 무기한)'))) return;
+  api('/admin/approve', { method:'POST', body: JSON.stringify({ email: email, expires_at: exp }) })
+    .then(function(r){ if (r.ok) { toast('✅ 승인됨'); load(); } else toast('실패: ' + (r.error||'')); });
+}
+function reject(email) {
+  if (!confirm(email + ' 님의 이용을 중지(거절)할까요?')) return;
+  api('/admin/reject', { method:'POST', body: JSON.stringify({ email: email }) })
+    .then(function(r){ if (r.ok) { toast('처리됨'); load(); } else toast('실패: ' + (r.error||'')); });
+}
+function addUser() {
+  var email = document.getElementById('a-email').value.trim();
+  if (!email) { toast('이메일을 입력하세요'); return; }
+  api('/admin/add', { method:'POST', body: JSON.stringify({
+    email: email,
+    name: document.getElementById('a-name').value.trim(),
+    phone: document.getElementById('a-phone').value.trim(),
+    memo: document.getElementById('a-memo').value.trim()
+  }) }).then(function(r){
+    if (r.ok) { toast('✅ 등록·승인됨'); ['a-email','a-name','a-phone','a-memo'].forEach(function(i){ document.getElementById(i).value=''; }); load(); }
+    else toast('실패: ' + (r.error||''));
+  });
+}
+</script>
+</body>
+</html>

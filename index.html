@@ -10849,6 +10849,36 @@ function copyContact(el) {
   }
   window.salguLinkBackup = openBackupPicker;  /* 콘솔/원격 안내용 수동 호출 */
 
+  // ─── 승인 대기 화면 (2026-08-10) ───
+  function showPendingScreen(email) {
+    try {
+      var ov = document.getElementById('login-overlay');
+      if (!ov) { afterLogin(); return; }
+      ov.style.display = 'flex';
+      var card = ov.querySelector('.login-card');
+      if (!card) { afterLogin(); return; }
+      card.innerHTML =
+        '<div style="font-size:52px;line-height:1;margin-bottom:10px;">🔒</div>' +
+        '<h1 style="font-size:26px;color:#7c2d12;margin-bottom:6px;">승인 대기 중</h1>' +
+        '<div style="font-size:14px;color:#64748b;margin-bottom:18px;">살구(SALGU) CRM</div>' +
+        '<p style="color:#334155;font-size:15px;line-height:1.7;margin-bottom:16px;">' +
+          '살구는 <b style="color:#7c2d12;">승인된 분만</b> 이용하실 수 있습니다.<br>' +
+          '아래 이메일로 이용 신청을 해주세요.</p>' +
+        '<div style="background:#fff6ed;border:1.5px solid #f5d9bd;border-radius:10px;padding:12px 14px;margin-bottom:18px;">' +
+          '<div style="font-size:12px;color:#a06a42;margin-bottom:4px;">신청하신 계정</div>' +
+          '<div style="font-size:15px;font-weight:800;color:#7c2d12;word-break:break-all;">' + (email || '') + '</div>' +
+        '</div>' +
+        '<div style="background:#f8fafc;border-radius:10px;padding:14px 16px;font-size:14.5px;color:#334155;line-height:1.8;">' +
+          '<b style="color:#0f172a;">📞 이용 신청 · 문의</b><br>' +
+          '담당 팀장 <b>여상현</b><br>' +
+          '<b style="font-size:17px;color:#7c2d12;">010-6226-5359</b><br>' +
+          '<span style="font-size:13px;color:#64748b;">위 이메일 주소와 함께 연락 주세요.</span>' +
+        '</div>' +
+        '<div style="margin-top:16px;"><a href="#" onclick="if(window.salguLogout)window.salguLogout();return false;" style="color:#94a3b8;font-size:13.5px;text-decoration:underline;">다른 계정으로 로그인</a></div>';
+      banner('', '');
+    } catch(e) { afterLogin(); }   /* 화면 그리기 실패해도 막지 않음 */
+  }
+
   // ─── 로그인 후 처리 ───
   function afterLogin() {
     saveTokenToStorage();
@@ -10868,6 +10898,31 @@ function copyContact(el) {
             window.__pickerRetried__ = true;
           }
         } catch(e) {}
+        /* ★ 신규 가입 승인 게이트 (2026-08-10)
+           여기까지 왔다 = 드라이브에 백업이 없다 = 처음 쓰는 사람일 가능성.
+           기존 사용자는 백업이 있어 이 분기 자체에 오지 않으므로 영향 없음.
+           추가 안전장치: 이 브라우저 사용 이력이 있으면 무조건 통과.
+           그리고 목록을 못 읽거나 오류가 나면 '통과'(fail-open) — 절대 막지 않음. */
+        if (!window.__gateChecked__) {
+          window.__gateChecked__ = true;
+          var _visited = false;
+          try { _visited = !!localStorage.getItem('__salgu_visited__'); } catch(e) {}
+          if (!_visited) {
+            fetch('allowlist.json?t=' + Date.now())
+              .then(function(r){ return r.ok ? r.json() : null; })
+              .then(function(j){
+                var list = (j && Array.isArray(j.approved)) ? j.approved : null;
+                if (!list) { afterLogin(); return; }            // 목록 못 읽음 → 통과
+                var me = String(_userEmail || '').trim().toLowerCase();
+                if (!me) { afterLogin(); return; }               // 이메일 모름 → 통과
+                var ok = list.some(function(e){ return String(e).trim().toLowerCase() === me; });
+                if (ok) { afterLogin(); return; }                // 승인됨 → 통과
+                showPendingScreen(me);                           // 미승인 → 대기 화면
+              })
+              .catch(function(){ afterLogin(); });               // 오류 → 통과
+            return;
+          }
+        }
         // 백업 파일이 없으면 → 현재 상태로 첫 업로드
         // ★★ 안전망: 다른 사람 데이터 유출 방지 — 새 사용자는 무조건 빈 상태로 시작 (2026-06-20)
         //   GitHub 배포본 index.html에 데이터가 박혀 있어도, 새 계정 로그인 시 강제로 비움.
