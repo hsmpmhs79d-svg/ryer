@@ -11036,15 +11036,18 @@ function copyContact(el) {
       _driveFileId = file.id;
       _lastKnownDriveTime = file.modifiedTime || null;  // ★ 충돌 감지 기준 시각 (2026-07-07)
       /* ★ 기존 사용자 명단 자동 수집 (2026-08-10, B안) — 백업이 있다 = 기존 사용자.
-         브라우저당 1회만, 실패해도 무시(사용에 아무 영향 없음) */
+         계정당 1회만(같은 브라우저에서 여러 계정 로그인해도 각각 수집), 실패해도 무시 */
       try {
-        if (!localStorage.getItem('__salgu_census__') && _userEmail) {
+        var _cmail = String(_userEmail || '').trim().toLowerCase();
+        var _csent = '';
+        try { _csent = localStorage.getItem('__salgu_census__') || ''; } catch(e4) {}
+        if (_cmail && _csent.indexOf(_cmail) === -1) {
           var _cname = '';
           try { _cname = (typeof window._getUserName === 'function' && window._getUserName()) || ''; } catch(e2) {}
           fetch('https://salgu-api.wmmryer.workers.dev/census', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: _userEmail, name: _cname })
-          }).then(function(){ try { localStorage.setItem('__salgu_census__','1'); } catch(e3) {} })
+            body: JSON.stringify({ email: _cmail, name: _cname })
+          }).then(function(){ try { localStorage.setItem('__salgu_census__', _csent + '|' + _cmail); } catch(e3) {} })
             .catch(function(){});
         }
       } catch(e) {}
