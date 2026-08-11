@@ -31,7 +31,7 @@
 <header>
   <div class="logo">🍑</div>
   <h1>개인정보처리방침</h1>
-  <div class="sub">살구(SALGU) CRM — 보험 전문가의 고객관리 · 시행일 2026년 8월 7일</div>
+  <div class="sub">살구(SALGU) CRM — 보험 전문가의 고객관리 · 시행일 2026년 8월 11일 (개정)</div>
 </header>
 
 <p>살구(SALGU) CRM(이하 "서비스", https://salgu.pages.dev)은 보험설계사가 본인의 고객 정보를 관리하기 위한 웹 기반 도구입니다. 본 방침은 서비스가 어떤 정보를 다루며, 그 정보가 어디에 저장되고, 어떻게 보호되는지를 설명합니다.</p>
@@ -66,10 +66,29 @@
   <li>데이터의 보관·삭제는 전적으로 사용자 본인이 결정합니다. Google Drive에서 백업 파일을 삭제하면 데이터가 완전히 삭제됩니다.</li>
 </ul>
 
-<h2>4. 제3자 제공 및 위탁</h2>
-<p>서비스는 사용자 데이터를 제3자에게 제공, 판매, 위탁하지 않습니다. 웹페이지 호스팅은 Cloudflare Pages를 통해 이루어지나, 이는 화면(코드)의 전달만을 담당하며 사용자 데이터는 경유하지 않습니다.</p>
+<h2>4. Google 사용자 데이터의 공유·이전·공개 (Data Sharing Disclosure)</h2>
+<div class="hl">
+서비스는 Google API를 통해 얻은 사용자 데이터(이메일 주소, Drive 파일, 연락처, 캘린더 일정)를 <b>어떠한 제3자에게도 공유, 판매, 이전, 공개하지 않습니다.</b><br>
+(SALGU CRM does <b>not</b> share, sell, transfer, or disclose any Google user data — including email address, Drive files, contacts, and calendar events — to any third party, for any purpose.)
+</div>
+<ul>
+  <li>Google 사용자 데이터는 광고, 마케팅, 데이터 분석, AI/ML 모델 학습 등 어떠한 2차 목적으로도 사용되지 않습니다.</li>
+  <li>법령에 의해 공개가 강제되는 경우를 제외하고는 어떠한 예외도 없으며, 현재까지 그러한 공개 사례는 없습니다.</li>
+  <li>웹페이지 호스팅은 Cloudflare Pages를 통해 이루어지나, 이는 화면(코드)의 전달만을 담당하며 Google 사용자 데이터는 경유하지 않습니다.</li>
+  <li>이용 신청 시 사용자가 직접 입력하는 최소한의 가입 정보(이름, 전화번호, 이메일 주소)는 가입 승인 관리 목적으로만 운영자의 관리 시스템(Cloudflare D1)에 저장되며, 역시 제3자에게 제공되지 않습니다.</li>
+</ul>
 
-<h2>5. Google API 데이터 사용에 관한 고지 (Limited Use)</h2>
+<h2>5. 데이터 보호 조치 (Data Protection Mechanisms)</h2>
+<p>서비스는 민감한 데이터를 보호하기 위해 다음 조치를 적용합니다. (SALGU CRM applies the following mechanisms to protect sensitive data:)</p>
+<ul>
+  <li><b>전송 구간 암호화 (Encryption in transit):</b> 모든 데이터 전송은 HTTPS(TLS)로 암호화됩니다. 암호화되지 않은 통신은 사용하지 않습니다. (All data transmission is encrypted via HTTPS/TLS.)</li>
+  <li><b>저장 시 암호화 (Encryption at rest):</b> 고객 정보·일정 등 민감한 데이터는 사용자 본인의 Google Drive에만 저장되며, Google Drive의 저장 시 암호화(encryption at rest)로 보호됩니다. (Sensitive data is stored only in the user's own Google Drive, protected by Google's encryption at rest.)</li>
+  <li><b>인증 토큰 보호 (Token protection):</b> OAuth 2.0 액세스 토큰은 사용자 본인의 브라우저 안에만 보관되며, 운영자의 서버로 전송되거나 저장되지 않습니다. 공용 PC를 위해 기본값은 브라우저 종료 시 토큰이 삭제되는 세션 저장 방식입니다. (OAuth access tokens are kept only in the user's browser and are never sent to or stored on our servers.)</li>
+  <li><b>접근 통제 (Access control):</b> 각 사용자의 데이터에는 해당 Google 계정으로 로그인한 본인만 접근할 수 있습니다. 개발자·운영자를 포함한 어떠한 사람도 사용자의 Google 데이터에 접근할 수 없습니다. 가입 관리 시스템은 관리자 Google 계정 인증(OAuth)을 통과해야만 접근됩니다. (Only the authenticated account owner can access their data; the admin console requires administrator OAuth authentication.)</li>
+  <li><b>최소 권한 (Minimum scopes):</b> Drive 전체가 아닌 <code>drive.file</code>(앱이 만든 파일만) 권한을 사용하는 등, 필요 최소한의 권한만 요청합니다. (The app requests only the minimum required scopes, e.g. drive.file instead of full Drive access.)</li>
+</ul>
+
+<h2>6. Google API 데이터 사용에 관한 고지 (Limited Use)</h2>
 <div class="hl">
 살구 CRM이 Google API로부터 받는 정보의 사용은 <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API Services User Data Policy</a>의 <b>Limited Use 요구사항을 포함하여</b> 해당 정책을 준수합니다. (SALGU CRM's use and transfer of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.)
 </div>
@@ -79,19 +98,19 @@
   <li>사람이 해당 데이터를 열람하지 않습니다 (사용자 본인 제외).</li>
 </ul>
 
-<h2>6. 권한 철회 및 삭제 방법</h2>
+<h2>7. 권한 철회 및 삭제 방법</h2>
 <ul>
   <li>사용자는 언제든 <a href="https://myaccount.google.com/permissions" target="_blank">Google 계정 → 보안 → 제3자 액세스</a>에서 서비스의 접근 권한을 철회할 수 있습니다.</li>
   <li>데이터를 완전히 삭제하려면 본인 Google Drive에서 <code>고객관리_백업.html</code> 및 관련 백업 파일을 삭제하면 됩니다.</li>
 </ul>
 
-<h2>7. 문의처</h2>
+<h2>8. 문의처</h2>
 <p>본 방침이나 서비스 이용에 관한 문의는 아래로 연락해 주세요.</p>
 <p><b>운영자:</b> 살구(SalGu) — 담당 팀장 여상현<br>
 <b>연락처:</b> 010-6226-5359<br>
 <b>이메일:</b> wmmryer@gmail.com</p>
 
-<h2>8. 방침의 변경</h2>
+<h2>9. 방침의 변경</h2>
 <p>본 방침이 변경되는 경우 이 페이지를 통해 공지하며, 시행일을 함께 표시합니다.</p>
 
 <footer>
