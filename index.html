@@ -7267,7 +7267,7 @@ function sdGoToEdit(cid, idx) {
         <button class="sd-nav-today" onclick="sdMonthToday()">오늘</button>
         <div id="sd-jump-panel" class="sd-jump-panel"></div>
       </div>
-      <div class="sd-month-hint">💡 빈 날짜 <b>더블클릭</b> → 일정 추가 &nbsp;·&nbsp; 일정 <b>클릭</b> → 수정 &nbsp;·&nbsp; 일정 <b>드래그</b> → 이동 &nbsp;·&nbsp; <b>Shift+드래그</b> → 복사 &nbsp;·&nbsp; 일정 <b>우클릭</b> → 복사/수정/삭제</div>
+      <div class="sd-month-hint">💡 빈 날짜 <b>더블클릭</b> → 일정 추가 &nbsp;·&nbsp; 일정 <b>클릭</b> → 수정 &nbsp;·&nbsp; 일정 <b>드래그</b> → 이동 &nbsp;·&nbsp; <b>Shift+드래그</b> → 복사 &nbsp;·&nbsp; 일정 <b>클릭</b> → 복사/수정/삭제</div>
     </div>
     <div class="sd-month-wrap" id="sd-month-wrap">
       <div class="sd-month-dow-row">
@@ -14747,8 +14747,7 @@ body { background:#faf3ea !important; }
   background:#fff !important; color:#9a3412 !important; border:1.5px solid #ecd5bd !important;
 }
 .btn-contact-save { background:#16a34a !important; color:#fff !important; border:none !important; }
-/* 연락처 등 표 머리글: 남색 → 크림, 세로 구분선 제거로 통일감 */
-table th { background:#fdeadd !important; color:#7c2d12 !important; }
+/* 보험사 연락처 표 머리글만: 남색 → 크림, 세로 구분선 제거 (다른 표는 원래 색 유지) */
 .contact-tbl th { background:#fff8f0 !important; color:#7c2d12 !important; border-right:none !important; border-bottom:2px solid #e8b98c !important; }
 .contact-tbl td { border-right:none !important; border-bottom:1px solid #f3e6d6 !important; }
 /* 손해보험/생명보험 구분 행: 회청색 → 웜 베이지 */
@@ -14760,8 +14759,8 @@ table th { background:#fdeadd !important; color:#7c2d12 !important; }
 /* ── 상담 스크립트 패널: 그라데이션 헤더 → 밝은 크림 헤더 ── */
 #script-panel { border-left:1px solid #f0e2d2 !important; }
 #script-panel-header { background:#fffaf4 !important; color:#7c2d12 !important; border-bottom:1px solid #f0e2d2; }
-#script-panel-header button { background:#fff !important; color:#9a3412 !important; border:1.5px solid #ecd5bd !important; }
-#script-panel-header button:hover { background:#fdeadd !important; }
+#script-panel-header button:not([id^="script-tab-"]) { background:#fff !important; color:#9a3412 !important; border:1.5px solid #ecd5bd !important; }
+#script-panel-header button:not([id^="script-tab-"]):hover { background:#fdeadd !important; }
 #script-save-btn { background:#16a34a !important; color:#fff !important; border:none !important; }
 #script-tabs button { border:none !important; }
 /* 저장된 스크립트 내용 속 옛 파란색(사용자 백업 데이터에 박힌 색)도 살구톤으로 덮어쓰기 */
@@ -14780,6 +14779,44 @@ table th { background:#fdeadd !important; color:#7c2d12 !important; }
 .sg-menu button { display:block; width:100%; text-align:left; background:#fff !important; color:#7c2d12 !important; border:none !important; padding:9px 12px !important; border-radius:7px !important; font-size:13px !important; font-weight:700; cursor:pointer; font-family:inherit; }
 .sg-menu button:hover { background:#fdeadd !important; }
 .sg-menu .sg-sep { height:1px; background:#f3e3d2; margin:5px 4px; }
+/* ── 스케줄 대시보드: 보라 → 오렌지 (요청) ── */
+.sd-tab.active { color:#c2410c !important; border-bottom-color:#e46a25 !important; }
+.sd-tab.active .sd-tab-count { background:#e46a25 !important; }
+.sd-nav-today { background:#fff6ed !important; border:1px solid #f0d0b0 !important; color:#c2410c !important; }
+.sd-month-hint b { color:#c2410c !important; }
+.sd-month-day.drag-over { background:#fdeadd !important; outline:2px dashed #e46a25 !important; }
+/* ── 미팅 스케줄 색: 테마와 어울리는 블루로 (요청) ── */
+.st-미팅, .ne-미팅 { background:#e6eef7 !important; color:#2f5f8f !important; }
+.sd-month-event.sd-ev-미팅 { background:#e6eef7 !important; color:#2f5f8f !important; }
+.sd-tab-dot-미팅 { background:#4a7fb5 !important; }
+.notif-entry .ne-미팅 { background:#e6eef7 !important; color:#2f5f8f !important; }
+
+/* ── 설계요청 구역: 보라 → 옅은 살구톤 (요청) ── */
+.dr-section { background:#fff8f0 !important; border:1.5px solid #f0d9bd !important; }
+.dr-title { color:#9a3412 !important; }
+.dr-group-header { background:#f8efe4 !important; color:#6b5545 !important; border-left:3px solid #e46a25 !important; }
+.dr-item { border:1px solid #f0e2d2 !important; }
+.dr-item label, .dr-item .dr-label { color:#7c2d12 !important; }
+.dr-sub-label { color:#c2410c !important; }
+.dr-item select, .dr-section select { border-color:#e0c9ac !important; color:#513c2c !important; }
+.dr-btn-save { background:#e46a25 !important; }
+.dr-btn-manage { background:#fff !important; border:1.5px solid #ecd5bd !important; color:#7c2d12 !important; }
+
+/* ── 빠른 메모: 시각·날짜·구분선·전체복사 버튼 제거 (요청) ── */
+.quick-memo-panel-toolbar button[onclick^="qmInsertTimestamp"],
+.quick-memo-panel-toolbar button[onclick^="qmInsertDate"],
+.quick-memo-panel-toolbar button[onclick^="qmInsertSeparator"],
+.quick-memo-panel-toolbar button[onclick^="qmCopyAll"] { display:none !important; }
+/* ── 알림: 빨간 배너 라인 → 종 아이콘 (헤더) ── */
+body:not(.sg-notif-open) #notif-banner { display:none !important; }
+body:not(.sg-notif-open) #notif-list { display:none !important; }
+#sg-bell { position:relative !important; }
+#sg-bell .sg-bell-ic { width:16px; height:16px; display:inline-block; background:#4a3728;
+  -webkit-mask:var(--sgbell) center/contain no-repeat; mask:var(--sgbell) center/contain no-repeat; }
+#sg-bell:hover .sg-bell-ic { background:#c2410c; }
+#sg-bell .sg-bell-n { position:absolute; top:-2px; right:-4px; background:#dc2626; color:#fff;
+  font-size:10px; font-weight:800; min-width:16px; height:16px; line-height:16px; text-align:center;
+  border-radius:9px; padding:0 4px; display:none; }
 /* 메뉴로 이동해 숨긴 원래 버튼들 — 반드시 맨 마지막 규칙 (정렬 규칙보다 우선) */
 .header .sg-hide, .left-panel .sg-hide, .sg-hide { display:none !important; }
 </style>
@@ -14853,10 +14890,33 @@ table th { background:#fdeadd !important; color:#7c2d12 !important; }
       ['화면: 기본', function(){ setLayoutMode('default'); }],
       ['화면: 넓게', function(){ setLayoutMode('wide'); }]
     ]);
+    /* 알림 종 버튼 — 빨간 배너 대신. 누르면 기존 알림 배너를 펼쳤다 접음 */
+    var bell = document.createElement('button');
+    bell.type = 'button'; bell.id = 'sg-bell'; bell.title = '오늘 예정·기한초과 알림';
+    bell.style.setProperty('--sgbell', 'url("data:image/svg+xml,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+    ) + '")');
+    bell.innerHTML = '<span class="sg-bell-ic"></span> 기한초과 <span class="sg-bell-n" id="sg-bell-n"></span>';
+    bell.onclick = function(e){ e.stopPropagation(); document.body.classList.toggle('sg-notif-open'); };
+    function _sgBellSync() {
+      try {
+        var banner = document.getElementById('notif-banner');
+        var cnt = document.getElementById('notif-count');
+        var n = document.getElementById('sg-bell-n');
+        if (!n) return;
+        var active = banner && banner.classList.contains('show');
+        var num = cnt ? (cnt.textContent || '').trim() : '';
+        n.style.display = (active && num && num !== '0') ? 'inline-block' : 'none';
+        n.textContent = num;
+      } catch(e) {}
+    }
+    setInterval(_sgBellSync, 2000);
+    setTimeout(_sgBellSync, 1500);
+
     /* 로그아웃 버튼 앞에 끼워넣기 (없으면 맨 뒤에) */
     var logoutBtn = tools.querySelector('button[onclick*="salguLogout"]');
-    if (logoutBtn) { tools.insertBefore(mMy, logoutBtn); tools.insertBefore(mConsult, mMy); }
-    else { tools.appendChild(mConsult); tools.appendChild(mMy); }
+    if (logoutBtn) { tools.insertBefore(mMy, logoutBtn); tools.insertBefore(mConsult, mMy); tools.insertBefore(bell, mConsult); }
+    else { tools.appendChild(bell); tools.appendChild(mConsult); tools.appendChild(mMy); }
 
     /* 3) 바깥 클릭 시 메뉴 닫기 */
     document.addEventListener('click', function(){
@@ -14867,6 +14927,34 @@ table th { background:#fdeadd !important; color:#7c2d12 !important; }
     var h1 = document.querySelector('.header h1');
     if (h1 && h1.firstChild && h1.firstChild.nodeType === 3) {
       h1.firstChild.textContent = '🍑 살구 CRM ';
+    }
+
+    /* 5-00) 스크립트 탭: 선택된 탭이 살구색으로 활성 표시되게 (요청) */
+    function _sgPaintScriptTabs(n) {
+      try {
+        for (var i = 1; i <= 3; i++) {
+          var t = document.getElementById('script-tab-' + i);
+          if (!t) continue;
+          if (i === n) {
+            t.style.background = '#e46a25';
+            t.style.color = '#fff';
+            t.style.fontWeight = '800';
+          } else {
+            t.style.background = '#f6ead9';
+            t.style.color = '#8a6a4e';
+            t.style.fontWeight = '700';
+          }
+        }
+      } catch(e) {}
+    }
+    if (typeof window.switchScriptTab === 'function' && !window.__sgTabPatched__) {
+      window.__sgTabPatched__ = true;
+      var _origSwitchTab = window.switchScriptTab;
+      window.switchScriptTab = function(n) {
+        _origSwitchTab(n);
+        _sgPaintScriptTabs(n);
+      };
+      _sgPaintScriptTabs(window._activeScriptTab || 1);
     }
 
     /* 5-0) 고객 카드: 상태 선택·추가가입 버튼을 이름 줄로 올리기 (샘플 배치) */
@@ -14895,6 +14983,7 @@ table th { background:#fdeadd !important; color:#7c2d12 !important; }
     var emojiRe = /[\u{1F000}-\u{1FAFF}\u{2B50}\u{2705}\u{260E}\u{FE0F}]/gu;
     document.querySelectorAll('.header-quick-btns button, .header-tools > button').forEach(function(b){
       try {
+        if (b.id === 'sg-bell' || b.querySelector('.sg-bell-ic')) return;   /* 알림 종 버튼 제외 */
         if (b.textContent.indexOf('✕') >= 0) return;   /* 닫기 버튼 제외 */
         var t = b.textContent.replace(emojiRe, '').replace(/\s+/g, ' ').trim();
         if (t) b.textContent = t;
@@ -14908,7 +14997,7 @@ table th { background:#fdeadd !important; color:#7c2d12 !important; }
 <style id="salgu-tabs">
 .card-tabs { border:none !important; padding:2px 10px 0 10px !important; }
 .card-tabs button { background:transparent !important; border:none !important; border-radius:0 !important;
-  color:#6b5545 !important; font-weight:700 !important; padding:9px 4px !important; margin-right:16px !important;
+  color:#6b5545 !important; font-weight:700 !important; padding:9px 3px !important; font-size:13.5px !important; margin-right:8px !important; white-space:nowrap;
   border-bottom:2.5px solid transparent !important; box-shadow:none !important;
   display:inline-flex !important; align-items:center !important; gap:6px; }
 .card-tabs button:hover { color:#c2410c !important; border-bottom-color:#f3b077 !important; background:transparent !important; }
