@@ -11045,19 +11045,24 @@ function copyContact(el) {
       _driveFileId = file.id;
       _lastKnownDriveTime = file.modifiedTime || null;  // ★ 충돌 감지 기준 시각 (2026-07-07)
       /* ★ 기존 사용자 명단 자동 수집 (2026-08-10, B안) — 백업이 있다 = 기존 사용자.
-         계정당 1회만(같은 브라우저에서 여러 계정 로그인해도 각각 수집), 실패해도 무시 */
+         계정당 1회만(같은 브라우저에서 여러 계정 로그인해도 각각 수집), 실패해도 무시.
+         5초 지연 = 백업 데이터 로드가 끝난 뒤 등록된 이름까지 읽어서 보내기 위함 (2026-08-11) */
       try {
         var _cmail = String(_userEmail || '').trim().toLowerCase();
         var _csent = '';
-        try { _csent = localStorage.getItem('__salgu_census__') || ''; } catch(e4) {}
+        try { _csent = localStorage.getItem('__salgu_census2__') || ''; } catch(e4) {}
         if (_cmail && _csent.indexOf(_cmail) === -1) {
-          var _cname = '';
-          try { _cname = (typeof window._getUserName === 'function' && window._getUserName()) || ''; } catch(e2) {}
-          fetch('https://salgu-api.wmmryer.workers.dev/census', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: _cmail, name: _cname })
-          }).then(function(){ try { localStorage.setItem('__salgu_census__', _csent + '|' + _cmail); } catch(e3) {} })
-            .catch(function(){});
+          setTimeout(function() {
+            try {
+              var _cname = '';
+              try { _cname = (typeof window._getUserName === 'function' && window._getUserName()) || ''; } catch(e2) {}
+              fetch('https://salgu-api.wmmryer.workers.dev/census', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: _cmail, name: _cname })
+              }).then(function(){ try { localStorage.setItem('__salgu_census2__', _csent + '|' + _cmail); } catch(e3) {} })
+                .catch(function(){});
+            } catch(e5) {}
+          }, 5000);
         }
       } catch(e) {}
       /* ★ 이용 중지 강제 적용 (2026-08-10) — 서버가 명시적으로 '중지(rejected)' 또는
