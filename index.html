@@ -14843,7 +14843,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 /* ── 내 파일 (개인 파일함) 패널 ── */
 #sg-mf-overlay { display:none; position:fixed; inset:0; background:rgba(30,20,10,.45); z-index:10500; align-items:center; justify-content:center; padding:20px; }
 #sg-mf-overlay.open { display:flex; }
-#sg-mf-card { background:#fff; border-radius:14px; width:min(760px, 94vw); height:88vh; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#sg-mf-card { position:relative; background:#fff; border-radius:14px; width:min(760px, 94vw); height:88vh; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
 #sg-mf-head { background:#fffaf4; border-bottom:2px solid #f3d9c0; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
 #sg-mf-head b { color:#7c2d12; font-size:16px; }
 #sg-mf-body { padding:14px 20px 20px; overflow-y:auto; flex:1; }
@@ -15043,6 +15043,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
             + '<span class="sg-mf-name" data-link="' + mfEsc(f.webViewLink||'') + '">' + mfEsc(f.name) + '</span>'
             + '<span class="sg-mf-meta">' + mfSize(f.size) + ' · ' + mfEsc((f.modifiedTime||'').slice(0,10)) + '</span>'
             + '<button type="button" data-open="' + mfEsc(f.webViewLink||'') + '">열기</button>'
+            + '<button type="button" data-move="' + mfEsc(f.id) + '" data-nm="' + mfEsc(f.name) + '">이동</button>'
             + '<button type="button" class="del" data-del="' + mfEsc(f.id) + '" data-nm="' + mfEsc(f.name) + '">삭제</button>'
             + '</div>';
         }).join('');
@@ -15091,6 +15092,41 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
       mfRender();
     };
     document.getElementById('sg-mf-close').onclick = function(){ mfOv.classList.remove('open'); };
+    /* 파일 이동: 폴더 목록을 보여주고 선택한 폴더로 옮김 */
+    function mfShowMove(fileId, fname) {
+      mfEnsureFolder().then(function(root){
+        return gapi.client.request({
+          path: 'https://www.googleapis.com/drive/v3/files',
+          params: { q: "mimeType='application/vnd.google-apps.folder' and trashed=false", fields: 'files(id,name)', pageSize: 100 }
+        }).then(function(r){
+          var cur = mfCurId(root);
+          var folders = [{ id: root, name: '내 파일 (맨 위)' }].concat(
+            ((r.result && r.result.files) || []).filter(function(f){ return f.id !== root; })
+          ).filter(function(f){ return f.id !== cur; });
+          var old = document.getElementById('sg-mf-move'); if (old) old.remove();
+          var pop = document.createElement('div');
+          pop.id = 'sg-mf-move';
+          pop.style.cssText = 'position:absolute;inset:0;background:rgba(255,250,244,.97);z-index:5;display:flex;flex-direction:column;padding:24px;overflow-y:auto;';
+          pop.innerHTML = '<div style="font-size:15px;font-weight:800;color:#7c2d12;margin-bottom:14px;">"' + mfEsc(fname) + '"<br>어느 폴더로 옮길까요?</div>'
+            + folders.map(function(f){
+                return '<button type="button" data-mvto="' + mfEsc(f.id) + '" style="text-align:left;background:#fff;border:1.5px solid #ecd5bd;color:#7c2d12;border-radius:9px;padding:11px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:7px;">' + mfEsc(f.name) + '</button>';
+              }).join('')
+            + '<button type="button" id="sg-mf-mvcancel" style="background:#f8efe4;border:none;color:#8a6a4e;border-radius:9px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;">취소</button>';
+          document.getElementById('sg-mf-card').appendChild(pop);
+          document.getElementById('sg-mf-mvcancel').onclick = function(){ pop.remove(); };
+          pop.addEventListener('click', function(ev){
+            var b2 = ev.target;
+            if (!b2.dataset || !b2.dataset.mvto) return;
+            gapi.client.request({
+              path: 'https://www.googleapis.com/drive/v3/files/' + fileId,
+              method: 'PATCH',
+              params: { addParents: b2.dataset.mvto, removeParents: cur, fields: 'id' },
+              body: {}
+            }).then(function(){ pop.remove(); mfRender(); }, function(e){ pop.remove(); mfStatus('이동 오류: ' + mfErr(e)); });
+          });
+        });
+      }).catch(function(e){ mfStatus('이동 오류: ' + mfErr(e)); });
+    }
     document.getElementById('sg-mf-newfolder').onclick = function(){
       if (!mfReady()) { mfStatus('로그인 후 이용할 수 있습니다.'); return; }
       var nm = prompt('새 폴더 이름을 입력하세요');
@@ -15123,6 +15159,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
         _mfPath.push({ id: t.dataset.dir || t.dataset.dirOpen, name: t.dataset.nm || '폴더' });
         mfRender(); return;
       }
+      if (t.dataset && t.dataset.move) { mfShowMove(t.dataset.move, t.dataset.nm || ''); return; }
       if (t.dataset && t.dataset.open) { window.open(t.dataset.open, '_blank'); return; }
       if (t.classList && t.classList.contains('sg-mf-name') && t.dataset.link) { window.open(t.dataset.link, '_blank'); return; }
       if (t.dataset && t.dataset.del) {
