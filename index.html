@@ -14843,10 +14843,10 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 /* ── 내 파일 (개인 파일함) 패널 ── */
 #sg-mf-overlay { display:none; position:fixed; inset:0; background:rgba(30,20,10,.45); z-index:10500; align-items:center; justify-content:center; padding:20px; }
 #sg-mf-overlay.open { display:flex; }
-#sg-mf-card { background:#fff; border-radius:14px; width:min(680px, 94vw); max-height:86vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#sg-mf-card { background:#fff; border-radius:14px; width:min(760px, 94vw); height:88vh; max-height:88vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
 #sg-mf-head { background:#fffaf4; border-bottom:2px solid #f3d9c0; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
 #sg-mf-head b { color:#7c2d12; font-size:16px; }
-#sg-mf-body { padding:14px 20px 20px; overflow-y:auto; }
+#sg-mf-body { padding:14px 20px 20px; overflow-y:auto; flex:1; }
 #sg-mf-status { font-size:13px; color:#a06a42; margin:2px 0 10px; }
 .sg-mf-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #f0e2d2; border-radius:10px; margin-bottom:8px; }
 .sg-mf-name { flex:1; font-size:14px; font-weight:700; color:#334155; word-break:break-all; cursor:pointer; }
