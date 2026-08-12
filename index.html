@@ -5065,7 +5065,7 @@ function headerProposalUpload() {
     var stat = ps ? ps.querySelector('.pc-pdf-status') : null;
     if (!stat) stat = document.createElement('div');
     window.__pcUploadProposalPdf(c, f, ps || document.body, stat);
-  });
+  }, true);
 }
 
 function _xlsxHandleFile(file) {
@@ -5341,7 +5341,7 @@ function _xlsxBuildContent(rw, COL) {
 }
 
 // ─── 파일 드롭 모달 (버튼 클릭 시 표시, PC 전용) ───
-function _showFileDropModal(accept, label, onFile) {
+function _showFileDropModal(accept, label, onFile, multi) {   /* ★ multi=true면 여러 파일 동시 업로드 (2026-08-12) */
   if (window.__IS_MOBILE__) return;
   var ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:inherit;';
@@ -5355,21 +5355,30 @@ function _showFileDropModal(accept, label, onFile) {
   var zone = document.createElement('div');
   zone.style.cssText = 'border:3px dashed #ddccb6;border-radius:12px;padding:48px 24px;text-align:center;background:#fdf8f3;cursor:pointer;transition:all .15s;';
   zone.innerHTML = '<div style="font-size:48px;margin-bottom:12px;">📥</div>'
-                 + '<div style="font-size:14px;color:#64748b;margin-bottom:14px;">파일을 이 영역에 끌어다 놓으세요</div>'
+                 + '<div style="font-size:14px;color:#64748b;margin-bottom:14px;">파일을 이 영역에 끌어다 놓으세요' + (multi ? ' <b>(한 번에 10개까지)</b>' : '') + '</div>'
                  + '<button type="button" class="_fdm-pick" style="background:#e46a25;color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">📁 파일 선택</button>';
   var input = document.createElement('input');
   input.type = 'file'; input.accept = accept; input.style.display = 'none';
-  function handle(f) { if (!f) return; close(); onFile(f); }
+  if (multi) input.multiple = true;
+  function handle(fs) {
+    var arr = (fs && typeof fs.length === 'number') ? Array.prototype.slice.call(fs) : [fs];
+    arr = arr.filter(Boolean);
+    if (!arr.length) return;
+    close();
+    if (!multi) { onFile(arr[0]); return; }
+    /* 여러 파일: 최대 10개, 0.5초 간격으로 순차 업로드 */
+    arr.slice(0, 10).forEach(function(f, i) { setTimeout(function(){ onFile(f); }, i * 500); });
+  }
   // 버튼 클릭만 파일창 열기 (zone 전체 클릭은 텍스트/이모지 영역도 포함되어 의도 불명확)
   var pickBtn = zone.querySelector('._fdm-pick');
   if (pickBtn) pickBtn.onclick = function(e) { e.stopPropagation(); input.click(); };
-  input.onchange = function() { if (input.files && input.files[0]) handle(input.files[0]); };
+  input.onchange = function() { if (input.files && input.files[0]) handle(input.files); };
   zone.addEventListener('dragenter', function(e) { e.preventDefault(); zone.style.background='#dcfce7'; zone.style.borderColor='#16a34a'; });
   zone.addEventListener('dragover',  function(e) { e.preventDefault(); });
   zone.addEventListener('dragleave', function(e) { e.preventDefault(); zone.style.background='#fdf8f3'; zone.style.borderColor='#ddccb6'; });
   zone.addEventListener('drop', function(e) {
     e.preventDefault();
-    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) handle(e.dataTransfer.files);
   });
   var actions = document.createElement('div');
   actions.style.cssText = 'display:flex;justify-content:flex-end;margin-top:18px;';
@@ -11071,9 +11080,23 @@ function copyContact(el) {
           fetch('https://salgu-api.wmmryer.workers.dev/check?email=' + encodeURIComponent(_bmail) + '&t=' + Date.now())
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(j){
-              if (j && (j.status === 'rejected' || j.status === 'expired') && !window.__blockShown__) {
-                window.__blockShown__ = true;   /* 반복 표시 방지 */
+              if (j && (j.status === 'rejected' || j.status === 'expired')) {
+                /* ★ 2026-08-12: 차단 확정 시 잠금 플래그 — 이후 로딩 완료 코드(hideLogin)가
+                   차단 화면을 덮어버리는 것을 감시 타이머로 막음. 다른 계정으로 재로그인해
+                   통과 판정이 나오면 플래그가 풀려 정상 진입. */
+                window.__salguBlocked__ = true;
                 try { showPendingScreen(_bmail, j.status); } catch(e6) {}
+                if (!window.__blockGuard__) {
+                  window.__blockGuard__ = setInterval(function(){
+                    try {
+                      if (!window.__salguBlocked__) return;
+                      var _ov = document.getElementById('login-overlay');
+                      if (_ov && getComputedStyle(_ov).display === 'none') _ov.style.display = 'flex';
+                    } catch(e9) {}
+                  }, 600);
+                }
+              } else {
+                window.__salguBlocked__ = false;   /* 통과 판정 → 잠금 해제 */
               }
             }).catch(function(){});
         }
@@ -13166,7 +13189,7 @@ function copyContact(el) {
       if (typeof _showFileDropModal === 'function') {
         _showFileDropModal('', '고객 자료 첨부 (PDF·이미지·엑셀·워드·한글 등)', function(f) {
           uploadProposalPdf(c, f, container, status);
-        });
+        }, true);
       }
     };
     // 각 PDF별 열기/삭제 핸들러
@@ -14817,6 +14840,22 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 #sg-bell .sg-bell-n { position:absolute; top:-2px; right:-4px; background:#dc2626; color:#fff;
   font-size:10px; font-weight:800; min-width:16px; height:16px; line-height:16px; text-align:center;
   border-radius:9px; padding:0 4px; display:none; }
+/* ── 내 파일 (개인 파일함) 패널 ── */
+#sg-mf-overlay { display:none; position:fixed; inset:0; background:rgba(30,20,10,.45); z-index:10500; align-items:center; justify-content:center; padding:20px; }
+#sg-mf-overlay.open { display:flex; }
+#sg-mf-card { background:#fff; border-radius:14px; width:min(680px, 94vw); max-height:86vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.3); }
+#sg-mf-head { background:#fffaf4; border-bottom:2px solid #f3d9c0; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+#sg-mf-head b { color:#7c2d12; font-size:16px; }
+#sg-mf-body { padding:14px 20px 20px; overflow-y:auto; }
+#sg-mf-status { font-size:13px; color:#a06a42; margin:2px 0 10px; }
+.sg-mf-row { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1px solid #f0e2d2; border-radius:10px; margin-bottom:8px; }
+.sg-mf-name { flex:1; font-size:14px; font-weight:700; color:#334155; word-break:break-all; cursor:pointer; }
+.sg-mf-name:hover { color:#c2410c; }
+.sg-mf-meta { font-size:12px; color:#94a3b8; white-space:nowrap; }
+.sg-mf-row button { background:#fff; border:1.5px solid #ecd5bd; color:#9a3412; border-radius:7px; padding:5px 10px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit; }
+.sg-mf-row button:hover { background:#fdeadd; }
+.sg-mf-row button.del { color:#b91c1c; border-color:#f0c9c0; }
+#sg-mf-upbtn { background:#e46a25 !important; color:#fff !important; border:none !important; border-radius:8px !important; padding:8px 16px !important; font-size:13.5px !important; font-weight:800 !important; cursor:pointer; font-family:inherit; }
 /* 메뉴로 이동해 숨긴 원래 버튼들 — 반드시 맨 마지막 규칙 (정렬 규칙보다 우선) */
 .header .sg-hide, .left-panel .sg-hide, .sg-hide { display:none !important; }
 </style>
@@ -14913,10 +14952,136 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
     setInterval(_sgBellSync, 2000);
     setTimeout(_sgBellSync, 1500);
 
+    /* ── 내 파일 (개인 파일함) — Google Drive "살구 내 파일" 폴더에 저장 (2026-08-12) ── */
+    var mfBtn = document.createElement('button');
+    mfBtn.type = 'button'; mfBtn.textContent = '내 파일'; mfBtn.title = '내 개인 파일함 (Drive의 "살구 내 파일" 폴더)';
+    mfBtn.onclick = function(e){ e.stopPropagation(); window.sgOpenMyFiles(); };
+
+    var mfOv = document.createElement('div');
+    mfOv.id = 'sg-mf-overlay';
+    mfOv.innerHTML = '<div id="sg-mf-card">'
+      + '<div id="sg-mf-head"><b>내 파일</b>'
+      + '<div style="display:flex;gap:8px;align-items:center;">'
+      + '<button id="sg-mf-upbtn" type="button">+ 파일 올리기</button>'
+      + '<button type="button" id="sg-mf-close" style="background:#fdeadd;border:none;color:#9a3412;width:30px;height:30px;border-radius:7px;font-size:16px;cursor:pointer;">✕</button>'
+      + '</div></div>'
+      + '<div id="sg-mf-body"><div id="sg-mf-status"></div><div id="sg-mf-list"></div></div></div>';
+    document.body.appendChild(mfOv);
+    var mfInput = document.createElement('input');
+    mfInput.type = 'file'; mfInput.multiple = true; mfInput.style.display = 'none';
+    document.body.appendChild(mfInput);
+
+    function mfStatus(t){ var s = document.getElementById('sg-mf-status'); if (s) s.textContent = t || ''; }
+    function mfReady(){ try { return window.gapi && gapi.client && gapi.client.getToken && gapi.client.getToken(); } catch(e) { return false; } }
+    function mfEsc(x){ return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function mfSize(n){ n = +n || 0; if (!n) return ''; if (n < 1048576) return Math.max(1, Math.round(n/1024)) + 'KB'; return (n/1048576).toFixed(1) + 'MB'; }
+
+    var _mfFolderId = null;
+    function mfEnsureFolder() {
+      if (_mfFolderId) return Promise.resolve(_mfFolderId);
+      return gapi.client.drive.files.list({
+        q: "name='살구 내 파일' and mimeType='application/vnd.google-apps.folder' and trashed=false",
+        fields: 'files(id,name)'
+      }).then(function(r){
+        var f = (r.result.files || [])[0];
+        if (f) { _mfFolderId = f.id; return f.id; }
+        return gapi.client.drive.files.create({
+          resource: { name: '살구 내 파일', mimeType: 'application/vnd.google-apps.folder' },
+          fields: 'id'
+        }).then(function(c){ _mfFolderId = c.result.id; return c.result.id; });
+      });
+    }
+    function mfRender() {
+      mfStatus('파일 목록 불러오는 중…');
+      mfEnsureFolder().then(function(fid){
+        return gapi.client.drive.files.list({
+          q: "'" + fid + "' in parents and trashed=false",
+          fields: 'files(id,name,size,modifiedTime,webViewLink)',
+          orderBy: 'modifiedTime desc', pageSize: 200
+        });
+      }).then(function(r){
+        var files = r.result.files || [];
+        var box = document.getElementById('sg-mf-list');
+        if (!files.length) { box.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:30px 0;">아직 파일이 없습니다.<br>[+ 파일 올리기]를 누르거나, 파일을 이 창에 <b>끌어다 놓으세요</b> (한 번에 10개까지).<br>PDF · 엑셀 · 한글 · 이미지 모두 가능합니다.</div>'; mfStatus(''); return; }
+        box.innerHTML = files.map(function(f){
+          return '<div class="sg-mf-row">'
+            + '<span class="sg-mf-name" data-link="' + mfEsc(f.webViewLink||'') + '">' + mfEsc(f.name) + '</span>'
+            + '<span class="sg-mf-meta">' + mfSize(f.size) + ' · ' + mfEsc((f.modifiedTime||'').slice(0,10)) + '</span>'
+            + '<button type="button" data-open="' + mfEsc(f.webViewLink||'') + '">열기</button>'
+            + '<button type="button" class="del" data-del="' + mfEsc(f.id) + '" data-nm="' + mfEsc(f.name) + '">삭제</button>'
+            + '</div>';
+        }).join('');
+        mfStatus('총 ' + files.length + '개 · Google Drive의 "살구 내 파일" 폴더에 저장되어 있습니다');
+      }).catch(function(e){ mfStatus('목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.'); });
+    }
+    function mfUpload(fileList) {
+      var files = Array.prototype.slice.call(fileList || []);
+      if (!files.length) return;
+      if (files.length > 10) { mfStatus('한 번에 최대 10개까지 올릴 수 있어 앞의 10개만 올립니다.'); files = files.slice(0, 10); }
+      mfEnsureFolder().then(function(fid){
+        var done = 0;
+        function next(i) {
+          if (i >= files.length) { mfRender(); return; }
+          var f = files[i];
+          mfStatus('올리는 중… (' + (i+1) + '/' + files.length + ') ' + f.name);
+          var reader = new FileReader();
+          reader.onload = function() {
+            var b64 = String(reader.result).split(',')[1] || '';
+            var boundary = 'salgu_mf_' + i;
+            var meta = JSON.stringify({ name: f.name, parents: [fid] });
+            var body = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + meta
+              + '\r\n--' + boundary + '\r\nContent-Type: ' + (f.type || 'application/octet-stream')
+              + '\r\nContent-Transfer-Encoding: base64\r\n\r\n' + b64 + '\r\n--' + boundary + '--';
+            gapi.client.request({
+              path: '/upload/drive/v3/files', method: 'POST',
+              params: { uploadType: 'multipart' },
+              headers: { 'Content-Type': 'multipart/related; boundary=' + boundary },
+              body: body
+            }).then(function(){ next(i+1); }, function(){ mfStatus('업로드 실패: ' + f.name); next(i+1); });
+          };
+          reader.readAsDataURL(f);
+        }
+        next(0);
+      }).catch(function(){ mfStatus('폴더를 만들지 못했습니다. 잠시 후 다시 시도해주세요.'); });
+    }
+    window.sgOpenMyFiles = function() {
+      mfOv.classList.add('open');
+      if (!mfReady()) {
+        document.getElementById('sg-mf-list').innerHTML = '';
+        mfStatus('로그인 후 이용할 수 있습니다.');
+        return;
+      }
+      mfRender();
+    };
+    document.getElementById('sg-mf-close').onclick = function(){ mfOv.classList.remove('open'); };
+    /* 드래그 앤 드롭 업로드 (최대 10개) */
+    var mfCard = document.getElementById('sg-mf-card');
+    ['dragover','dragenter'].forEach(function(ev){
+      mfCard.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); mfCard.style.outline = '3px dashed #e46a25'; mfCard.style.outlineOffset = '-8px'; });
+    });
+    ['dragleave','drop'].forEach(function(ev){
+      mfCard.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); mfCard.style.outline = 'none'; });
+    });
+    mfCard.addEventListener('drop', function(e){
+      if (!mfReady()) { mfStatus('로그인 후 이용할 수 있습니다.'); return; }
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) mfUpload(e.dataTransfer.files);
+    });
+    document.getElementById('sg-mf-upbtn').onclick = function(){ if (!mfReady()) { mfStatus('로그인 후 이용할 수 있습니다.'); return; } mfInput.click(); };
+    mfInput.onchange = function(){ mfUpload(mfInput.files); mfInput.value = ''; };
+    document.getElementById('sg-mf-list').addEventListener('click', function(e){
+      var t = e.target;
+      if (t.dataset && t.dataset.open) { window.open(t.dataset.open, '_blank'); return; }
+      if (t.classList && t.classList.contains('sg-mf-name') && t.dataset.link) { window.open(t.dataset.link, '_blank'); return; }
+      if (t.dataset && t.dataset.del) {
+        if (!confirm('"' + (t.dataset.nm||'') + '" 파일을 삭제할까요?\n(드라이브 휴지통으로 이동합니다)')) return;
+        gapi.client.drive.files.delete({ fileId: t.dataset.del }).then(function(){ mfRender(); }, function(){ mfStatus('삭제하지 못했습니다.'); });
+      }
+    });
+
     /* 로그아웃 버튼 앞에 끼워넣기 (없으면 맨 뒤에) */
     var logoutBtn = tools.querySelector('button[onclick*="salguLogout"]');
-    if (logoutBtn) { tools.insertBefore(mMy, logoutBtn); tools.insertBefore(mConsult, mMy); tools.insertBefore(bell, mConsult); }
-    else { tools.appendChild(bell); tools.appendChild(mConsult); tools.appendChild(mMy); }
+    if (logoutBtn) { tools.insertBefore(mMy, logoutBtn); tools.insertBefore(mConsult, mMy); tools.insertBefore(bell, mConsult); tools.insertBefore(mfBtn, logoutBtn); }
+    else { tools.appendChild(bell); tools.appendChild(mConsult); tools.appendChild(mMy); tools.appendChild(mfBtn); }
 
     /* 3) 바깥 클릭 시 메뉴 닫기 */
     document.addEventListener('click', function(){
