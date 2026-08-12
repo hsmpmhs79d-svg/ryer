@@ -13180,7 +13180,7 @@ function copyContact(el) {
       html += '</div>';
     }
     // 추가 버튼 (클릭하면 드롭 모달 표시)
-    html += '<button class="pc-pdf-upload" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">PDF 첨부</button>';
+    html += '<button class="pc-pdf-upload" style="background:#10b981;color:#fff;border:none;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">파일 첨부</button>';
     html += '<div class="pc-pdf-status" style="font-size:12px;color:#64748b;margin-top:8px;"></div>';
     container.innerHTML = html;
     var status = container.querySelector('.pc-pdf-status');
@@ -14840,6 +14840,37 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 #sg-bell .sg-bell-n { position:absolute; top:-2px; right:-4px; background:#dc2626; color:#fff;
   font-size:10px; font-weight:800; min-width:16px; height:16px; line-height:16px; text-align:center;
   border-radius:9px; padding:0 4px; display:none; }
+
+/* ── 모바일 버튼: 그라데이션 제거, PC처럼 단색/아웃라인 (2026-08-12) ── */
+.mv-dm-btn { background:#fff !important; color:#9a3412 !important; border:1.5px solid #ecd5bd !important; box-shadow:none !important; }
+.mv-add-btn { background:#e46a25 !important; color:#fff !important; border:none !important; box-shadow:none !important; }
+.mv-edit-btn { background:#fff !important; color:#9a3412 !important; border:1.5px solid #ecd5bd !important; box-shadow:none !important; }
+.mv-stat-btn { box-shadow:none !important; }
+/* 모바 안의 인라인 그라데이션 버튼(세대별 비교표 등)도 단색으로 */
+#mobile-view button[style*="linear-gradient"], .mv-content button[style*="linear-gradient"] {
+  background:#e46a25 !important; color:#fff !important;
+}
+/* 상단 아이콘 버튼: 아이콘 + 아래 작은 설명 글자 */
+.mv-header button[onclick="location.reload()"], .mv-header button[onclick="mvOpenGiftModal()"],
+.mv-header button[onclick="openBirthdayPanel()"], .mv-header button[onclick="openPolicyLinksModal()"],
+.mv-header button[onclick="openConsultLib()"], .mv-header button[onclick="sgMobileMyFiles()"] {
+  display:inline-flex !important; flex-direction:column !important; align-items:center !important;
+  justify-content:center !important; padding:4px 4px !important; min-width:38px; flex-shrink:1;
+}
+.mv-header button[onclick="location.reload()"]::after { content:'새로고침'; }
+.mv-header button[onclick="mvOpenGiftModal()"]::after { content:'중요할일'; }
+.mv-header button[onclick="openBirthdayPanel()"]::after { content:'생일자'; }
+.mv-header button[onclick="openPolicyLinksModal()"]::after { content:'약관'; }
+.mv-header button[onclick="openConsultLib()"]::after { content:'상담자료'; }
+.mv-header button[onclick="sgMobileMyFiles()"]::after { content:'내파일'; }
+.mv-header button[onclick="location.reload()"]::after, .mv-header button[onclick="mvOpenGiftModal()"]::after,
+.mv-header button[onclick="openBirthdayPanel()"]::after, .mv-header button[onclick="openPolicyLinksModal()"]::after,
+.mv-header button[onclick="openConsultLib()"]::after, .mv-header button[onclick="sgMobileMyFiles()"]::after {
+  font-size:7.5px; font-weight:700; color:#8a6a4e; margin-top:2px; line-height:1; letter-spacing:-0.3px;
+}
+/* 가−/가+ 축소 및 헤더 버튼 줄 넘침 방지 */
+.mv-header button[onclick^="mvAdjustFont"] { padding:6px 7px !important; min-width:34px !important; }
+.mv-header .mv-font-btn { padding:6px 7px !important; }
 /* ── 내 파일 (개인 파일함) 패널 ── */
 #sg-mf-overlay { display:none; position:fixed; inset:0; background:rgba(30,20,10,.45); z-index:10500; align-items:center; justify-content:center; padding:20px; }
 #sg-mf-overlay.open { display:flex; }
@@ -14953,6 +14984,24 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
     setTimeout(_sgBellSync, 1500);
 
     /* ── 내 파일 (개인 파일함) — Google Drive "살구 내 파일" 폴더에 저장 (2026-08-12) ── */
+    /* 모바일 헤더에도 내 파일 버튼 추가 */
+    window.sgMobileMyFiles = function(){ window.sgOpenMyFiles(); };
+    try {
+      var _mvLib = document.querySelector('.mv-header button[onclick="openConsultLib()"]');
+      if (_mvLib && _mvLib.parentNode) {
+        var _mvMf = document.createElement('button');
+        _mvMf.type = 'button';
+        _mvMf.setAttribute('onclick', 'sgMobileMyFiles()');
+        _mvMf.style.cssText = _mvLib.style.cssText;
+        var _mvIc = document.createElement('span');
+        _mvIc.style.cssText = 'width:18px;height:18px;display:inline-block;background:#7c2d12;' +
+          '-webkit-mask:url(\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>') + '\') center/contain no-repeat;' +
+          'mask:url(\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>') + '\') center/contain no-repeat;';
+        _mvMf.appendChild(_mvIc);
+        _mvLib.parentNode.insertBefore(_mvMf, _mvLib.nextSibling);
+      }
+    } catch(e) {}
+
     var mfBtn = document.createElement('button');
     mfBtn.type = 'button'; mfBtn.textContent = '내 파일'; mfBtn.title = '내 개인 파일함 (Drive의 "살구 내 파일" 폴더)';
     mfBtn.onclick = function(e){ e.stopPropagation(); window.sgOpenMyFiles(); };
