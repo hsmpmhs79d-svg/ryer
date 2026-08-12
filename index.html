@@ -5385,7 +5385,7 @@ function _showFileDropModal(accept, label, onFile) {
   document.addEventListener('keydown', escHandler);
 }
 
-(function(){var _mo=document.getElementById('modal-overlay');if(_mo)_mo.addEventListener('click',function(e){if(e.target===this)closeModal();});})();
+/* ★ 신규/수정 고객 창: 바깥 클릭으로 닫히지 않게 제거 (2026-08-12) — 입력 중 실수 방지, ✕ 버튼으로만 닫기 */
 (function(){var _mm=document.getElementById('memo-modal');if(_mm)_mm.addEventListener('click',function(e){if(e.target===this)closeMemoModal();});})();
 // save-indicator 클릭 시 저장 실행
 (function(){var _si=document.getElementById('save-indicator');if(_si)_si.addEventListener('click',function(){saveToFile();});})();
