@@ -15096,6 +15096,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
             + '<button type="button" class="del" data-del="' + mfEsc(f.id) + '" data-nm="' + mfEsc(f.name) + '">삭제</button>'
             + '</div>';
         }).join('');
+        box.innerHTML += '<div id="sg-mf-addzone" style="border:2.5px dashed #e8c9a8;border-radius:12px;padding:22px;text-align:center;color:#a06a42;font-size:13.5px;font-weight:700;cursor:pointer;margin-top:8px;">+ 파일 추가 — 클릭하거나 파일을 여기에 끌어다 놓으세요 (한 번에 10개까지)</div>';
         mfStatus('총 ' + files.length + '개 · Google Drive의 "살구 내 파일" 폴더에 저장되어 있습니다');
       }).catch(function(e){ mfStatus('목록 오류: ' + mfErr(e)); });
     }
@@ -15204,6 +15205,10 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
     mfInput.onchange = function(){ mfUpload(mfInput.files); mfInput.value = ''; };
     document.getElementById('sg-mf-list').addEventListener('click', function(e){
       var t = e.target;
+      if (t.id === 'sg-mf-addzone' || (t.closest && t.closest('#sg-mf-addzone'))) {
+        if (!mfReady()) { mfStatus('로그인 후 이용할 수 있습니다.'); return; }
+        mfInput.click(); return;
+      }
       if (t.dataset && (t.dataset.dir || t.dataset.dirOpen)) {
         _mfPath.push({ id: t.dataset.dir || t.dataset.dirOpen, name: t.dataset.nm || '폴더' });
         mfRender(); return;
