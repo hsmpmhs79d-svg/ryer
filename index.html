@@ -2546,9 +2546,10 @@ function renderList() {
       var _gMatch = _g && _g.indexOf(_genQ + '세대') === 0;
       return _gMatch && (!gf || c.gender===gf);
     }
-    /* ★ '유병자' 검색 (2026-08-13) — 표시된 고객을 상담이력 글자와 무관하게 확실히 찾음 */
-    if (q === '유병자' || q === '유병') return !!c.preexisting && (!gf || c.gender===gf);
-    var basic = (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
+    /* ★ '유병자' 검색 (2026-08-13) — 체크로 표시한 고객을 확실히 찾음.
+       기존 글자 검색 결과도 그대로 유지(합집합) — 메모·상담이력에 직접 적어두신 분 보호 */
+    var _preHit = (q === '유병자' || q === '유병') && !!c.preexisting;
+    var basic = _preHit || (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
                || (c.address||'').toLowerCase().includes(q) || (c.job||'').includes(q);
     var inNotes = (c.notes||'').toLowerCase().includes(q);
     var inMedical = (c.medical_history||'').toLowerCase().includes(q);
@@ -4840,9 +4841,10 @@ function bulkSelectAll() {
       var _gMatch = _g && _g.indexOf(_genQ + '세대') === 0;
       return _gMatch && (!gf || c.gender===gf);
     }
-    /* ★ '유병자' 검색 (2026-08-13) — 표시된 고객을 상담이력 글자와 무관하게 확실히 찾음 */
-    if (q === '유병자' || q === '유병') return !!c.preexisting && (!gf || c.gender===gf);
-    var basic = (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
+    /* ★ '유병자' 검색 (2026-08-13) — 체크로 표시한 고객을 확실히 찾음.
+       기존 글자 검색 결과도 그대로 유지(합집합) — 메모·상담이력에 직접 적어두신 분 보호 */
+    var _preHit = (q === '유병자' || q === '유병') && !!c.preexisting;
+    var basic = _preHit || (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
                || (c.address||'').toLowerCase().includes(q) || (c.job||'').includes(q);
     var inNotes = (c.notes||'').toLowerCase().includes(q);
     var inMedical = (c.medical_history||'').toLowerCase().includes(q);
@@ -11606,11 +11608,11 @@ function copyContact(el) {
           var _g = silsonDetectGen(c.silsonDate, c.silsonType2013||'', c.silsonManual||'');
           return _g && _g.indexOf(_gQ + '세대') === 0;
         });
-      } else if (filter === '유병자' || filter === '유병') {
-        /* ★ 유병자 상품 검색 (2026-08-13) */
-        list = list.filter(function(c) { return !!c.preexisting; });
       } else {
+        /* ★ '유병자' 검색 (2026-08-13) — 체크 표시된 고객 + 기존 글자 검색 결과 합집합 */
+        var _preQ = (filter === '유병자' || filter === '유병');
         list = list.filter(function(c) {
+          if (_preQ && c.preexisting) return true;
           var blob = [c.name, c.phone, c.memo, c.notes, c.address, c.job, c.jumin, c.resident_number].join(' ').toLowerCase();
           return blob.indexOf(filter) >= 0;
         });
