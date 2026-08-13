@@ -1469,7 +1469,7 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
     <!-- ★ 안내 박스 (2026-07-26): 처음 방문자에게만 표시 — 로그인 성공 이력 있으면 아래 스크립트가 숨김 -->
     <div class="login-tip" id="login-tip">
       <b>✓ 안전합니다.</b> 다음 화면은 <b>처음 1회만</b> 나와요.<br>
-      <b>① "확인되지 않은 앱"</b> 화면 → <b>계속</b><br>
+      <b>① 계정 선택</b> 화면 → 쓰실 <b>구글 계정</b> 선택<br>
       <b>② 권한 선택</b> 화면 → <b>모두 선택</b> → <b>계속</b><br>
       그다음부터는 버튼만 누르면 <b>바로 로그인</b>됩니다.
     </div>
@@ -1514,8 +1514,12 @@ try {
       <input type="checkbox" id="join-alert-cancer" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 🎗 암 보장 포함 — 보장개시 알림 (가입 91일째)
     </label>
     <!-- ★ 카드납 알림 (2026-07-30) — 매월 15일, 자동 연장 -->
-    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:16px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:9px;">
       <input type="checkbox" id="join-alert-card" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 💳 카드납 — 매월 15일 카드결제 알림 (자동 연장)
+    </label>
+    <!-- ★ 유병자 상품 표시 (2026-08-13) — 체크 시 상담이력 자동 기록 + 목록 배지 + '유병자' 검색 -->
+    <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:16px;">
+      <input type="checkbox" id="join-alert-pre" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 🩹 유병자 상품 가입 (목록에 표시 · "유병자"로 검색됨)
     </label>
     <div style="display:flex;gap:8px;justify-content:flex-end;">
       <button onclick="if(window.closeJoinAlert)window.closeJoinAlert()" style="background:#f8efe4;color:#374151;border:1px solid #eee0cf;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">건너뛰기</button>
@@ -2542,6 +2546,8 @@ function renderList() {
       var _gMatch = _g && _g.indexOf(_genQ + '세대') === 0;
       return _gMatch && (!gf || c.gender===gf);
     }
+    /* ★ '유병자' 검색 (2026-08-13) — 표시된 고객을 상담이력 글자와 무관하게 확실히 찾음 */
+    if (q === '유병자' || q === '유병') return !!c.preexisting && (!gf || c.gender===gf);
     var basic = (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
                || (c.address||'').toLowerCase().includes(q) || (c.job||'').includes(q);
     var inNotes = (c.notes||'').toLowerCase().includes(q);
@@ -3152,8 +3158,12 @@ function calcAge(residentNum) {
 }
 /* ★ 사이드바 리스트용 상태 배지 (2026-07-26) — 가입완료/가망/부재중/거절을 이름 옆에 표시 */
 function getStatusTag(c) {
+  /* ★ 유병자 상품 배지 (2026-08-13) — 상태 배지 뒤에 함께 표시 */
+  var pre = c.preexisting
+    ? '<span style="display:inline-block;margin-left:5px;padding:1px 7px;background:#fdeadd;color:#9a3412;border-radius:10px;font-size:10.5px;font-weight:700;white-space:nowrap;vertical-align:middle;">🩹 유병</span>'
+    : '';
   var s = c.status || '';
-  if (!s) return '';
+  if (!s) return pre;
   var m = {
     '가입완료': ['✅', '가입', '#d1fae5', '#065f46'],
     '가망고객': ['⭐', '가망', '#fef3c7', '#92400e'],
@@ -3161,8 +3171,8 @@ function getStatusTag(c) {
     '거절':     ['🚫', '거절', '#fee2e2', '#991b1b']
   };
   var v = m[s];
-  if (!v) return '';
-  return '<span style="display:inline-block;margin-left:5px;padding:1px 7px;background:' + v[2] + ';color:' + v[3] + ';border-radius:10px;font-size:10.5px;font-weight:700;white-space:nowrap;vertical-align:middle;">' + v[0] + ' ' + v[1] + '</span>';
+  if (!v) return pre;
+  return '<span style="display:inline-block;margin-left:5px;padding:1px 7px;background:' + v[2] + ';color:' + v[3] + ';border-radius:10px;font-size:10.5px;font-weight:700;white-space:nowrap;vertical-align:middle;">' + v[0] + ' ' + v[1] + '</span>' + pre;
 }
 
 function getAgeTag(c, fs) {  /* ★ fs: 글자 크기(px, 기본 12) — 카드 헤더는 14로 호출 (2026-07-15) */
@@ -4830,6 +4840,8 @@ function bulkSelectAll() {
       var _gMatch = _g && _g.indexOf(_genQ + '세대') === 0;
       return _gMatch && (!gf || c.gender===gf);
     }
+    /* ★ '유병자' 검색 (2026-08-13) — 표시된 고객을 상담이력 글자와 무관하게 확실히 찾음 */
+    if (q === '유병자' || q === '유병') return !!c.preexisting && (!gf || c.gender===gf);
     var basic = (c.name||'').toLowerCase().includes(q) || (c.phone||'').includes(q)
                || (c.address||'').toLowerCase().includes(q) || (c.job||'').includes(q);
     var inNotes = (c.notes||'').toLowerCase().includes(q);
@@ -11594,6 +11606,9 @@ function copyContact(el) {
           var _g = silsonDetectGen(c.silsonDate, c.silsonType2013||'', c.silsonManual||'');
           return _g && _g.indexOf(_gQ + '세대') === 0;
         });
+      } else if (filter === '유병자' || filter === '유병') {
+        /* ★ 유병자 상품 검색 (2026-08-13) */
+        list = list.filter(function(c) { return !!c.preexisting; });
       } else {
         list = list.filter(function(c) {
           var blob = [c.name, c.phone, c.memo, c.notes, c.address, c.job, c.jumin, c.resident_number].join(' ').toLowerCase();
@@ -11624,6 +11639,8 @@ function copyContact(el) {
         if (c.status === '가입완료') statusTag = '<span style="display:inline-block;margin-left:6px;padding:1px 7px;background:#10b981;color:#fff;border-radius:10px;font-size:10.5px;font-weight:700;">✅</span>';
         else if (c.status === '가망고객') statusTag = '<span style="display:inline-block;margin-left:6px;padding:1px 7px;background:#f59e0b;color:#fff;border-radius:10px;font-size:10.5px;font-weight:700;">⭐</span>';
         else if (c.status === '거절') statusTag = '<span style="display:inline-block;margin-left:6px;padding:1px 7px;background:#ef4444;color:#fff;border-radius:10px;font-size:10.5px;font-weight:700;">🚫</span>';
+        /* ★ 유병자 상품 배지 (2026-08-13) */
+        if (c.preexisting) statusTag += '<span style="display:inline-block;margin-left:5px;padding:1px 7px;background:#fdeadd;color:#9a3412;border-radius:10px;font-size:10.5px;font-weight:700;">🩹 유병</span>';
         html += '<div class="mv-card" onclick="mvOpenDetail(' + c.id + ')">' +
           '<div class="mv-name">' + escapeHtml(c.name || '(이름없음)') + statusTag + '</div>' +
           '<div class="mv-meta">' +
@@ -12712,6 +12729,7 @@ function copyContact(el) {
     var a = document.getElementById('join-alert-anniv'); if (a) a.checked = true;
     var k = document.getElementById('join-alert-cancer'); if (k) k.checked = false;
     var cc = document.getElementById('join-alert-card'); if (cc) cc.checked = !!c.cardPay;  /* ★ 카드납 현재 상태 반영 (2026-07-30) */
+    var pe = document.getElementById('join-alert-pre'); if (pe) pe.checked = !!c.preexisting;  /* ★ 유병자 현재 상태 반영 (2026-08-13) */
     ov.style.display = 'block';
   };
   window.closeJoinAlert = function() {
@@ -12762,6 +12780,18 @@ function copyContact(el) {
     } else if (c.cardPay) {
       c.cardPay = false;
       window._removeCardPayAlerts(c);
+    }
+    /* ★ 유병자 상품 (2026-08-13) — 체크 시 표시 저장 + 상담이력에 자동 기록 (처음 켤 때 1회만) */
+    var wantPre = !!(document.getElementById('join-alert-pre') || {}).checked;
+    if (wantPre) {
+      if (!c.preexisting) {
+        c.consultations = c.consultations || [];
+        c.consultations.unshift({ date: date, content: '유병자 상품 가입' });
+        added.push('유병자 상품 표시');
+      }
+      c.preexisting = true;
+    } else if (c.preexisting) {
+      c.preexisting = false;
     }
     c._updated = Date.now();
     if (IS_MOBILE) {
