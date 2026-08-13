@@ -15013,12 +15013,25 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 #mobile-view button[style*="linear-gradient"], .mv-content button[style*="linear-gradient"] {
   background:#e46a25 !important; color:#fff !important;
 }
+/* ── 모바일 헤더 상단: 로고 + 살구 CRM (2026-08-13) ── */
+#sg-mv-title { display:flex !important; align-items:center; gap:7px;
+  font-size:20px; font-weight:900; color:#7c2d12; letter-spacing:-0.6px;
+  margin-bottom:10px; line-height:1.1; }
+#sg-mv-title .sg-mvt-c { color:#c2410c; }
+/* 버튼 줄: 잘리지 않게 왼쪽 정렬 + 줄바꿈 허용 (2026-08-13) */
+.mv-header > div:not([class]) { justify-content:flex-start !important; }
+.mv-header .mv-font-controls { flex-wrap:wrap !important; justify-content:flex-start !important;
+  gap:6px !important; flex-shrink:1 !important; width:100% !important; }
+/* 이메일·인원수 글자: 흰색이라 안 보이던 것 → 갈색으로 (2026-08-13) */
+.mv-header .mv-sub { color:#8a5a37 !important; opacity:1 !important; }
+.mv-header .mv-stats { color:#7c2d12 !important; }
 /* 상단 아이콘 버튼: 아이콘 + 아래 작은 설명 글자 */
 .mv-header button[onclick="location.reload()"], .mv-header button[onclick="mvOpenGiftModal()"],
 .mv-header button[onclick="openBirthdayPanel()"], .mv-header button[onclick="openPolicyLinksModal()"],
+.mv-header button[onclick="openClaimDocsModal()"],
 .mv-header button[onclick="openConsultLib()"], .mv-header button[onclick="sgMobileMyFiles()"] {
   display:inline-flex !important; flex-direction:column !important; align-items:center !important;
-  justify-content:center !important; padding:4px 4px !important; min-width:38px; flex-shrink:1;
+  justify-content:center !important; padding:5px 4px !important; min-width:39px !important; flex-shrink:1;
 }
 .mv-header button[onclick="location.reload()"]::after { content:'새로고침'; }
 .mv-header button[onclick="mvOpenGiftModal()"]::after { content:'중요할일'; }
@@ -15033,9 +15046,17 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 .mv-header button[onclick="openConsultLib()"]::after, .mv-header button[onclick="sgMobileMyFiles()"]::after {
   font-size:7.5px; font-weight:700; color:#8a6a4e; margin-top:2px; line-height:1; letter-spacing:-0.3px;
 }
-/* 가−/가+ 축소 및 헤더 버튼 줄 넘침 방지 */
-.mv-header button[onclick^="mvAdjustFont"] { padding:6px 7px !important; min-width:34px !important; }
-.mv-header .mv-font-btn { padding:6px 7px !important; }
+/* ── 가−/가+ 를 헤더 오른쪽 아래로 분리 (2026-08-13)
+   위 버튼 줄이 좁아지지 않도록 글자 크기 조절만 따로 뺐습니다. ── */
+.mv-header { position:relative; }
+#sg-mv-font { position:absolute; right:16px; bottom:13px; display:flex; gap:6px; z-index:2; }
+#sg-mv-font button { background:#fff !important; color:#7c2d12 !important;
+  border:1.5px solid #ecd5bd !important; border-radius:8px !important;
+  padding:7px 10px !important; min-width:42px !important; font-weight:800 !important;
+  font-family:inherit; cursor:pointer; line-height:1 !important; }
+#sg-mv-font button:first-child { font-size:13.5px !important; }
+#sg-mv-font button:last-child  { font-size:16.5px !important; }
+.mv-header .mv-font-btn { padding:6px 4px !important; }
 /* ── 내 파일 (개인 파일함) 패널 ── */
 #sg-mf-overlay { display:none; position:fixed; inset:0; background:rgba(30,20,10,.45); z-index:10500; align-items:center; justify-content:center; padding:20px; }
 #sg-mf-overlay.open { display:flex; }
@@ -15148,6 +15169,28 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
     }
     setInterval(_sgBellSync, 2000);
     setTimeout(_sgBellSync, 1500);
+
+    /* ── 모바일 헤더에 로고 + 살구 CRM 넣기 (2026-08-13) — PC 헤더와 통일 ── */
+    try {
+      var _mvHdr = document.querySelector('.mv-header');
+      if (_mvHdr && !document.getElementById('sg-mv-title')) {
+        var _mvT = document.createElement('div');
+        _mvT.id = 'sg-mv-title';
+        _mvT.innerHTML = '<span style="font-size:22px;line-height:1;">🍑</span>' +
+                         '<span>살구 <span class="sg-mvt-c">CRM</span></span>';
+        _mvHdr.insertBefore(_mvT, _mvHdr.firstChild);
+      }
+      /* 가−/가+ 를 헤더 오른쪽 아래로 옮김 — 위 버튼 줄에 자리를 내줌 (2026-08-13) */
+      if (_mvHdr && !document.getElementById('sg-mv-font')) {
+        var _fbs = _mvHdr.querySelectorAll('button[onclick^="mvAdjustFont"]');
+        if (_fbs.length) {
+          var _fw = document.createElement('div');
+          _fw.id = 'sg-mv-font';
+          for (var _i = 0; _i < _fbs.length; _i++) _fw.appendChild(_fbs[_i]);
+          _mvHdr.appendChild(_fw);
+        }
+      }
+    } catch(e) {}
 
     /* ── 내 파일 (개인 파일함) — Google Drive "살구 내 파일" 폴더에 저장 (2026-08-12) ── */
     /* 모바일 헤더에도 내 파일 버튼 추가 */
