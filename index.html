@@ -15048,7 +15048,11 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 }
 /* ── 가−/가+ 를 헤더 오른쪽 아래로 분리 (2026-08-13)
    위 버튼 줄이 좁아지지 않도록 글자 크기 조절만 따로 뺐습니다. ── */
+/* 헤더는 스크롤과 함께 올라가고(화면을 넓게 쓰기 위해),
+   고객/캘린더 탭 바만 화면 맨 위에 딱 붙게 합니다. (2026-08-13)
+   ※ 예전엔 탭이 위에서 70px 떨어진 자리에 고정돼 화면 중간에 떠 보였습니다. */
 .mv-header { position:relative; }
+.mv-tabs { top:0 !important; }
 #sg-mv-font { position:absolute; right:16px; bottom:13px; display:flex; gap:6px; z-index:2; }
 #sg-mv-font button { background:#fff !important; color:#7c2d12 !important;
   border:1.5px solid #ecd5bd !important; border-radius:8px !important;
