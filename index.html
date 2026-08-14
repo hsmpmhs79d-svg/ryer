@@ -1603,12 +1603,22 @@ try {
           <option value="recent" selected="">최신 수정순</option>
           <option value="id">등록순</option>
           <option value="name">이름순</option>
+          <option value="sang">상령일 임박순</option>
         </select>
       </div>
       <!-- ★ 등록월 필터 (2026-08-05) — 등록일 없는 기존 고객은 첫 상담일로 추정 -->
       <div class="filter-row">
         <select id="filter-regmonth" onchange="renderList()">
           <option value="">등록월 전체</option>
+        </select>
+      </div>
+      <!-- ★ 상령일·생일 월별 조회 (2026-08-14) — 주민번호로 계산, 없는 고객은 '주민번호 없음'으로 분류 -->
+      <div class="filter-row">
+        <select id="filter-sangmonth" onchange="renderList()">
+          <option value="">🎯 상령일 월 전체</option>
+        </select>
+        <select id="filter-birthmonth" onchange="renderList()">
+          <option value="">🎂 생일 월 전체</option>
         </select>
       </div>
     </div>
@@ -2500,6 +2510,71 @@ function _getRegMonth(c) {
   var d = _getRegDate(c);
   return d ? String(d).slice(0, 7) : null; // 'YYYY-MM'
 }
+/* ══════ 🎯 상령일 월 · 🎂 생일 월 조회 (2026-08-14) ══════
+   주민번호로 계산합니다. 이미 있는 getInsAgeInfo(상령일 계산)를 그대로 씁니다. */
+/* 상령일 계산 결과 캐시 — 고객 1000명 넘어도 검색이 느려지지 않도록.
+   날짜가 바뀌면 자동으로 비워집니다. */
+var _sangCache = {}, _sangCacheDay = '';
+function _sangInfo(c) {
+  try {
+    if (typeof getInsAgeInfo !== 'function') return null;
+    var rn = String(c.resident_number || c.jumin || '');
+    if (!rn) return null;
+    var t = new Date();
+    var day = t.getFullYear() + '-' + (t.getMonth() + 1) + '-' + t.getDate();
+    if (day !== _sangCacheDay) { _sangCache = {}; _sangCacheDay = day; }
+    if (_sangCache[rn] !== undefined) return _sangCache[rn];
+    var info = getInsAgeInfo(rn) || null;
+    _sangCache[rn] = info;
+    return info;
+  } catch(e) { return null; }
+}
+function _getSangMonth(c) {           /* 다음 상령일이 몇 월인지 (1~12), 없으면 null */
+  var info = _sangInfo(c);
+  if (!info || !info.nextSang) return null;
+  var m = parseInt(String(info.nextSang).split('/')[0], 10);
+  return (m >= 1 && m <= 12) ? m : null;
+}
+function _getSangDaysLeft(c) {        /* 상령일까지 남은 일수 — 임박순 정렬용 */
+  var info = _sangInfo(c);
+  return (info && typeof info.daysLeft === 'number') ? info.daysLeft : null;
+}
+function _getBirthMonth(c) {          /* 생일이 몇 월인지 (1~12), 없으면 null */
+  try {
+    var rn = String(c.resident_number || c.jumin || '').replace(/[^0-9]/g, '');
+    if (rn.length < 6) return null;
+    var m = parseInt(rn.substring(2, 4), 10);
+    return (m >= 1 && m <= 12) ? m : null;
+  } catch(e) { return null; }
+}
+/* 월 선택 목록 채우기 — 등록월 필터와 같은 방식(인원수 표시) */
+var _monthOptsCache = { sang: '', birth: '' };
+function _populateMonthFilter(kind) {
+  var isSang = (kind === 'sang');
+  var sel = document.getElementById(isSang ? 'filter-sangmonth' : 'filter-birthmonth');
+  if (!sel) return;
+  var counts = {}, noneCount = 0;
+  customers.forEach(function(c){
+    if (c._personal) return;
+    var m = isSang ? _getSangMonth(c) : _getBirthMonth(c);
+    if (m) counts[m] = (counts[m] || 0) + 1;
+    else noneCount++;
+  });
+  var key = Object.keys(counts).sort().map(function(m){ return m + ':' + counts[m]; }).join(',') + '|' + noneCount;
+  if (key === _monthOptsCache[kind]) return;   /* 변동 없으면 재구성 생략 */
+  _monthOptsCache[kind] = key;
+  var cur = sel.value;
+  var h = '<option value="">' + (isSang ? '🎯 상령일 월 전체' : '🎂 생일 월 전체') + '</option>';
+  for (var m = 1; m <= 12; m++) {
+    if (!counts[m]) continue;
+    h += '<option value="' + m + '">' + m + '월 (' + counts[m] + '명)</option>';
+  }
+  if (noneCount > 0) h += '<option value="__none__">주민번호 없음 (' + noneCount + '명)</option>';
+  sel.innerHTML = h;
+  sel.value = cur;
+  if (sel.selectedIndex < 0) sel.selectedIndex = 0;
+}
+
 var _regMonthOptsCache = '';
 function _populateRegMonthFilter() {
   var sel = document.getElementById('filter-regmonth');
@@ -2534,6 +2609,8 @@ function renderList() {
   var sort = document.getElementById('filter-sort').value;
   /* ★ 등록월 필터 (2026-08-05) */
   _populateRegMonthFilter();
+  _populateMonthFilter('sang');    /* ★ 상령일 월 (2026-08-14) */
+  _populateMonthFilter('birth');   /* ★ 생일 월 (2026-08-14) */
   var _rmSel = document.getElementById('filter-regmonth');
   var _rm = _rmSel ? _rmSel.value : '';
   // ★ 실손 세대 검색 — "1세대" ~ "5세대" 정확한 한국어 패턴 (2026-06-20)
@@ -2567,8 +2644,33 @@ function renderList() {
       return _rm === '__none__' ? cm === null : cm === _rm;
     });
   }
+  /* ★ 상령일 월 · 생일 월 필터 적용 (2026-08-14) */
+  var _smSel = document.getElementById('filter-sangmonth');
+  var _sm = _smSel ? _smSel.value : '';
+  if (_sm) {
+    filtered = filtered.filter(function(c){
+      var m = _getSangMonth(c);
+      return _sm === '__none__' ? m === null : m === parseInt(_sm, 10);
+    });
+  }
+  var _bmSel = document.getElementById('filter-birthmonth');
+  var _bm = _bmSel ? _bmSel.value : '';
+  if (_bm) {
+    filtered = filtered.filter(function(c){
+      var m = _getBirthMonth(c);
+      return _bm === '__none__' ? m === null : m === parseInt(_bm, 10);
+    });
+  }
   if (sort==='name') filtered.sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ko');});
   else if (sort==='id') filtered.sort(function(a,b){return a.id-b.id;});
+  /* ★ 상령일 임박순 (2026-08-14) — 남은 일수가 적은 순, 주민번호 없는 고객은 맨 뒤 */
+  else if (sort==='sang') filtered.sort(function(a,b){
+    var da = _getSangDaysLeft(a), db = _getSangDaysLeft(b);
+    if (da === null && db === null) return 0;
+    if (da === null) return 1;
+    if (db === null) return -1;
+    return da - db;
+  });
   else filtered.sort(function(a,b){return (b._updated||b.id)-(a._updated||a.id);});
   // ★ 상태 필터 — 가입완료/가망고객 버튼 active 시 해당 상태 고객만 표시 (2026-06-19)
   if (window._statusSortTop) {
@@ -4854,6 +4956,23 @@ function bulkSelectAll() {
     var inSched = (c.schedules||[]).some(function(s){return (s.type||'').toLowerCase().includes(q);});
     var m = basic || inNotes || inMedical || inConsult || inSched;
     return m && (!gf || c.gender===gf);
+  });
+  /* ★ 등록월·상령일월·생일월 필터도 똑같이 적용 (2026-08-14)
+     — 화면에 안 보이는 고객이 '전체 선택'에 딸려 들어가 실수로 삭제되는 것을 막습니다. */
+  var _bRm = (document.getElementById('filter-regmonth') || {}).value || '';
+  if (_bRm) filtered = filtered.filter(function(c){
+    var cm = _getRegMonth(c);
+    return _bRm === '__none__' ? cm === null : cm === _bRm;
+  });
+  var _bSm = (document.getElementById('filter-sangmonth') || {}).value || '';
+  if (_bSm) filtered = filtered.filter(function(c){
+    var m = _getSangMonth(c);
+    return _bSm === '__none__' ? m === null : m === parseInt(_bSm, 10);
+  });
+  var _bBm = (document.getElementById('filter-birthmonth') || {}).value || '';
+  if (_bBm) filtered = filtered.filter(function(c){
+    var m = _getBirthMonth(c);
+    return _bBm === '__none__' ? m === null : m === parseInt(_bBm, 10);
   });
   if (window._statusSortTop) {
     var _sst = window._statusSortTop;
