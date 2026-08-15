@@ -15503,16 +15503,16 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
         /* ★ 로고 터치 = 새로고침 + 🔄 버튼을 로고 오른쪽으로 이동 (2026-08-15) — 버튼 줄 한 칸 확보 */
         _mvT.style.cursor = 'pointer';
         _mvT.title = '터치하면 새로고침 (Drive에서 최신 데이터 받기)';
-        _mvT.onclick = function(){ location.reload(); };
+        /* 버튼 위 터치는 로고 새로고침에서 제외 (설명서 버튼 오작동 방지) */
+        _mvT.onclick = function(e){ if (e && e.target && e.target.closest && e.target.closest('button')) return; location.reload(); };
         try {
-          /* ★ 새로고침 버튼: 버튼 줄 맨 앞(좌측 상단), 크기는 다른 버튼과 동일 (2026-08-15) */
+          /* ★ 새로고침·설명서: 로고 줄 오른쪽 끝(우측 상단) — 아래 버튼 줄은 한 줄 유지 (2026-08-15) */
+          var _mvTR = document.createElement('span');
+          _mvTR.id = 'sg-mvt-right';
+          _mvTR.style.cssText = 'margin-left:auto;display:flex;gap:6px;align-items:center;';
+          _mvT.appendChild(_mvTR);
           var _mvRl = _mvHdr.querySelector('button[onclick="location.reload()"]');
-          var _mvCtr0 = _mvHdr.querySelector('.mv-font-controls');
-          if (_mvRl && _mvCtr0) {
-            _mvRl.style.fontSize = '15px';
-            _mvRl.style.marginLeft = '';
-            _mvCtr0.insertBefore(_mvRl, _mvCtr0.firstChild);
-          }
+          if (_mvRl) { _mvRl.style.fontSize = '15px'; _mvRl.style.marginLeft = ''; _mvTR.appendChild(_mvRl); }
         } catch(_e) {}
       }
       /* 가−/가+ 를 헤더 오른쪽 아래로 옮김 — 위 버튼 줄에 자리를 내줌 (2026-08-13) */
@@ -15561,11 +15561,9 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
           '-webkit-mask:url(\'data:image/svg+xml,' + _mvManSvg + '\') center/contain no-repeat;' +
           'mask:url(\'data:image/svg+xml,' + _mvManSvg + '\') center/contain no-repeat;';
         _mvMan.appendChild(_mvManIc);
-        /* ★ 좌측 상단 배치 (2026-08-15) — 새로고침 바로 뒤, 줄바꿈 되어도 항상 보이는 위치 */
-        var _mvCtr3 = document.querySelector('.mv-header .mv-font-controls');
-        var _mvRl3 = _mvCtr3 ? _mvCtr3.querySelector('button[onclick="location.reload()"]') : null;
-        if (_mvCtr3 && _mvRl3) _mvCtr3.insertBefore(_mvMan, _mvRl3.nextSibling);
-        else if (_mvCtr3) _mvCtr3.insertBefore(_mvMan, _mvCtr3.firstChild);
+        /* ★ 우측 상단 배치 (2026-08-15) — 로고 줄 오른쪽(새로고침 옆), 아래 버튼 줄은 한 줄 유지 */
+        var _mvTR2 = document.getElementById('sg-mvt-right');
+        if (_mvTR2) _mvTR2.appendChild(_mvMan);
         else _mvMfBtn2.parentNode.insertBefore(_mvMan, _mvMfBtn2.nextSibling);
       }
     } catch(e) {}
