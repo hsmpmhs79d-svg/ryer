@@ -9100,7 +9100,16 @@ var CD_ITEMS = [
   { k:'am',      n:'암',        docs:['진단서','조직검사 결과지'] },
   { k:'noe',     n:'뇌질환',    docs:['진단서','CT·MRI 등 정밀검사 결과지'] },
   { k:'sim',     n:'심장질환',  docs:['진단서','관상동맥조영술 결과지','심장효소 혈액검사 결과지','심초음파 / 심전도 결과지'] },
-  { k:'samang',  n:'사망',      docs:['사망진단서','사망 유형별 추가서류 (일반사망 / 상해·재해 / 교통사고 등에 따라 다름 — 보험사 확인 필요)'] }
+  { k:'samang',  n:'사망',      docs:['사망진단서','사망 유형별 추가서류 (일반사망 / 상해·재해 / 교통사고 등에 따라 다름 — 보험사 확인 필요)'] },
+  /* ★ 청구 유형 추가 (2026-08-15) — 배상책임·누수·화재·운전자·골절·후유장해·치아 */
+  { k:'goljeol', n:'골절·깁스',   docs:['진단서 또는 의사소견서 (질병분류코드·진단일자 포함)','X-ray 등 검사결과지','깁스(부목) 치료 내용 확인서류 (깁스치료비 특약 청구 시)','사고경위 확인서류 (상해사고 입증 — 사고사실확인서 등)'] },
+  { k:'huyu',    n:'후유장해',    docs:['후유장해진단서 (보험사 보상청구용 양식 — 장해율 % 기재)','X-ray·MRI 등 정밀검사 결과지','사고사실 확인서류','※ 치료 종결 후 장해 확정 시점에 청구 (통상 사고일로부터 180일 이후 — 약관 확인)'] },
+  { k:'chia',    n:'치아',        docs:['치과치료확인서 (치식도 — 치아 번호 표기 포함)','진료비 영수증·세부내역서','치과 진료기록 사본·X-ray (보험사 요청 시)'] },
+  { k:'bae_in',  n:'배상책임(대인)', docs:['사고경위서 (6하원칙으로 상세 기재)','피해자 진단서 또는 진료확인서 (질병분류코드 포함)','피해자 진료비 영수증·세부내역서','피해자 신분증 사본·지급계좌 + 개인(신용)정보처리 동의서','주민등록등본 (가족일상생활배상책임 — 가족관계 확인용)'] },
+  { k:'bae_mul', n:'배상책임(대물)', docs:['사고경위서 (6하원칙으로 상세 기재)','피해물 사진 (파손 상태가 잘 보이게)','수리비 견적서 및 수리비 영수증','피해품 구입시기·구입가격 증빙 (구매내역·영수증 등)','피해자 신분증 사본·지급계좌 + 개인(신용)정보처리 동의서','주민등록등본 (가족일상생활배상책임 — 가족관계 확인용)'] },
+  { k:'nusu',    n:'누수',        docs:['누수 원인 소견서 (누수탐지·설비업체 — 누수 원인·발생 부위 기재)','누수 부위·피해 부위 사진 (수리 전·후)','수리비 견적서·영수증 (원인수리 공사와 아랫집 피해복구 공사 구분)','아랫집 피해품 내역·피해 사진','등기부등본 (누수 발생 세대 — 소유 확인용, 임차 시 임대차계약서)','관리사무소 확인서 또는 민원 접수 기록 (아파트인 경우)'] },
+  { k:'hwajae',  n:'화재',        docs:['화재증명원 (관할 소방서 발급)','사고현장·피해품 사진 (전체와 부분이 모두 보이게)','수리비 견적서 및 영수증','건물 피해: 등기부등본·건축물대장','가재도구 피해: 피해품 명세서 (품목·구입시기·구입가격)'] },
+  { k:'unjeon',  n:'운전자(교통사고)', docs:['교통사고사실확인원 (경찰서 발급)','부상치료비: 진단서 (자동차보험 처리 시 치료비 지급결의서로 대체 가능)','교통사고처리지원금: 경찰서 제출 형사합의서 (합의금액 명시) + 합의금 입금내역 + 공소장','벌금: 벌금 영수증 + 법원 판결문 또는 약식명령문','변호사선임비용: 판결문·공소장 + 변호사 발행 세금계산서'] }
 ];
 /* 실손 세대별 통원 본인부담금 — 세대에 따라 공제 기준이 다릅니다 */
 var CD_FEE = [
@@ -15310,6 +15319,8 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
 .mv-header button[onclick="openConsultLib()"]::after { content:'상담자료'; }
 .mv-header button[onclick="openClaimDocsModal()"]::after { content:'청구서류'; }
 .mv-header button[onclick="sgMobileMyFiles()"]::after { content:'내파일'; }
+.mv-header button[onclick="sgOpenManual()"] { display:inline-flex !important; flex-direction:column !important; align-items:center !important; justify-content:center !important; padding:5px 4px !important; min-width:39px !important; flex-shrink:1; }
+.mv-header button[onclick="sgOpenManual()"]::after { content:'설명서'; font-size:7.5px; font-weight:700; color:#8a6a4e; margin-top:2px; line-height:1; letter-spacing:-0.3px; }
 .mv-header button[onclick="location.reload()"]::after, .mv-header button[onclick="mvOpenGiftModal()"]::after,
 .mv-header button[onclick="openBirthdayPanel()"]::after, .mv-header button[onclick="openPolicyLinksModal()"]::after,
 .mv-header button[onclick="openClaimDocsModal()"]::after,
@@ -15417,6 +15428,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
       ['대표코드', function(){ toggleCodePanel(); }],
       ['내 아이디/비번', function(){ toggleIdpwPanel(); }],
       ['백업 폴더', function(){ openBackupFolder(); }],
+      ['사용설명서', function(){ window.sgOpenManual(); }],   /* ★ 웹 설명서 (2026-08-15) */
       '-',
       ['화면: 기본', function(){ setLayoutMode('default'); }],
       ['화면: 넓게', function(){ setLayoutMode('wide'); }]
@@ -15493,8 +15505,14 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
         _mvT.title = '터치하면 새로고침 (Drive에서 최신 데이터 받기)';
         _mvT.onclick = function(){ location.reload(); };
         try {
-          var _mvRl = _mvHdr.querySelector('.mv-font-controls button[onclick="location.reload()"]');
-          if (_mvRl) { _mvRl.style.marginLeft = '4px'; _mvT.appendChild(_mvRl); }
+          /* ★ 새로고침 버튼: 버튼 줄 맨 앞(좌측 상단), 크기는 다른 버튼과 동일 (2026-08-15) */
+          var _mvRl = _mvHdr.querySelector('button[onclick="location.reload()"]');
+          var _mvCtr0 = _mvHdr.querySelector('.mv-font-controls');
+          if (_mvRl && _mvCtr0) {
+            _mvRl.style.fontSize = '15px';
+            _mvRl.style.marginLeft = '';
+            _mvCtr0.insertBefore(_mvRl, _mvCtr0.firstChild);
+          }
         } catch(_e) {}
       }
       /* 가−/가+ 를 헤더 오른쪽 아래로 옮김 — 위 버튼 줄에 자리를 내줌 (2026-08-13) */
@@ -15525,6 +15543,30 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
           'mask:url(\'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>') + '\') center/contain no-repeat;';
         _mvMf.appendChild(_mvIc);
         _mvLib.parentNode.insertBefore(_mvMf, _mvLib.nextSibling);
+      }
+    } catch(e) {}
+
+    /* ★ 사용설명서 (2026-08-15) — 웹 설명서(manual.html) 새 탭. PC는 내 도구 메뉴, 모바는 헤더 버튼 */
+    window.sgOpenManual = function(){ window.open('manual.html', '_blank'); };
+    try {
+      var _mvMfBtn2 = document.querySelector('.mv-header button[onclick="sgMobileMyFiles()"]');
+      if (_mvMfBtn2 && _mvMfBtn2.parentNode && !document.querySelector('.mv-header button[onclick="sgOpenManual()"]')) {
+        var _mvMan = document.createElement('button');
+        _mvMan.type = 'button';
+        _mvMan.setAttribute('onclick', 'sgOpenManual()');
+        _mvMan.style.cssText = _mvMfBtn2.style.cssText;
+        var _mvManIc = document.createElement('span');
+        var _mvManSvg = encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>');
+        _mvManIc.style.cssText = 'width:18px;height:18px;display:inline-block;background:#7c2d12;' +
+          '-webkit-mask:url(\'data:image/svg+xml,' + _mvManSvg + '\') center/contain no-repeat;' +
+          'mask:url(\'data:image/svg+xml,' + _mvManSvg + '\') center/contain no-repeat;';
+        _mvMan.appendChild(_mvManIc);
+        /* ★ 좌측 상단 배치 (2026-08-15) — 새로고침 바로 뒤, 줄바꿈 되어도 항상 보이는 위치 */
+        var _mvCtr3 = document.querySelector('.mv-header .mv-font-controls');
+        var _mvRl3 = _mvCtr3 ? _mvCtr3.querySelector('button[onclick="location.reload()"]') : null;
+        if (_mvCtr3 && _mvRl3) _mvCtr3.insertBefore(_mvMan, _mvRl3.nextSibling);
+        else if (_mvCtr3) _mvCtr3.insertBefore(_mvMan, _mvCtr3.firstChild);
+        else _mvMfBtn2.parentNode.insertBefore(_mvMan, _mvMfBtn2.nextSibling);
       }
     } catch(e) {}
 
