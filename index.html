@@ -871,6 +871,10 @@
     .cf-tab.active { background:#c2410c; color:#fff; border-color:#c2410c; }
     .cf-tab:hover:not(.active) { background:#f0f3f7; }
     .cf-body { padding:18px 22px; overflow-y:auto; flex:1; }
+    /* ★ 모바일: 주소창·하단바 때문에 100vh가 실제 화면보다 길어 모달 하단 버튼이 잘리던 문제 (2026-08-15).
+       dvh(실제 보이는 높이) 지원 브라우저는 dvh 사용, 아니면 여유 넉넉한 vh로 fallback */
+    body.mobile-mode .cf-overlay { padding:10px 10px; }
+    body.mobile-mode .cf-modal { max-height:calc(100vh - 110px); max-height:calc(100dvh - 20px); }
     .cf-section-title { font-size:14px; color:#444; font-weight:700; margin:18px 0 10px; padding-left:4px; display:flex; align-items:center; gap:8px; }
     .cf-section-title:first-child { margin-top:0; }
     .cf-section-title::before { content:""; display:inline-block; width:4px; height:14px; background:#c2410c; border-radius:2px; }
@@ -15484,6 +15488,14 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
         _mvT.innerHTML = '<span style="font-size:22px;line-height:1;">🍑</span>' +
                          '<span>살구 <span class="sg-mvt-c">CRM</span></span>';
         _mvHdr.insertBefore(_mvT, _mvHdr.firstChild);
+        /* ★ 로고 터치 = 새로고침 + 🔄 버튼을 로고 오른쪽으로 이동 (2026-08-15) — 버튼 줄 한 칸 확보 */
+        _mvT.style.cursor = 'pointer';
+        _mvT.title = '터치하면 새로고침 (Drive에서 최신 데이터 받기)';
+        _mvT.onclick = function(){ location.reload(); };
+        try {
+          var _mvRl = _mvHdr.querySelector('.mv-font-controls button[onclick="location.reload()"]');
+          if (_mvRl) { _mvRl.style.marginLeft = '4px'; _mvT.appendChild(_mvRl); }
+        } catch(_e) {}
       }
       /* 가−/가+ 를 헤더 오른쪽 아래로 옮김 — 위 버튼 줄에 자리를 내줌 (2026-08-13) */
       if (_mvHdr && !document.getElementById('sg-mv-font')) {
@@ -15555,7 +15567,10 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
        ※ 새 권한을 요청하지 않습니다 — 이미 승인된 범위를 그대로 재사용합니다. */
     var _mfRetrying = false;
     function mfReq(opts) {
-      return gapi.client.request(opts).catch(function(e) {
+      /* ★ Fix (2026-08-15): gapi 요청 객체에는 .catch가 없어서 여기서 TypeError가 나며
+         '파일 목록 불러오는 중…'에서 멈추던 버그 (PC·모바 공통, 8/13 재시도 래퍼 추가 때부터).
+         Promise.resolve로 감싸면 진짜 Promise가 되어 .catch 사용 가능. */
+      return Promise.resolve(gapi.client.request(opts)).catch(function(e) {
         var code = (e && e.status) || (e && e.result && e.result.error && e.result.error.code) || 0;
         if (code !== 401 || _mfRetrying || typeof window.salguReauth !== 'function') throw e;
         _mfRetrying = true;
