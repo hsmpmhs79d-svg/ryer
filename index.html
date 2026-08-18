@@ -2680,6 +2680,34 @@ try {
   }
 } catch(e) {}
 
+/* ══════ ★ 고객 태그 (2026-08-15) — c.tags 배열. 검색·표시·엑셀 일괄 태그. 기존 데이터 미변경 ══════ */
+function _tagsOf(c){ return Array.isArray(c && c.tags) ? c.tags : []; }
+function _tagChipsHtml(c){
+  var t=_tagsOf(c);
+  if(!t.length) return '';
+  return t.map(function(x){
+    var e=String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<span style="display:inline-block;background:#f3e8ff;color:#6b21a8;border:1px solid #e9d5ff;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:10px;margin-right:4px;">🏷 '+e+'</span>';
+  }).join('');
+}
+function _parseTagStr(v){
+  var seen={};
+  return String(v||'').split(',').map(function(s){return s.trim();}).filter(function(s){ if(!s||seen[s])return false; seen[s]=1; return true; });
+}
+function editCustomerTags(cid){
+  var c = customers.find(function(x){return x.id===cid;});
+  if(!c) return;
+  var v = prompt('이 고객의 태그 (쉼표로 여러 개)\n예: 흥생DB, 종신', _tagsOf(c).join(', '));
+  if (v === null) return;
+  c.tags = _parseTagStr(v);
+  c._updated = Date.now();
+  if (typeof autoSave === 'function') autoSave();
+  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+  if (typeof renderList === 'function') renderList();
+  if (typeof selectCustomer === 'function') selectCustomer(cid);
+  if (typeof showToast === 'function') showToast('🏷 태그 저장됨','green');
+}
+
 function renderList() {
   var q = document.getElementById('search-input').value.toLowerCase();
   var gf = document.getElementById('filter-gender').value;
@@ -2712,7 +2740,8 @@ function renderList() {
     var inMedical = (c.medical_history||'').toLowerCase().includes(q);
     var inConsult = (c.consultations||[]).some(function(con){return (con.content||'').toLowerCase().includes(q);});
     var inSched = (c.schedules||[]).some(function(s){return (s.type||'').toLowerCase().includes(q);});
-    var m = basic || inNotes || inMedical || inConsult || inSched;
+    var inTags = _tagsOf(c).some(function(t){return t.toLowerCase().includes(q);});   /* ★ 태그 검색 (2026-08-15) */
+    var m = basic || inNotes || inMedical || inConsult || inSched || inTags;
     return m && (!gf || c.gender===gf);
   });
   /* ★ 등록월 필터 적용 (2026-08-05) */
@@ -2776,6 +2805,7 @@ function renderList() {
       +'<div class="c-name">'+(c.name||'(이름없음)')+getAgeTag(c)+dot+'<span class="c-badge '+bc+'">'+(c.gender||'?')+'</span>'+getStatusTag(c)+'</div>'
       +'<div class="c-sub">'+(c.phone||'전화번호 없음')+'</div>'
       +'<div class="c-sub">'+(c.job||'')+(c.address?' · '+c.address.substring(0,14)+'…':'')+'</div>'
+      +(function(){var _th=_tagChipsHtml(c);return _th?'<div class="c-sub" style="margin-top:2px;">'+_th+'</div>':'';})()   /* ★ 태그 칩 (2026-08-15) */
       +(snippet?'<div class="c-snippet">'+snippet+'</div>':'')
       +'</div>';
   }).join('');
@@ -2893,6 +2923,9 @@ function selectCustomer(id) {
     +'<button class="btn-edit" onclick="openEditModal('+id+')">수정</button>'
     +'<button class="btn-delete" onclick="delCustomer('+id+')">삭제</button>'
     +'</div></div>'
+    /* ★ 태그 줄 (2026-08-15) — 칩 + 편집 */
+    +'<div style="padding:2px 2px 7px;display:flex;align-items:center;flex-wrap:wrap;gap:3px;">'+_tagChipsHtml(c)
+    +'<button onclick="editCustomerTags('+id+')" style="background:none;border:1.5px dashed #d8b4fe;color:#7c3aed;font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:10px;cursor:pointer;font-family:inherit;" title="태그 달기/수정 — 쉼표로 여러 개">🏷 태그</button></div>'
     +'<div class="card-tabs">'
     +  '<button type="button" onclick="scrollToCardTab(\'.info-grid\')">고객정보</button>'
     +  '<button type="button" onclick="scrollToCardTab(\'.sched-add-form\')">스케줄</button>'
@@ -5034,7 +5067,8 @@ function bulkSelectAll() {
     var inMedical = (c.medical_history||'').toLowerCase().includes(q);
     var inConsult = (c.consultations||[]).some(function(con){return (con.content||'').toLowerCase().includes(q);});
     var inSched = (c.schedules||[]).some(function(s){return (s.type||'').toLowerCase().includes(q);});
-    var m = basic || inNotes || inMedical || inConsult || inSched;
+    var inTags = _tagsOf(c).some(function(t){return t.toLowerCase().includes(q);});   /* ★ 태그 검색 (2026-08-15) */
+    var m = basic || inNotes || inMedical || inConsult || inSched || inTags;
     return m && (!gf || c.gender===gf);
   });
   /* ★ 등록월·상령일월·생일월 필터도 똑같이 적용 (2026-08-14)
@@ -5117,6 +5151,10 @@ function showToast(msg,type) {
 function xlsxImport() {
   if (window.__IS_MOBILE__) return;
   _showFileDropModal('.xlsx,.xls', '엑셀 파일에서 고객 일괄 등록', function(f) {
+    /* ★ 일괄 태그 (2026-08-15) — 이 파일의 고객 전체에 같은 태그를 붙여 나중에 통째로 검색 */
+    var _t = prompt('이 파일의 고객 전체에 붙일 태그를 입력하세요.\n(쉼표로 여러 개 · 비워두고 확인하면 태그 없이 등록)\n예: 8월흥생DB', '');
+    if (_t === null) { showToast('엑셀 등록 취소됨', 'orange'); return; }
+    window.__xlsxBatchTags = _parseTagStr(_t);
     _xlsxHandleFile(f);
   });
 }
@@ -5458,6 +5496,11 @@ function _xlsxProcessRows(rows) {
       newCount++;
     }
     if (!target.consultations) target.consultations = [];
+    /* ★ 일괄 태그 부여 (2026-08-15) — 신규·기존(병합) 모두, 중복 없이 추가 */
+    if (window.__xlsxBatchTags && window.__xlsxBatchTags.length) {
+      if (!Array.isArray(target.tags)) target.tags = [];
+      window.__xlsxBatchTags.forEach(function(_bt){ if (target.tags.indexOf(_bt) < 0) target.tags.push(_bt); });
+    }
 
     // 4) 각 행 → 상담이력 추가 (빈 줄은 skip)
     for (var k = 0; k < grp.length; k++) {
@@ -12064,7 +12107,7 @@ function copyContact(el) {
         var _preQ = (filter === '유병자' || filter === '유병');
         list = list.filter(function(c) {
           if (_preQ && c.preexisting) return true;
-          var blob = [c.name, c.phone, c.memo, c.notes, c.address, c.job, c.jumin, c.resident_number].join(' ').toLowerCase();
+          var blob = [c.name, c.phone, c.memo, c.notes, c.address, c.job, c.jumin, c.resident_number].concat(_tagsOf(c)).join(' ').toLowerCase();   /* ★ 태그 검색 (2026-08-15) */
           return blob.indexOf(filter) >= 0;
         });
       }
@@ -12107,6 +12150,7 @@ function copyContact(el) {
         else if (c.status === '거절') statusTag = '<span style="display:inline-block;margin-left:6px;padding:1px 7px;background:#ef4444;color:#fff;border-radius:10px;font-size:10.5px;font-weight:700;">🚫</span>';
         /* ★ 유병자 상품 배지 (2026-08-13) */
         if (c.preexisting) statusTag += '<span style="display:inline-block;margin-left:5px;padding:1px 7px;background:#fdeadd;color:#9a3412;border-radius:10px;font-size:10.5px;font-weight:700;">🩹 유병</span>';
+        if (typeof _tagChipsHtml === 'function') { var _mtg = _tagChipsHtml(c); if (_mtg) statusTag += ' ' + _mtg; }   /* ★ 태그 칩 (2026-08-15) */
         html += '<div class="mv-card" onclick="mvOpenDetail(' + c.id + ')">' +
           '<div class="mv-name">' + escapeHtml(c.name || '(이름없음)') + statusTag + '</div>' +
           '<div class="mv-meta">' +
