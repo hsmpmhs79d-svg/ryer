@@ -1614,7 +1614,7 @@ try {
   <div class="left-panel">
     <!-- ★ 전체/남/여 통계 — 헤더에서 이동, 헤더 한 줄 유지 (2026-07-10) -->
     <!-- ★ 선택삭제 버튼 — bulk-bar에서 통계 줄로 이동, 칩 크기 통일 (2026-07-15) -->
-    <div class="side-stats"><span id="stat-total">전체 0명</span><span id="stat-male">남 0명</span><span id="stat-female">여 0명</span><button class="bulk-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" title="여러 고객을 한 번에 선택해서 삭제" style="background:#eef2f7;color:#334155;font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;border:none;cursor:pointer;white-space:nowrap;">삭제</button></div>
+    <div class="side-stats"><span id="stat-total">전체 0명</span><span id="stat-male">남 0명</span><span id="stat-female">여 0명</span><button class="bulk-btn" id="bulk-toggle-btn" onclick="toggleBulkMode()" title="여러 고객을 한 번에 선택해서 태그를 달거나 삭제해요" style="background:#eef2f7;color:#334155;font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px;border:none;cursor:pointer;white-space:nowrap;">선택</button></div>
     <div class="search-box">
       <input type="text" id="search-input" placeholder="이름, 전화번호, 주소, 메모, 상담내용 검색..." oninput="renderList()">
       <!-- ★ 필터 정리 (2026-08-15) — 정렬+⚙︎필터 버튼만 밖에, 셀렉트 4개는 접이식 상자로. id·onchange는 원래 그대로 -->
@@ -1668,6 +1668,8 @@ try {
       <div id="bulk-actions" style="display:none; gap:6px; flex-wrap:wrap; width:100%;">
         <button class="bulk-btn" onclick="bulkSelectAll()" title="현재 보이는 고객 전체 선택">전체</button>
         <button class="bulk-btn" onclick="bulkClearSelection()">해제</button>
+        <button class="bulk-btn" onclick="bulkAddTags()" style="background:#f3e8ff;color:#6b21a8;" title="체크한 고객 전체에 태그 붙이기">🏷 태그 달기</button>
+        <button class="bulk-btn" onclick="bulkRemoveTags()" style="background:#faf5ff;color:#7c3aed;" title="체크한 고객 전체에서 태그 떼기">태그 빼기</button>
         <button class="bulk-btn danger" onclick="bulkDeleteSelected()">선택 삭제</button>
         <button class="bulk-btn" onclick="toggleBulkMode()">취소</button>
         <span class="bulk-count" id="bulk-count">0명 선택</span>
@@ -5040,6 +5042,49 @@ function updateBulkCount() {
   var n = Object.keys(window._bulkSelected || {}).length;
   var el = document.getElementById('bulk-count');
   if (el) el.textContent = n + '명 선택';
+}
+
+/* ★ 태그 일괄 달기/빼기 (2026-08-15) — 선택 모드에서 체크한 고객 전체에 적용.
+   사용 흐름: 검색·필터로 추림 → [삭제] 칩으로 선택 모드 → [전체] → [🏷 태그 달기] */
+function bulkAddTags() {
+  var ids = Object.keys(window._bulkSelected || {}).map(function(x){return parseInt(x,10);});
+  if (!ids.length) { if (typeof showToast==='function') showToast('선택된 고객이 없습니다 — 체크 후 눌러주세요', 'orange'); return; }
+  var v = prompt(ids.length + '명에게 붙일 태그를 입력하세요 (쉼표로 여러 개)\n예: 흥생DB, 종신', '');
+  if (v === null) return;
+  var tags = _parseTagStr(v);
+  if (!tags.length) { showToast('입력된 태그가 없습니다', 'orange'); return; }
+  var idSet = {}; ids.forEach(function(i){ idSet[i]=true; });
+  var n = 0;
+  customers.forEach(function(c){
+    if (!idSet[c.id]) return;
+    if (!Array.isArray(c.tags)) c.tags = [];
+    tags.forEach(function(t){ if (c.tags.indexOf(t) < 0) c.tags.push(t); });
+    c._updated = Date.now(); n++;
+  });
+  if (typeof autoSave === 'function') autoSave();
+  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+  renderList();
+  showToast('🏷 ' + n + '명에게 [' + tags.join(', ') + '] 태그 완료', 'green');
+}
+function bulkRemoveTags() {
+  var ids = Object.keys(window._bulkSelected || {}).map(function(x){return parseInt(x,10);});
+  if (!ids.length) { if (typeof showToast==='function') showToast('선택된 고객이 없습니다 — 체크 후 눌러주세요', 'orange'); return; }
+  var v = prompt(ids.length + '명에게서 뗄 태그를 입력하세요 (쉼표로 여러 개)', '');
+  if (v === null) return;
+  var tags = _parseTagStr(v);
+  if (!tags.length) { showToast('입력된 태그가 없습니다', 'orange'); return; }
+  var idSet = {}; ids.forEach(function(i){ idSet[i]=true; });
+  var n = 0;
+  customers.forEach(function(c){
+    if (!idSet[c.id] || !Array.isArray(c.tags) || !c.tags.length) return;
+    var before = c.tags.length;
+    c.tags = c.tags.filter(function(t){ return tags.indexOf(t) < 0; });
+    if (c.tags.length !== before) { c._updated = Date.now(); n++; }
+  });
+  if (typeof autoSave === 'function') autoSave();
+  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+  renderList();
+  showToast('🏷 ' + n + '명에게서 태그 제거 완료', 'green');
 }
 
 function bulkSelectAll() {
