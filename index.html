@@ -2696,18 +2696,71 @@ function _parseTagStr(v){
   var seen={};
   return String(v||'').split(',').map(function(s){return s.trim();}).filter(function(s){ if(!s||seen[s])return false; seen[s]=1; return true; });
 }
+/* ★ 태그 선택창 (2026-08-15) — 이미 만든 태그를 눌러서 켜고 끄기 + 새 태그 입력. prompt 대체 */
+function _allTags(){
+  var m={};
+  customers.forEach(function(c){ _tagsOf(c).forEach(function(t){ m[t]=(m[t]||0)+1; }); });
+  return Object.keys(m).sort(function(a,b){return a.localeCompare(b,'ko');}).map(function(t){return {t:t,n:m[t]};});
+}
+function _tgChipStyle(on){
+  return 'padding:6px 13px;border-radius:99px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;border:1.5px solid '+(on?'#7c3aed;background:#7c3aed;color:#fff;':'#e9d5ff;background:#faf5ff;color:#6b21a8;');
+}
+function _openTagDialog(o){
+  var old=document.getElementById('sg-tag-dlg'); if(old) old.remove();
+  var sel={}; (o.preset||[]).forEach(function(t){ sel[t]=true; });
+  var ov=document.createElement('div');
+  ov.id='sg-tag-dlg';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:inherit;';
+  var chipHtml=(o.tags||[]).map(function(x,i){
+    var e=String(x.t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return '<button type="button" data-tg="'+i+'" style="'+_tgChipStyle(!!sel[x.t])+'">'+e+' <span style="opacity:.65;font-size:11px;">'+x.n+'</span></button>';
+  }).join('');
+  ov.innerHTML='<div style="background:#fff;border-radius:14px;width:420px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">'
+    +'<div style="background:linear-gradient(135deg,#6b21a8,#a855f7);color:#fff;padding:12px 18px;font-weight:800;font-size:15px;">🏷 '+o.title+'</div>'
+    +'<div style="padding:14px 18px;overflow-y:auto;flex:1;">'
+    +(o.sub?'<div style="font-size:12.5px;color:#8a6a4e;margin-bottom:9px;line-height:1.6;">'+o.sub+'</div>':'')
+    +((o.tags&&o.tags.length)?'<div id="sg-tg-chips" style="display:flex;flex-wrap:wrap;gap:7px;">'+chipHtml+'</div>':'<div style="font-size:13px;color:#94a3b8;">아직 만든 태그가 없습니다. 아래에 새로 입력해 보세요.</div>')
+    +(o.allowNew?'<input id="sg-tg-new" type="text" placeholder="새 태그 입력 (쉼표로 여러 개)" style="width:100%;margin-top:12px;padding:9px 12px;border:1.5px solid #e7d9c8;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;">':'')
+    +'</div>'
+    +'<div style="padding:12px 18px;border-top:1px solid #eee0cf;display:flex;gap:8px;justify-content:flex-end;background:#fdf8f3;">'
+    +'<button type="button" id="sg-tg-cancel" style="background:#fff;color:#8a5a37;border:1.5px solid #e6cdb0;padding:8px 16px;border-radius:9px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;">취소</button>'
+    +'<button type="button" id="sg-tg-save" style="background:#7c3aed;color:#fff;border:none;padding:8px 22px;border-radius:9px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;">'+(o.saveLabel||'저장')+'</button>'
+    +'</div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){ if(e.target===ov) ov.remove(); });
+  var chips=ov.querySelector('#sg-tg-chips');
+  if(chips) chips.addEventListener('click',function(e){
+    var b=e.target.closest('button[data-tg]'); if(!b) return;
+    var x=o.tags[parseInt(b.getAttribute('data-tg'),10)];
+    sel[x.t]=!sel[x.t];
+    b.setAttribute('style', _tgChipStyle(!!sel[x.t]));
+  });
+  ov.querySelector('#sg-tg-cancel').onclick=function(){ ov.remove(); };
+  ov.querySelector('#sg-tg-save').onclick=function(){
+    var picked=Object.keys(sel).filter(function(t){return sel[t];});
+    var inp=ov.querySelector('#sg-tg-new');
+    if(inp) _parseTagStr(inp.value).forEach(function(t){ if(picked.indexOf(t)<0) picked.push(t); });
+    ov.remove();
+    o.onSave(picked);
+  };
+}
 function editCustomerTags(cid){
   var c = customers.find(function(x){return x.id===cid;});
   if(!c) return;
-  var v = prompt('이 고객의 태그 (쉼표로 여러 개)\n예: 흥생DB, 종신', _tagsOf(c).join(', '));
-  if (v === null) return;
-  c.tags = _parseTagStr(v);
-  c._updated = Date.now();
-  if (typeof autoSave === 'function') autoSave();
-  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
-  if (typeof renderList === 'function') renderList();
-  if (typeof selectCustomer === 'function') selectCustomer(cid);
-  if (typeof showToast === 'function') showToast('🏷 태그 저장됨','green');
+  _openTagDialog({
+    title: (c.name||'고객') + '님 태그',
+    sub: '보라색으로 켜진 태그가 이 고객에게 붙습니다. 눌러서 켜고 끄고, 새 태그는 아래에 입력하세요.',
+    tags: _allTags(), preset: _tagsOf(c), allowNew: true,
+    onSave: function(tags){
+      c.tags = tags;
+      c._updated = Date.now();
+      if (typeof autoSave === 'function') autoSave();
+      if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+      if (typeof renderList === 'function') renderList();
+      if (typeof selectCustomer === 'function') selectCustomer(cid);
+      if (typeof showToast === 'function') showToast('🏷 태그 저장됨','green');
+    }
+  });
 }
 
 function renderList() {
@@ -2915,8 +2968,9 @@ function selectCustomer(id) {
     /* ★ 1줄 순서: 이름 → 성별 → 만나이 → 보험나이 → 상령일 (2026-07-15) */
     +'<div><span class="cname" onclick="copyField(this,\'이름\')">'+(c.name||'(이름없음)')+'</span>'
     +'<span class="cbadge" style="background:'+bg+';color:'+tc+'">'+(c.gender||'?')+'</span>'
-    +getAgeTag(c,14)+getInsAgeTag(c,14)+'</div>'  /* ★ 카드 헤더는 나이 글자 14px (2026-07-15) */
+    +getAgeTag(c,14)+getInsAgeTag(c,14)+' '+_tagChipsHtml(c)+'</div>'  /* ★ 카드 헤더는 나이 글자 14px (2026-07-15) · 태그 칩 (2026-08-15) */
     +'<div class="btn-group">'
+    +'<button class="btn-quick-msg" style="background:#7c3aed;" title="태그 달기/수정 — 이미 만든 태그를 눌러 고를 수 있어요" onclick="editCustomerTags('+id+')">🏷 태그</button>'   /* ★ 태그 (2026-08-15) */
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">퀵메시지</button>'
     /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
     +(c.status==='가입완료' ? '<button class="btn-quick-msg" style="background:#16a34a;" title="추가 계약 알림 등록 (1주년·암 보장개시·카드납)" onclick="openJoinAlertModal('+id+',true)">추가가입</button>' : '')
@@ -2925,9 +2979,6 @@ function selectCustomer(id) {
     +'<button class="btn-edit" onclick="openEditModal('+id+')">수정</button>'
     +'<button class="btn-delete" onclick="delCustomer('+id+')">삭제</button>'
     +'</div></div>'
-    /* ★ 태그 줄 (2026-08-15) — 칩 + 편집 */
-    +'<div style="padding:2px 2px 7px;display:flex;align-items:center;flex-wrap:wrap;gap:3px;">'+_tagChipsHtml(c)
-    +'<button onclick="editCustomerTags('+id+')" style="background:none;border:1.5px dashed #d8b4fe;color:#7c3aed;font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:10px;cursor:pointer;font-family:inherit;" title="태그 달기/수정 — 쉼표로 여러 개">🏷 태그</button></div>'
     +'<div class="card-tabs">'
     +  '<button type="button" onclick="scrollToCardTab(\'.info-grid\')">고객정보</button>'
     +  '<button type="button" onclick="scrollToCardTab(\'.sched-add-form\')">스케줄</button>'
@@ -5049,42 +5100,54 @@ function updateBulkCount() {
 function bulkAddTags() {
   var ids = Object.keys(window._bulkSelected || {}).map(function(x){return parseInt(x,10);});
   if (!ids.length) { if (typeof showToast==='function') showToast('선택된 고객이 없습니다 — 체크 후 눌러주세요', 'orange'); return; }
-  var v = prompt(ids.length + '명에게 붙일 태그를 입력하세요 (쉼표로 여러 개)\n예: 흥생DB, 종신', '');
-  if (v === null) return;
-  var tags = _parseTagStr(v);
-  if (!tags.length) { showToast('입력된 태그가 없습니다', 'orange'); return; }
-  var idSet = {}; ids.forEach(function(i){ idSet[i]=true; });
-  var n = 0;
-  customers.forEach(function(c){
-    if (!idSet[c.id]) return;
-    if (!Array.isArray(c.tags)) c.tags = [];
-    tags.forEach(function(t){ if (c.tags.indexOf(t) < 0) c.tags.push(t); });
-    c._updated = Date.now(); n++;
+  _openTagDialog({
+    title: ids.length + '명에게 태그 달기',
+    sub: '켠 태그(+새 태그)를 체크한 고객 전원에게 붙입니다.',
+    tags: _allTags(), preset: [], allowNew: true, saveLabel: '달기',
+    onSave: function(tags){
+      if (!tags.length) { showToast('선택된 태그가 없습니다', 'orange'); return; }
+      var idSet = {}; ids.forEach(function(i){ idSet[i]=true; });
+      var n = 0;
+      customers.forEach(function(c){
+        if (!idSet[c.id]) return;
+        if (!Array.isArray(c.tags)) c.tags = [];
+        tags.forEach(function(t){ if (c.tags.indexOf(t) < 0) c.tags.push(t); });
+        c._updated = Date.now(); n++;
+      });
+      if (typeof autoSave === 'function') autoSave();
+      if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+      renderList();
+      showToast('🏷 ' + n + '명에게 [' + tags.join(', ') + '] 태그 완료', 'green');
+    }
   });
-  if (typeof autoSave === 'function') autoSave();
-  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
-  renderList();
-  showToast('🏷 ' + n + '명에게 [' + tags.join(', ') + '] 태그 완료', 'green');
 }
 function bulkRemoveTags() {
   var ids = Object.keys(window._bulkSelected || {}).map(function(x){return parseInt(x,10);});
   if (!ids.length) { if (typeof showToast==='function') showToast('선택된 고객이 없습니다 — 체크 후 눌러주세요', 'orange'); return; }
-  var v = prompt(ids.length + '명에게서 뗄 태그를 입력하세요 (쉼표로 여러 개)', '');
-  if (v === null) return;
-  var tags = _parseTagStr(v);
-  if (!tags.length) { showToast('입력된 태그가 없습니다', 'orange'); return; }
   var idSet = {}; ids.forEach(function(i){ idSet[i]=true; });
-  var n = 0;
-  customers.forEach(function(c){
-    if (!idSet[c.id] || !Array.isArray(c.tags) || !c.tags.length) return;
-    var before = c.tags.length;
-    c.tags = c.tags.filter(function(t){ return tags.indexOf(t) < 0; });
-    if (c.tags.length !== before) { c._updated = Date.now(); n++; }
+  var m = {};
+  customers.forEach(function(c){ if (idSet[c.id]) _tagsOf(c).forEach(function(t){ m[t]=(m[t]||0)+1; }); });
+  var list = Object.keys(m).sort(function(a,b){return a.localeCompare(b,'ko');}).map(function(t){return {t:t,n:m[t]};});
+  if (!list.length) { showToast('선택한 고객에게 붙은 태그가 없습니다', 'orange'); return; }
+  _openTagDialog({
+    title: ids.length + '명에게서 태그 빼기',
+    sub: '켠 태그를 체크한 고객 전원에게서 뗍니다. (숫자 = 선택 고객 중 그 태그가 붙은 인원)',
+    tags: list, preset: [], allowNew: false, saveLabel: '빼기',
+    onSave: function(tags){
+      if (!tags.length) { showToast('선택된 태그가 없습니다', 'orange'); return; }
+      var n = 0;
+      customers.forEach(function(c){
+        if (!idSet[c.id] || !Array.isArray(c.tags) || !c.tags.length) return;
+        var before = c.tags.length;
+        c.tags = c.tags.filter(function(t){ return tags.indexOf(t) < 0; });
+        if (c.tags.length !== before) { c._updated = Date.now(); n++; }
+      });
+      if (typeof autoSave === 'function') autoSave();
+      if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+      renderList();
+      showToast('🏷 ' + n + '명에게서 태그 제거 완료', 'green');
+    }
   });
-  if (typeof autoSave === 'function') autoSave();
-  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
-  renderList();
-  showToast('🏷 ' + n + '명에게서 태그 제거 완료', 'green');
 }
 
 function bulkSelectAll() {
