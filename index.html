@@ -7515,6 +7515,7 @@ function sdGoToEdit(cid, idx) {
   <div id="code-panel-header" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:white;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;cursor:move;user-select:none;flex-shrink:0;">
     <span style="font-weight:700;font-size:15px;">🔑 대표코드</span>
     <div style="display:flex;gap:6px;align-items:center;">
+      <button onclick="codeExcelImport()" style="background:rgba(255,255,255,.25);border:none;color:white;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;" title="엑셀 파일로 표 전체 교체 — 1행은 제목줄, 2행부터 내용">📥 엑셀</button>
       <button id="code-edit-btn" onclick="toggleCodeEdit()" style="background:rgba(255,255,255,.25);border:none;color:white;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">편집</button>
       <button id="code-save-btn" onclick="saveCodeEdit()" style="display:none;background:#22c55e;border:none;color:white;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">💾 저장</button>
       <button id="code-cancel-btn" onclick="cancelCodeEdit()" style="display:none;background:rgba(255,255,255,.25);border:none;color:white;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;">취소</button>
@@ -7695,6 +7696,55 @@ function cancelCodeEdit(){
   document.getElementById('code-save-btn').style.display='none';
   document.getElementById('code-cancel-btn').style.display='none';
   _codeEditMode=false;
+}
+/* ★ 대표코드 엑셀 등록 (2026-08-15) — 1행=제목줄, 2행부터 내용. 열 개수 자유(2~6열 권장).
+   표 전체를 엑셀 내용으로 교체하고 Drive에 저장. 고객 엑셀 등록과 같은 SheetJS 사용 */
+function codeExcelImport(){
+  if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중... 잠시 후 다시 시도해주세요','orange'); return; }
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='.xlsx,.xls,.csv';
+  inp.onchange=function(){
+    var f=inp.files && inp.files[0];
+    if(!f) return;
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        var rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+        _codeExcelApply(rows);
+      }catch(err){ console.error('code xlsx err:',err); showToast('엑셀 파싱 실패: '+(err.message||''),'red'); }
+    };
+    reader.readAsArrayBuffer(f);
+  };
+  inp.click();
+}
+function _codeExcelApply(rows){
+  rows=(rows||[]).map(function(r){ return (r||[]).map(function(c){ return String(c==null?'':c).trim(); }); })
+                 .filter(function(r){ return r.some(function(c){ return c!==''; }); });
+  if(rows.length<2){ showToast('엑셀에 내용이 없습니다 (1행 제목줄 + 2행부터 내용)','red'); return; }
+  var head=rows[0], body=rows.slice(1), cols=head.length;
+  if(!confirm('대표코드 표를 엑셀 내용으로 교체할까요?\n\n항목: '+head.join(' / ')+'\n'+body.length+'줄이 등록됩니다.\n(기존 표 내용은 사라집니다)')) return;
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  var TH='background:#fef3c7;color:#92400e;font-size:12px;font-weight:700;padding:8px 10px;text-align:center;border-bottom:2px solid #eee0cf;';
+  var TD0='font-weight:700;color:#9a3412;padding:7px 10px;border-bottom:1px solid #f8efe4;';
+  var TDC='padding:7px 10px;border-bottom:1px solid #f8efe4;text-align:center;font-family:monospace;font-size:12px;cursor:pointer;';
+  var h='<table style="width:100%;border-collapse:collapse;"><thead><tr>';
+  for(var i=0;i<cols;i++) h+='<th style="'+TH+'">'+esc(head[i]||'')+'</th>';
+  h+='</tr></thead><tbody id="code-table-body">';
+  body.forEach(function(r){
+    h+='<tr><td style="'+TD0+'">'+esc(r[0]||'')+'</td>';
+    for(var j=1;j<cols;j++) h+='<td class="cc" style="'+TDC+'" onclick="copyCell(this)">'+esc(r[j]||'')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table><div style="margin-top:10px;font-size:11px;color:#94a3b8;text-align:center;">셀 클릭 → 바로 복사</div>';
+  var bodyEl=document.getElementById('code-panel-body');
+  if(!bodyEl) return;
+  bodyEl.innerHTML=h;
+  var dataEl=document.getElementById('code-panel-data');
+  if(dataEl) dataEl.textContent=JSON.stringify(bodyEl.innerHTML);
+  if(typeof autoSave==='function') autoSave();
+  if(typeof scheduleAutoSave==='function') scheduleAutoSave();
+  showToast('✅ 대표코드 '+body.length+'줄 등록 완료!','green');
 }
 // 저장된 대표코드 복원
 (function(){
