@@ -11545,7 +11545,7 @@ function copyContact(el) {
           '<div style="font-size:46px;line-height:1;margin-bottom:8px;">⏳</div>' +
           '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">승인 대기 중</h1>' +
           '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">신청이 접수되었습니다.<br>관리자 확인 후 이용하실 수 있습니다.</p>' +
-          emailBox + contact + other;
+          emailBox + _sgPayBox() + contact + other;
       } else if (status === 'expired') {
         card.innerHTML =
           '<div style="font-size:46px;line-height:1;margin-bottom:8px;">⌛</div>' +
@@ -11571,6 +11571,67 @@ function copyContact(el) {
   /* 중지·만료 화면에서 "다시 이용 신청하기" → 신청 폼으로 전환 (2026-08-10) */
   window.salguReapplyForm = function() {
     showPendingScreen(window.__pendingEmail__ || '', 'none');
+  };
+
+  /* ─── 이용료 입금 안내 + 입금 완료 신고 (2026-08-24) ─── */
+  var SG_ACCT = '1000-7691-2971';
+  function _sgPayBox() {
+    var done = localStorage.getItem('sgPaidSent') === (window.__pendingEmail__ || '');
+    return '<div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:10px;padding:13px 15px;margin-top:14px;text-align:left;">' +
+      '<div style="font-size:14.5px;font-weight:800;color:#92400e;margin-bottom:7px;">💰 이용료 49,000원 (1회 결제)</div>' +
+      '<div style="font-size:14px;color:#334155;line-height:1.7;">토스뱅크 · 예금주 <b>여상현</b></div>' +
+      '<div style="display:flex;align-items:center;gap:7px;margin:3px 0 6px;">' +
+        '<b style="font-size:17px;color:#7c2d12;letter-spacing:.4px;">' + SG_ACCT + '</b>' +
+        '<button id="sg-copy-acct" onclick="window.salguCopyAcct()" style="background:#fff;border:1.5px solid #e0c9a6;color:#92400e;border-radius:6px;padding:3px 9px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">복사</button>' +
+      '</div>' +
+      '<div style="font-size:12.5px;color:#8a7566;line-height:1.6;">입금자명은 <b>신청하신 이름</b>으로 보내주세요.<br>입금 후 아래 버튼을 누르시면 팀장에게 바로 알림이 갑니다.</div>' +
+      '<button id="sg-paid-btn" onclick="window.salguPaid()"' + (done ? ' disabled' : '') +
+        ' style="width:100%;margin-top:11px;background:' + (done ? '#cbd5e1' : '#f59e0b') + ';color:#fff;border:none;border-radius:9px;padding:11px;font-size:15px;font-weight:800;cursor:' + (done ? 'default' : 'pointer') + ';font-family:inherit;">' +
+        (done ? '✅ 입금 완료를 알렸습니다' : '입금 완료 알리기') + '</button>' +
+      '</div>';
+  }
+  window.salguCopyAcct = function() {
+    var t = SG_ACCT.replace(/-/g, '');
+    function ok() { var b = document.getElementById('sg-copy-acct'); if (b) { b.textContent = '복사됨'; setTimeout(function(){ b.textContent = '복사'; }, 1500); } }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(ok, _fb); return; }
+    } catch(e) {}
+    _fb();
+    function _fb() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); ok();
+      } catch(e) { alert('계좌번호: ' + SG_ACCT); }
+    }
+  };
+  window.salguPaid = function() {
+    var email = window.__pendingEmail__ || '';
+    var sender = prompt('입금하신 분 이름(입금자명)을 적어주세요.', '');
+    if (sender === null) return;
+    sender = String(sender).trim();
+    if (!sender) { alert('입금자명을 입력해주세요.'); return; }
+    var btn = document.getElementById('sg-paid-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '보내는 중...'; }
+    fetch('https://salgu-api.wmmryer.workers.dev/paid', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _accessToken },
+      body: JSON.stringify({ sender: sender })
+    }).then(function(r){ return r.json(); })
+      .then(function(j){
+        if (j && j.ok) {
+          try { localStorage.setItem('sgPaidSent', email); } catch(e) {}
+          alert('✅ 입금 완료 알림을 보냈습니다!\n확인 후 곧 승인해 드리겠습니다.');
+          showPendingScreen(email, 'pending');
+        } else {
+          alert('전송 실패: ' + ((j && j.error) || '잠시 후 다시 시도해주세요'));
+          if (btn) { btn.disabled = false; btn.textContent = '입금 완료 알리기'; }
+        }
+      })
+      .catch(function(){
+        alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        if (btn) { btn.disabled = false; btn.textContent = '입금 완료 알리기'; }
+      });
   };
 
   /* 이용 신청 전송 */
