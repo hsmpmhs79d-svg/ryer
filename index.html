@@ -1956,6 +1956,16 @@ try {
           <textarea id="f-medical" placeholder="입원, 수술, 투약 이력 등"></textarea>
         </div>
       </div>
+      <!-- ★ 유병자 상품 표시 — 여기서 켜고 끌 수 있음 (2026-08-21) -->
+      <div class="form-row">
+        <div class="form-group full">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#9a3412;">
+            <input type="checkbox" id="f-preexisting" style="width:17px;height:17px;cursor:pointer;accent-color:#c2410c;">
+            🩹 유병자 상품 가입 고객
+            <span style="font-size:11.5px;color:#94a3b8;font-weight:400;">체크하면 목록에 배지 표시 · "유병자"로 검색됩니다</span>
+          </label>
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group full">
           <label>메모</label>
@@ -4991,10 +5001,12 @@ function openAddModal() {
   document.getElementById('modal-title').textContent='신규 고객 등록';
   ['name','phone','resident','address','meeting-address','medical','notes'].forEach(function(f){document.getElementById('f-'+f).value='';});
   document.getElementById('f-gender').value='';
+  _resetPreexistingField();   /* ★ 유병자 체크 초기화 — 이전 고객 값이 남지 않게 (2026-08-21) */
   setJobField(''); setDrvField('');
   document.getElementById('modal-overlay').classList.add('show');
   _attachCustomerFormFormat();
 }
+function _resetPreexistingField(){ var e=document.getElementById('f-preexisting'); if(e) e.checked=false; }   /* ★ 유병자 (2026-08-21) */
 function openEditModal(id) {
   var c=customers.find(function(x){return x.id===id;}); if(!c) return;
   editingId=id;
@@ -5007,6 +5019,7 @@ function openEditModal(id) {
   var _fma = document.getElementById('f-meeting-address'); if (_fma) _fma.value = c.meetingAddress || '';
   document.getElementById('f-medical').value=c.medical_history||'';
   document.getElementById('f-notes').value=c.notes||'';
+  var _fpe=document.getElementById('f-preexisting'); if(_fpe) _fpe.checked=!!c.preexisting;   /* ★ 유병자 (2026-08-21) */
   setJobField(c.job||''); setDrvField(c.driving||'');
   document.getElementById('modal-overlay').classList.add('show');
   _attachCustomerFormFormat();
@@ -5038,7 +5051,8 @@ function saveCustomer() {
     meetingAddress:(document.getElementById('f-meeting-address')?document.getElementById('f-meeting-address').value.trim():''),
     job:getJobVal(), driving:getDrvVal(),
     medical_history:document.getElementById('f-medical').value.trim(),
-    notes:document.getElementById('f-notes').value.trim()};
+    notes:document.getElementById('f-notes').value.trim(),
+    preexisting:!!(document.getElementById('f-preexisting')||{}).checked};   /* ★ 유병자 (2026-08-21) */
   if(editingId!==null){
     var idx=customers.findIndex(function(x){return x.id===editingId;});
     if(idx!==-1){customers[idx]=Object.assign({},customers[idx],data);
@@ -13037,6 +13051,10 @@ function copyContact(el) {
          + '<label class="mv-flbl">직업</label><input class="mv-input" id="mv-edit-job" value="' + escapeHtml(c.job || '') + '">'
          + '<label class="mv-flbl">운전여부</label><input class="mv-input" id="mv-edit-driving" value="' + escapeHtml(c.driving || '') + '">'
          + '<label class="mv-flbl">병력</label><textarea class="mv-textarea" id="mv-edit-history">' + escapeHtml(_h) + '</textarea>'
+         /* ★ 유병자 상품 켜고 끄기 (2026-08-21) */
+         + '<label class="mv-flbl" style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;">'
+         +   '<input type="checkbox" id="mv-edit-pre" style="width:18px;height:18px;accent-color:#c2410c;"' + (c.preexisting ? ' checked' : '') + '>'
+         +   '🩹 유병자 상품 가입 고객</label>'
          + '<label class="mv-flbl">메모</label><textarea class="mv-textarea" id="mv-edit-memo">' + escapeHtml(_m) + '</textarea>'
          + '<div class="mv-modal-actions">'
          +   '<button class="mv-modal-cancel" onclick="mvHideModal()">취소</button>'
@@ -13061,6 +13079,8 @@ function copyContact(el) {
     c.history = hv; c.medical_history = hv;
     var mv = document.getElementById('mv-edit-memo').value;
     c.memo = mv; c.notes = mv;
+    var _mpe = document.getElementById('mv-edit-pre');
+    if (_mpe) c.preexisting = !!_mpe.checked;   /* ★ 유병자 (2026-08-21) */
     c._updated = Date.now();
     mvCommit();
     mvHideModal();
