@@ -9202,6 +9202,73 @@ function closeMrList() {
   document.getElementById('mr-list-overlay').classList.remove('show');
 }
 
+/* ══════ ★ 매니저 목록 엑셀 등록 (2026-08-21) — 사업부마다 매니저가 달라서 통째로 교체 ══════
+   엑셀 형식: A=보험사(병합 셀이면 아래로 이어받음), B=장기 담당자, C=전화
+              D=일반보험 담당자, E=전화, F=팩스   (제목·머리글 줄은 자동으로 건너뜀) */
+function mgrExcelImport() {
+  if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중... 잠시 후 다시 시도해주세요','orange'); return; }
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.xlsx,.xls,.csv';
+  inp.onchange = function(){
+    var f = inp.files && inp.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try {
+        var wb = XLSX.read(new Uint8Array(e.target.result), { type:'array' });
+        var rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header:1, defval:'' });
+        _mgrExcelApply(rows);
+      } catch(err) { console.error('mgr xlsx err:', err); showToast('엑셀 파싱 실패: ' + (err.message||''), 'red'); }
+    };
+    reader.readAsArrayBuffer(f);
+  };
+  inp.click();
+}
+function _mgrExcelParse(rows) {
+  function cl(v){ return String(v==null?'':v).replace(/\s+/g,' ').trim(); }
+  function isPhone(v){ return cl(v).replace(/[^0-9]/g,'').length >= 7; }
+  var HEAD = /^(전화번호|담당부서|팩스번호|장기보험|일반보험|보험사|이름|성명|비고)$/;
+  var out = [], co = '', skipped = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i] || [];
+    var c0 = cl(r[0]);
+    if (c0 && !HEAD.test(c0) && !/기준$/.test(c0)) co = c0;   /* 병합 셀 → 아래로 이어받기 */
+    var n1 = cl(r[1]), p1 = cl(r[2]);
+    if (n1 && !HEAD.test(n1)) {
+      if (isPhone(p1)) out.push({ company: co, name: n1, phone: p1, memo: '장기보험' });
+      else skipped++;
+    }
+    var n2 = cl(r[3]), p2 = cl(r[4]), f2 = cl(r[5]);
+    if (n2 && !HEAD.test(n2)) {
+      if (isPhone(p2)) out.push({ company: co, name: n2, phone: p2, memo: '일반보험' + (f2 ? ' · 팩스 ' + f2 : '') });
+      else skipped++;
+    } else if (!n2 && isPhone(p2)) { skipped++; }   /* 이름 없이 전화만 있는 줄 */
+  }
+  return { list: out, skipped: skipped };
+}
+function _mgrExcelApply(rows) {
+  var res = _mgrExcelParse(rows || []);
+  if (!res.list.length) {
+    alert('매니저를 찾지 못했습니다.\n\n엑셀 형식을 확인해주세요:\nA열 보험사 · B열 장기 담당자 · C열 전화\nD열 일반보험 담당자 · E열 전화 · F열 팩스');
+    return;
+  }
+  var msg = '매니저 목록을 이 엑셀 내용으로 교체할까요?\n\n· 새로 등록: ' + res.list.length + '명\n· 기존 ' + managerProfiles.length + '명은 목록에서 사라집니다';
+  if (res.skipped) msg += '\n· 전화번호가 없어 건너뛴 줄: ' + res.skipped + '개';
+  msg += '\n\n(고객에게 이미 연결해 둔 설계요청 기록은 그대로 남습니다)';
+  if (!confirm(msg)) return;
+  managerProfiles.length = 0;   /* 참조 유지한 채 내용만 교체 */
+  for (var i = 0; i < res.list.length; i++) {
+    var p = res.list[i];
+    managerProfiles.push({ id: i + 1, name: p.name, company: p.company, phone: p.phone, memo: p.memo });
+  }
+  window.managerProfiles = managerProfiles;
+  _saveMgrProfiles();
+  if (typeof autoSave === 'function') autoSave();
+  if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
+  if (typeof renderMrList === 'function') renderMrList();
+  showToast('✅ 매니저 ' + res.list.length + '명 등록 완료!', 'green');
+}
+
 function renderMrList() {
   var body = document.getElementById('mr-mgr-list-body');
   if (!body) return;
@@ -10854,6 +10921,7 @@ function copyContact(el) {
     <div class="mr-mgr-list" id="mr-mgr-list-body"></div>
     <div class="mr-buttons">
       <button class="mr-btn-cancel" onclick="closeMrList()">닫기</button>
+      <button class="mr-btn-cancel" onclick="mgrExcelImport()" style="background:#f3e8ff;color:#6b21a8;border-color:#d8b4fe;" title="엑셀 파일로 매니저 목록 전체 교체 — 사업부가 다르면 우리 매니저 목록으로 바꿔 쓰세요">📥 엑셀</button>
       <button class="mr-btn-save" onclick="openMrProfNew()">+ 매니저 추가</button>
     </div>
   </div>
