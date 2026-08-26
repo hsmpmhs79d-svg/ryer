@@ -1,0 +1,7450 @@
+{
+ "abl-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "aia-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "axa": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "db-insurance": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "fubon-hyundai-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "hana-insurance": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "hana-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "hanwha-general": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "hanwha-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "heungkuk-fire": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "heungkuk-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "hyundai-marine": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "im-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "kb-insurance": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "kb-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "kdb-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "kyobo-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "lina-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "lotte-insurance": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "meritz-fire": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "metlife": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "mirae-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "nh-fire": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "nh-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "samsung-fire": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "samsung-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "shinhan-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": false
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ],
+ "tongyang-life": [
+  {
+   "k": "__g1",
+   "label": "— 피보험자 —",
+   "type": "grp"
+  },
+  {
+   "k": "pName",
+   "label": "피보험자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pRrn",
+   "label": "피보험자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pTel",
+   "label": "피보험자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pAddr",
+   "label": "피보험자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pJob",
+   "label": "직업·직장명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "pNat",
+   "label": "국적·영문명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g2",
+   "label": "— 청구 사유 —",
+   "type": "grp"
+  },
+  {
+   "k": "cDisease",
+   "label": "질병 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAccident",
+   "label": "재해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDeath",
+   "label": "사망 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDisab",
+   "label": "장해 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cDiag",
+   "label": "진단 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cOper",
+   "label": "수술 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cAdmit",
+   "label": "입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cVisit",
+   "label": "통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilAdmit",
+   "label": "실손입원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "cSilVisit",
+   "label": "실손통원 ✔",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "dxName",
+   "label": "진단명·병명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDate",
+   "label": "사고(발병)일시",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accPlace",
+   "label": "사고장소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "accDesc",
+   "label": "사고경위·청구내용",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "hospital",
+   "label": "병원명(진료과)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "policyNo",
+   "label": "증권번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "otherIns",
+   "label": "타사 보험회사",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "carNo",
+   "label": "차량번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "driver",
+   "label": "운전자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g3",
+   "label": "— 수익자·청구인 —",
+   "type": "grp"
+  },
+  {
+   "k": "bName",
+   "label": "수익자 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bRrn",
+   "label": "수익자 주민번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bTel",
+   "label": "수익자 연락처",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bAddr",
+   "label": "수익자 주소",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "bEmail",
+   "label": "이메일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "relation",
+   "label": "피보험자와의 관계",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "신분증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g4",
+   "label": "— 받을 계좌 —",
+   "type": "grp"
+  },
+  {
+   "k": "bank",
+   "label": "은행명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "holder",
+   "label": "예금주",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "acct",
+   "label": "계좌번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "__g5",
+   "label": "— 동의서 —",
+   "type": "grp"
+  },
+  {
+   "k": "agree",
+   "label": "✔ 동의함 (네모칸마다)",
+   "type": "chk",
+   "on": true
+  },
+  {
+   "k": "__g6",
+   "label": "— 마무리 —",
+   "type": "grp"
+  },
+  {
+   "k": "today",
+   "label": "작성일",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "signName",
+   "label": "서명란 성명",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명",
+   "type": "sig",
+   "on": true
+  }
+ ]
+}
