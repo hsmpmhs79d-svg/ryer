@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>살구 · 청구서류 정리</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+    background: #fdf4ec; margin: 0; padding: 0; color: #3f3229;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 18px 90px; }
+  h1 { font-size: 21px; color: #7c2d12; margin: 0 0 4px; letter-spacing: -.4px; }
+  .sub { font-size: 13.5px; color: #8a7566; margin: 0 0 16px; line-height: 1.7; }
+  .safe {
+    background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 9px;
+    padding: 9px 13px; font-size: 12.5px; color: #166534; margin-bottom: 16px; line-height: 1.6;
+  }
+  #drop {
+    border: 2.5px dashed #e0c9a6; border-radius: 14px; background: #fffaf4;
+    padding: 34px 20px; text-align: center; cursor: pointer; transition: .15s;
+  }
+  #drop:hover, #drop.over { border-color: #c2410c; background: #fff3e8; }
+  #drop .big { font-size: 16px; font-weight: 800; color: #7c2d12; margin-bottom: 5px; }
+  #drop .small { font-size: 13px; color: #8a7566; }
+  .bar {
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 18px 0 12px; padding: 11px 13px;
+    background: #fff; border: 1.5px solid #ecdcc8; border-radius: 11px;
+  }
+  .bar.on { display: flex; }
+  .cnt { font-size: 13.5px; font-weight: 800; color: #7c2d12; margin-right: 4px; }
+  button {
+    font-family: inherit; cursor: pointer; border-radius: 8px;
+    border: 1.5px solid #e0c9a6; background: #fff; color: #7c2d12;
+    padding: 7px 12px; font-size: 13px; font-weight: 700;
+  }
+  button:hover { background: #fff3e8; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .spacer { flex: 1; }
+  .danger { border-color: #fca5a5; color: #b91c1c; }
+  .danger:hover { background: #fef2f2; }
+  #grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr));
+    gap: 14px; margin-top: 6px;
+  }
+  .card {
+    background: #fff; border: 1.5px solid #ecdcc8; border-radius: 11px;
+    padding: 9px; position: relative; cursor: grab;
+  }
+  .card.drag { opacity: .35; }
+  .card.target { border-color: #c2410c; border-style: dashed; }
+  .thumbbox {
+    width: 100%; height: 210px; display: flex; align-items: center; justify-content: center;
+    background: #f7f1e8; border-radius: 7px; overflow: hidden;
+  }
+  .thumbbox img { max-width: 100%; max-height: 100%; transition: transform .15s; }
+  .no { position: absolute; top: 4px; left: 4px; background: #7c2d12; color: #fff;
+        font-size: 11px; font-weight: 800; border-radius: 5px; padding: 2px 6px; }
+  .src { font-size: 10.5px; color: #a08a76; margin-top: 6px;
+         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ctrl { display: flex; gap: 4px; margin-top: 6px; }
+  .ctrl button { flex: 1; padding: 5px 0; font-size: 13px; }
+  #foot {
+    display: none; position: fixed; left: 0; right: 0; bottom: 0;
+    background: #fff; border-top: 1.5px solid #ecdcc8; padding: 11px 18px;
+    align-items: center; gap: 10px; justify-content: center;
+  }
+  #foot.on { display: flex; }
+  #foot input {
+    font-family: inherit; font-size: 14px; padding: 9px 11px;
+    border: 1.5px solid #e0c9a6; border-radius: 8px; width: 260px;
+  }
+  #make { background: #c2410c; color: #fff; border: none; padding: 11px 26px; font-size: 15px; }
+  #make:hover { background: #9a3412; }
+  #msg { font-size: 13px; color: #8a7566; min-height: 18px; margin-top: 10px; }
+  /* ── 팩스 표지 (2026-08-26) ── */
+  .cover {
+    display: none; margin: 16px 0 0; padding: 14px 16px;
+    background: #fff; border: 1.5px solid #ecdcc8; border-radius: 11px;
+  }
+  .cover.on { display: block; }
+  .cover h2 { font-size: 14.5px; color: #7c2d12; margin: 0 0 3px; }
+  .cover .hint { font-size: 12px; color: #a08a76; margin: 0 0 12px; line-height: 1.6; }
+  .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+  .fld label { display: block; font-size: 12px; font-weight: 700; color: #8a7566; margin-bottom: 4px; }
+  .fld input {
+    font-family: inherit; font-size: 14px; width: 100%; padding: 8px 10px;
+    border: 1.5px solid #e0c9a6; border-radius: 8px; background: #fffdfb;
+  }
+  .fld input:focus { outline: none; border-color: #c2410c; }
+  .toggle {
+    display: flex; align-items: center; gap: 7px; cursor: pointer;
+    font-size: 13.5px; font-weight: 700; color: #7c2d12; margin-bottom: 10px;
+  }
+  .toggle input { width: 17px; height: 17px; accent-color: #c2410c; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🍑 청구서류 정리</h1>
+  <p class="sub">
+    팩스로 받은 서류를 올리면 뒤집힌 장을 바로 세우고, 순서를 정리해서 PDF 한 장으로 합쳐줍니다.
+  </p>
+  <div class="safe">
+    🔒 올리신 파일은 <b>서버로 전송되지 않습니다.</b> 모두 이 브라우저 안에서만 처리되고, 창을 닫으면 사라집니다.
+  </div>
+
+  <div id="drop">
+    <div class="big">여기에 파일을 끌어다 놓으세요</div>
+    <div class="small">또는 눌러서 선택 · PDF, JPG, PNG · 여러 개 한꺼번에 가능</div>
+  </div>
+  <input type="file" id="pick" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none">
+  <div id="msg"></div>
+
+  <!-- ★ 팩스 표지 — 고객 본인 청구 형식이므로 고객 이름으로 작성 (2026-08-26) -->
+  <div class="cover" id="cover">
+    <label class="toggle">
+      <input type="checkbox" id="use-cover" checked onchange="render()">
+      📄 팩스 표지 붙이기
+    </label>
+    <p class="hint">
+      표지는 <b>고객 이름</b>으로 만들어집니다. 서류 장수는 자동으로 계산됩니다.<br>
+      빈 칸은 표지에 표시되지 않으니, 아는 것만 채우셔도 됩니다.
+    </p>
+    <div class="fields">
+      <div class="fld"><label>수신 보험사</label><input id="c-ins" placeholder="예) 삼성생명"></div>
+      <div class="fld"><label>고객 성명</label><input id="c-name" placeholder="예) 홍길동"></div>
+      <div class="fld"><label>생년월일</label><input id="c-birth" placeholder="예) 1960-06-20"></div>
+      <div class="fld"><label>연락처</label><input id="c-tel" placeholder="예) 010-0000-0000"></div>
+      <div class="fld"><label>증권번호</label><input id="c-pol" placeholder="아는 경우만"></div>
+      <div class="fld"><label>사고(진료)일자</label><input id="c-date" placeholder="예) 2026-02-05"></div>
+    </div>
+  </div>
+
+  <div class="bar" id="bar">
+    <span class="cnt" id="cnt">0장</span>
+    <button onclick="rotAll(180)">전체 180° 뒤집기</button>
+    <button onclick="rotAll(-90)">전체 ↺</button>
+    <button onclick="rotAll(90)">전체 ↻</button>
+    <span class="spacer"></span>
+    <button class="danger" onclick="clearAll()">전부 지우기</button>
+  </div>
+
+  <div id="grid"></div>
+</div>
+
+<div id="foot">
+  <input type="text" id="fname" placeholder="저장할 파일 이름" value="청구서류">
+  <button id="make" onclick="merge()">PDF로 합치기</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   살구 청구서류 정리 도구 (2026-08-26)
+   - 서버 전송 없음. 전부 브라우저 안에서 처리
+   - PDF 페이지는 원본 그대로 복사(화질 손실 없음), 회전만 적용
+   ══════════════════════════════════════════════════════════════ */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+var PAGES = [];      /* {id, kind:'pdf'|'img', fileIdx, pageIdx, rot, thumb, name} */
+var FILES = [];      /* {name, bytes(Uint8Array), kind} */
+var SEQ = 0;
+
+var $ = function(id) { return document.getElementById(id); };
+function msg(t) { $('msg').textContent = t || ''; }
+
+/* ── 파일 받기 ───────────────────────────────────────────── */
+$('drop').onclick = function() { $('pick').click(); };
+$('pick').onchange = function() { addFiles(this.files); this.value = ''; };
+$('drop').ondragover = function(e) { e.preventDefault(); this.classList.add('over'); };
+$('drop').ondragleave = function() { this.classList.remove('over'); };
+$('drop').ondrop = function(e) {
+  e.preventDefault(); this.classList.remove('over');
+  addFiles(e.dataTransfer.files);
+};
+
+function addFiles(list) {
+  var arr = Array.prototype.slice.call(list);
+  if (!arr.length) return;
+  var i = 0;
+  (function next() {
+    if (i >= arr.length) { msg(''); render(); return; }
+    var f = arr[i++];
+    msg('읽는 중... ' + f.name);
+    var isPdf = /\.pdf$/i.test(f.name);
+    var isImg = /\.(jpe?g|png)$/i.test(f.name);
+    if (!isPdf && !isImg) { next(); return; }
+    var fr = new FileReader();
+    fr.onload = function(e) {
+      var bytes = new Uint8Array(e.target.result);
+      var idx = FILES.length;
+      FILES.push({ name: f.name, bytes: bytes, kind: isPdf ? 'pdf' : 'img' });
+      if (isPdf) addPdf(idx, bytes, f.name, next);
+      else addImg(idx, bytes, f.name, next);
+    };
+    fr.onerror = function() { msg('읽기 실패: ' + f.name); next(); };
+    fr.readAsArrayBuffer(f);
+  })();
+}
+
+function addPdf(fileIdx, bytes, name, done) {
+  /* pdf.js는 넘긴 버퍼를 가져가 버리므로 복사본을 준다 */
+  pdfjsLib.getDocument({ data: bytes.slice(0) }).promise.then(function(doc) {
+    var p = 1;
+    (function loop() {
+      if (p > doc.numPages) { done(); return; }
+      var cur = p++;
+      doc.getPage(cur).then(function(page) {
+        var vp = page.getViewport({ scale: 1 });
+        var scale = 300 / vp.width;
+        var v = page.getViewport({ scale: scale });
+        var cv = document.createElement('canvas');
+        cv.width = v.width; cv.height = v.height;
+        page.render({ canvasContext: cv.getContext('2d'), viewport: v }).promise.then(function() {
+          PAGES.push({
+            id: ++SEQ, kind: 'pdf', fileIdx: fileIdx, pageIdx: cur - 1,
+            rot: 0, thumb: cv.toDataURL('image/jpeg', 0.7),
+            name: name + ' · ' + cur + '쪽'
+          });
+          render();
+          loop();
+        });
+      });
+    })();
+  }).catch(function(err) {
+    msg('PDF를 열 수 없습니다: ' + name);
+    console.error(err);
+    done();
+  });
+}
+
+function addImg(fileIdx, bytes, name, done) {
+  var blob = new Blob([bytes], { type: /\.png$/i.test(name) ? 'image/png' : 'image/jpeg' });
+  var url = URL.createObjectURL(blob);
+  PAGES.push({
+    id: ++SEQ, kind: 'img', fileIdx: fileIdx, pageIdx: 0,
+    rot: 0, thumb: url, name: name
+  });
+  done();
+}
+
+/* ── 화면 그리기 ─────────────────────────────────────────── */
+function render() {
+  var g = $('grid');
+  g.innerHTML = '';
+  PAGES.forEach(function(p, i) {
+    var d = document.createElement('div');
+    d.className = 'card';
+    d.draggable = true;
+    d.dataset.i = i;
+    var quarter = (p.rot % 180) !== 0;
+    d.innerHTML =
+      '<span class="no">' + (i + 1) + '</span>' +
+      '<div class="thumbbox"><img src="' + p.thumb + '" style="transform:rotate(' + p.rot + 'deg)' +
+        (quarter ? ';max-width:210px;max-height:100%' : '') + '"></div>' +
+      '<div class="src" title="' + p.name + '">' + p.name + '</div>' +
+      '<div class="ctrl">' +
+        '<button onclick="rot(' + i + ',-90)" title="왼쪽으로">↺</button>' +
+        '<button onclick="rot(' + i + ',180)" title="뒤집기">180°</button>' +
+        '<button onclick="rot(' + i + ',90)" title="오른쪽으로">↻</button>' +
+        '<button class="danger" onclick="del(' + i + ')" title="이 장 빼기">✕</button>' +
+      '</div>';
+    bindDrag(d);
+    g.appendChild(d);
+  });
+  $('cnt').textContent = PAGES.length + '장';
+  $('bar').classList.toggle('on', PAGES.length > 0);
+  $('foot').classList.toggle('on', PAGES.length > 0);
+  $('cover').classList.toggle('on', PAGES.length > 0);
+}
+
+/* ── 팩스 표지 만들기 (고객 이름으로) ───────────────────────
+   캔버스로 그려서 이미지 1쪽으로 붙인다.
+   PDF 글꼴을 심지 않아도 한글이 정확히 나오고, 팩스는 어차피 이미지다. */
+function buildCover() {
+  var v = function(id) { return ($(id).value || '').trim(); };
+  var W = 1240, H = 1754;                 /* A4 150dpi */
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var x = cv.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#000';
+
+  var M = 110, y = 190;
+  x.textAlign = 'center';
+  x.font = 'bold 58px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  x.fillText('보험금 청구 서류', W / 2, y);
+  y += 34;
+  x.lineWidth = 3;
+  x.beginPath(); x.moveTo(M, y); x.lineTo(W - M, y); x.stroke();
+  y += 90;
+
+  x.textAlign = 'left';
+  var rows = [
+    ['수신', v('c-ins')],
+    ['성명', v('c-name')],
+    ['생년월일', v('c-birth')],
+    ['연락처', v('c-tel')],
+    ['증권번호', v('c-pol')],
+    ['사고(진료)일자', v('c-date')],
+    ['첨부 서류', PAGES.length + '장 (표지 제외)']
+  ];
+  rows.forEach(function(r) {
+    if (!r[1]) return;
+    x.font = '32px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+    x.fillStyle = '#555';
+    x.fillText(r[0], M, y);
+    x.font = 'bold 36px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+    x.fillStyle = '#000';
+    x.fillText(r[1], M + 300, y);
+    x.strokeStyle = '#ccc'; x.lineWidth = 1;
+    x.beginPath(); x.moveTo(M, y + 22); x.lineTo(W - M, y + 22); x.stroke();
+    y += 76;
+  });
+
+  y += 70;
+  x.font = '32px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  x.fillStyle = '#000';
+  x.fillText('위 서류로 보험금 청구를 접수하여 주시기 바랍니다.', M, y);
+
+  y += 120;
+  var d = new Date();
+  var today = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+  x.textAlign = 'center';
+  x.fillText(today, W / 2, y);
+  if (v('c-name')) {
+    y += 70;
+    x.font = 'bold 38px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+    x.fillText('청구인  ' + v('c-name') + '  (인)', W / 2, y);
+  }
+
+  return cv.toDataURL('image/jpeg', 0.9);
+}
+
+function dataUrlToBytes(url) {
+  var b64 = url.split(',')[1];
+  var bin = atob(b64);
+  var out = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+function rot(i, deg) { PAGES[i].rot = (PAGES[i].rot + deg + 360) % 360; render(); }
+function rotAll(deg) { PAGES.forEach(function(p) { p.rot = (p.rot + deg + 360) % 360; }); render(); }
+function del(i) { PAGES.splice(i, 1); render(); }
+function clearAll() {
+  if (PAGES.length && !confirm('올린 서류를 전부 지울까요?')) return;
+  PAGES = []; FILES = []; render(); msg('');
+}
+
+/* ── 드래그로 순서 바꾸기 ────────────────────────────────── */
+var dragFrom = null;
+function bindDrag(el) {
+  el.ondragstart = function(e) {
+    dragFrom = +this.dataset.i;
+    this.classList.add('drag');
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  el.ondragend = function() { this.classList.remove('drag'); dragFrom = null; };
+  el.ondragover = function(e) { e.preventDefault(); this.classList.add('target'); };
+  el.ondragleave = function() { this.classList.remove('target'); };
+  el.ondrop = function(e) {
+    e.preventDefault(); this.classList.remove('target');
+    var to = +this.dataset.i;
+    if (dragFrom === null || dragFrom === to) return;
+    var moved = PAGES.splice(dragFrom, 1)[0];
+    PAGES.splice(to, 0, moved);
+    render();
+  };
+}
+
+/* ── PDF 한 장으로 합치기 ────────────────────────────────── */
+function merge() {
+  if (!PAGES.length) return;
+  var btn = $('make');
+  btn.disabled = true; btn.textContent = '합치는 중...';
+  doMerge().then(function() {
+    btn.disabled = false; btn.textContent = 'PDF로 합치기';
+  }).catch(function(err) {
+    console.error(err);
+    msg('합치기 실패: ' + (err.message || err));
+    btn.disabled = false; btn.textContent = 'PDF로 합치기';
+  });
+}
+
+async function doMerge() {
+  var L = PDFLib;
+  var out = await L.PDFDocument.create();
+  var loaded = {};   /* fileIdx → PDFDocument */
+
+  /* ★ 표지를 맨 앞에 붙인다 (2026-08-26) */
+  if ($('use-cover').checked) {
+    msg('표지 만드는 중...');
+    var cimg = await out.embedJpg(dataUrlToBytes(buildCover()));
+    var cpage = out.addPage([595, 842]);            /* A4 포인트 */
+    cpage.drawImage(cimg, { x: 0, y: 0, width: 595, height: 842 });
+  }
+
+  for (var i = 0; i < PAGES.length; i++) {
+    var p = PAGES[i];
+    msg('합치는 중... ' + (i + 1) + ' / ' + PAGES.length);
+    var f = FILES[p.fileIdx];
+
+    if (p.kind === 'pdf') {
+      if (!loaded[p.fileIdx]) {
+        loaded[p.fileIdx] = await L.PDFDocument.load(f.bytes, { ignoreEncryption: true });
+      }
+      var copied = await out.copyPages(loaded[p.fileIdx], [p.pageIdx]);
+      var pg = copied[0];
+      var base = pg.getRotation().angle || 0;
+      pg.setRotation(L.degrees((base + p.rot) % 360));
+      out.addPage(pg);
+    } else {
+      var img = /\.png$/i.test(f.name)
+        ? await out.embedPng(f.bytes)
+        : await out.embedJpg(f.bytes);
+      var page = out.addPage([img.width, img.height]);
+      page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+      if (p.rot) page.setRotation(L.degrees(p.rot % 360));
+    }
+  }
+
+  var bytes = await out.save();
+  var name = ($('fname').value || '청구서류').replace(/[\\/:*?"<>|]/g, '').trim() || '청구서류';
+  var blob = new Blob([bytes], { type: 'application/pdf' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name + '.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function() { URL.revokeObjectURL(a.href); }, 4000);
+  msg('완료 — ' + PAGES.length + '장을 ' + name + '.pdf 로 저장했습니다.');
+}
+</script>
+</body>
+</html>
