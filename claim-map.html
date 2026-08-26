@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>살구 · 청구서 좌표 잡기</title>
+<title>살구 · 청구서 칸 위치 알려주기</title>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -71,7 +71,7 @@
 <body>
 
 <header>
-  <h1>🍑 청구서 좌표 잡기</h1>
+  <h1>🍑 청구서 칸 위치 알려주기</h1>
   <select id="ins"></select>
   <button onclick="pageGo(-1)">◀</button>
   <span class="pg" id="pg">-</span>
@@ -79,6 +79,7 @@
   <span style="font-size:12.5px;color:#8a7566;">글자</span>
   <input type="number" id="size" value="11" min="6" max="30" style="width:62px">
   <span class="spacer"></span>
+  <button onclick="resetToDefault()">기본 위치 다시 넣기</button>
   <button onclick="undoLast()">↩ 방금 취소</button>
   <button class="danger" onclick="clearIns()">이 보험사 초기화</button>
   <button onclick="loadJson()">불러오기</button>
@@ -87,18 +88,28 @@
 
 <main>
   <div id="side">
-    <h2>찍을 항목</h2>
+    <h2>항목 목록</h2>
     <p class="tip">
-      항목을 고르고 청구서 위를 클릭하면 그 자리에 배치됩니다.<br>
-      배치하면 <b>다음 항목으로 자동으로 넘어갑니다.</b><br>
-      이 양식에 없는 항목은 그냥 건너뛰고 다른 걸 고르세요.<br>
-      찍은 표시를 클릭하면 지워집니다.
+      아래에서 항목을 고른 다음, 오른쪽 청구서에서 <b>그 내용이 들어갈 빈칸을 마우스로 눌러주세요.</b><br>
+      예) '피보험자 성명'을 고르고 → 청구서의 성명 칸을 클릭<br><br>
+      한 번 누르면 <b>다음 항목으로 자동으로 넘어갑니다.</b> 계속 누르기만 하시면 됩니다.<br>
+      이 청구서에 없는 항목은 건너뛰고 다른 걸 고르세요.<br>
+      잘못 눌렀으면 <b>그 표시를 다시 클릭하면 지워집니다.</b><br><br>
+      <b>표시를 끌면 위치를 미세하게 옮길 수 있습니다.</b><br><br>
+      <b>대부분은 이미 자동으로 찍혀 있습니다.</b> 확인하시고 어긋난 것만 옮기거나 지우고,
+      빠진 것만 채워주세요. 동의서의 '동의함' 네모칸, 서명란처럼 여러 쪽에 반복되는 것은
+      나오는 자리마다 찍으시면 됩니다.
     </p>
     <div id="flist"></div>
   </div>
 
   <div id="stage">
     <p id="hint">보험사를 고르면 청구서가 뜹니다. 작업 내용은 자동 저장되니 창을 닫아도 됩니다.</p>
+    <p id="warn" style="display:none;background:#fef2f2;border:1.5px solid #fca5a5;color:#b91c1c;
+       border-radius:9px;padding:11px 13px;font-size:13px;line-height:1.7;margin:0 0 10px;">
+      ⚠️ 지금 이 페이지를 <b>컴퓨터 파일로 직접 열고 계십니다.</b> 이렇게 열면 청구서를 불러올 수 없습니다.<br>
+      <b>https://salgu.pages.dev/claim-map.html</b> 로 접속해서 사용해주세요.
+    </p>
     <div id="wrap"><canvas id="cv"></canvas></div>
   </div>
 </main>
@@ -158,6 +169,8 @@ var FIELDS = [
   ['bank','은행명','text'],
   ['holder','예금주','text'],
   ['acct','계좌번호','text'],
+  ['— 동의서 —','grp'],
+  ['agree','✔ 동의함 (네모칸마다)','chk'],
   ['— 마무리 —','grp'],
   ['today','작성일','text'],
   ['signName','서명란 성명','text'],
@@ -166,6 +179,7 @@ var FIELDS = [
 
 var KEY='salguClaimMap';
 var MAP = {};                    /* {보험사키: [ {k,page,x,y,size,type}, ... ] } */
+var DEFAULTS = {};               /* claim-map.json — 자동으로 뽑아둔 기본 위치 */
 var curIns = null, curDoc = null, curPage = 0, numPages = 0;
 var curField = null, viewScale = 1;
 var $ = function(id){ return document.getElementById(id); };
@@ -177,6 +191,7 @@ function marks() { return (MAP[curIns] = MAP[curIns] || []); }
 
 /* ── 초기화 ─────────────────────────────────────────────── */
 load();
+if (location.protocol === 'file:') $('warn').style.display = 'block';
 INS.forEach(function(v){
   var o = document.createElement('option');
   o.value = v[0]; o.textContent = v[1];
@@ -185,7 +200,20 @@ INS.forEach(function(v){
 $('ins').onchange = function(){ openIns(this.value); };
 $('size').onchange = drawMarks;
 buildFieldList();
-openIns(INS[0][0]);
+
+/* 기본 위치를 먼저 받아온 뒤 첫 보험사를 연다 */
+fetch('claim-map.json').then(function(r){ return r.ok ? r.json() : {}; })
+  .catch(function(){ return {}; })
+  .then(function(d){ DEFAULTS = d || {}; openIns(INS[0][0]); });
+
+function clone(a) { return JSON.parse(JSON.stringify(a || [])); }
+
+function resetToDefault() {
+  var d = DEFAULTS[curIns];
+  if (!d || !d.length) { alert('이 보험사는 기본 위치가 없습니다. 직접 찍어주세요.'); return; }
+  if (marks().length && !confirm('지금 찍은 것을 지우고 기본 위치로 되돌릴까요?')) return;
+  MAP[curIns] = clone(d); save(); drawMarks(); refreshList();
+}
 
 /* ── 항목 목록 ──────────────────────────────────────────── */
 function buildFieldList() {
@@ -234,6 +262,10 @@ function fieldInfo(k) {
 /* ── PDF 열기 ───────────────────────────────────────────── */
 function openIns(key) {
   curIns = key; curPage = 0; curDoc = null;
+  /* 아직 손대지 않은 보험사면 자동으로 뽑아둔 기본 위치를 채워넣는다 */
+  if (!(MAP[key] && MAP[key].length) && DEFAULTS[key] && DEFAULTS[key].length) {
+    MAP[key] = clone(DEFAULTS[key]); save();
+  }
   $('hint').textContent = '불러오는 중...';
   pdfjsLib.getDocument('claim-forms/' + key + '.pdf').promise.then(function(doc){
     curDoc = doc; numPages = doc.numPages;
@@ -241,7 +273,9 @@ function openIns(key) {
     renderPage();
     refreshList();
   }).catch(function(e){
-    $('hint').textContent = '청구서를 열 수 없습니다: claim-forms/' + key + '.pdf';
+    $('hint').textContent = location.protocol === 'file:'
+      ? '컴퓨터 파일로 열어서 청구서를 불러올 수 없습니다. 위 안내대로 인터넷 주소로 접속해주세요.'
+      : '청구서를 열 수 없습니다: claim-forms/' + key + '.pdf';
     console.error(e);
   });
 }
@@ -294,13 +328,35 @@ function drawMarks() {
     d.style.left = (m.x * cv.width) + 'px';
     d.style.top  = (m.y * cv.height) + 'px';
     d.textContent = info.label;
-    d.title = '누르면 지웁니다';
-    d.onclick = function(ev){
-      ev.stopPropagation();
-      marks().splice(i, 1); save(); drawMarks(); refreshList();
-    };
+    d.title = '끌어서 옮기기 · 눌러서 지우기';
+    bindMark(d, m, i, cv);
     wrap.appendChild(d);
   });
+}
+
+/* 표시를 끌어서 미세 조정, 그냥 누르면 삭제 */
+function bindMark(el, m, idx, cv) {
+  el.onmousedown = function(ev) {
+    ev.preventDefault(); ev.stopPropagation();
+    var sx = ev.clientX, sy = ev.clientY, moved = false;
+    var r = cv.getBoundingClientRect();
+    function mv(e) {
+      if (!moved && Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) < 4) return;
+      moved = true;
+      m.x = +Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)).toFixed(4);
+      m.y = +Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)).toFixed(4);
+      el.style.left = (m.x * cv.width) + 'px';
+      el.style.top  = (m.y * cv.height) + 'px';
+    }
+    function up() {
+      document.removeEventListener('mousemove', mv);
+      document.removeEventListener('mouseup', up);
+      if (moved) { save(); }
+      else { marks().splice(idx, 1); save(); drawMarks(); refreshList(); }
+    }
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+  };
 }
 
 function undoLast() {
