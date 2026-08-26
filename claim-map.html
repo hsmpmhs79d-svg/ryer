@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>살구 · 청구서 좌표 잡기</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #fdf4ec; margin: 0; color: #3f3229;
+  }
+  header {
+    background: #fff; border-bottom: 1.5px solid #ecdcc8; padding: 11px 16px;
+    display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+    position: sticky; top: 0; z-index: 20;
+  }
+  h1 { font-size: 16px; color: #7c2d12; margin: 0 12px 0 0; letter-spacing: -.3px; }
+  select, input[type=number] {
+    font-family: inherit; font-size: 13.5px; padding: 7px 9px;
+    border: 1.5px solid #e0c9a6; border-radius: 8px; background: #fffdfb;
+  }
+  button {
+    font-family: inherit; cursor: pointer; border-radius: 8px;
+    border: 1.5px solid #e0c9a6; background: #fff; color: #7c2d12;
+    padding: 7px 12px; font-size: 13px; font-weight: 700;
+  }
+  button:hover { background: #fff3e8; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  .go { background: #c2410c; color: #fff; border: none; }
+  .go:hover { background: #9a3412; }
+  .danger { border-color: #fca5a5; color: #b91c1c; }
+  .spacer { flex: 1; }
+  .pg { font-size: 13.5px; font-weight: 800; color: #7c2d12; }
+
+  main { display: flex; gap: 14px; padding: 14px 16px 40px; align-items: flex-start; }
+  #side {
+    width: 260px; flex: none; background: #fff; border: 1.5px solid #ecdcc8;
+    border-radius: 11px; padding: 12px; position: sticky; top: 68px;
+    max-height: calc(100vh - 84px); overflow: auto;
+  }
+  #side h2 { font-size: 13px; color: #8a7566; margin: 0 0 4px; }
+  .tip { font-size: 11.5px; color: #a08a76; line-height: 1.6; margin: 0 0 10px; }
+  .grp { font-size: 11px; font-weight: 800; color: #c2410c; margin: 12px 0 5px; }
+  .f {
+    display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 7px;
+    cursor: pointer; font-size: 13px; border: 1.5px solid transparent;
+  }
+  .f:hover { background: #fff7f0; }
+  .f.cur { background: #fff3e8; border-color: #c2410c; font-weight: 800; }
+  .f .n { flex: 1; }
+  .f .c { font-size: 11px; color: #16a34a; font-weight: 800; }
+  .f .c.zero { color: #cbbcae; }
+
+  #stage { flex: 1; min-width: 0; }
+  #wrap { position: relative; display: inline-block; background: #fff;
+          border: 1.5px solid #ecdcc8; border-radius: 8px; overflow: hidden; }
+  #cv { display: block; cursor: crosshair; max-width: 100%; }
+  .mk {
+    position: absolute; transform: translate(0, -50%);
+    background: rgba(194,65,12,.86); color: #fff; font-size: 10px; font-weight: 700;
+    padding: 1px 5px; border-radius: 4px; white-space: nowrap; cursor: pointer;
+    border: 1px solid #fff; line-height: 1.5;
+  }
+  .mk:hover { background: #b91c1c; }
+  .mk.sig { background: rgba(29,78,216,.86); }
+  .mk.chk { background: rgba(22,101,52,.86); }
+  #hint { font-size: 12.5px; color: #8a7566; margin: 0 0 9px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🍑 청구서 좌표 잡기</h1>
+  <select id="ins"></select>
+  <button onclick="pageGo(-1)">◀</button>
+  <span class="pg" id="pg">-</span>
+  <button onclick="pageGo(1)">▶</button>
+  <span style="font-size:12.5px;color:#8a7566;">글자</span>
+  <input type="number" id="size" value="11" min="6" max="30" style="width:62px">
+  <span class="spacer"></span>
+  <button onclick="undoLast()">↩ 방금 취소</button>
+  <button class="danger" onclick="clearIns()">이 보험사 초기화</button>
+  <button onclick="loadJson()">불러오기</button>
+  <button class="go" onclick="saveJson()">전체 저장</button>
+</header>
+
+<main>
+  <div id="side">
+    <h2>찍을 항목</h2>
+    <p class="tip">
+      항목을 고르고 청구서 위를 클릭하면 그 자리에 배치됩니다.<br>
+      배치하면 <b>다음 항목으로 자동으로 넘어갑니다.</b><br>
+      이 양식에 없는 항목은 그냥 건너뛰고 다른 걸 고르세요.<br>
+      찍은 표시를 클릭하면 지워집니다.
+    </p>
+    <div id="flist"></div>
+  </div>
+
+  <div id="stage">
+    <p id="hint">보험사를 고르면 청구서가 뜹니다. 작업 내용은 자동 저장되니 창을 닫아도 됩니다.</p>
+    <div id="wrap"><canvas id="cv"></canvas></div>
+  </div>
+</main>
+
+<input type="file" id="jsonpick" accept=".json" style="display:none">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   살구 청구서 좌표 잡기 (2026-08-26)
+   각 보험사 청구서 PDF 위에 들어갈 항목의 위치를 찍어 저장한다.
+   좌표는 0~1 비율로 저장 → 화면 크기·해상도와 무관하게 재현된다.
+   ══════════════════════════════════════════════════════════════ */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+var INS = [
+  ['samsung-life','삼성생명'],['hanwha-life','한화생명'],['kyobo-life','교보생명'],
+  ['shinhan-life','신한라이프'],['nh-life','NH농협생명'],['mirae-life','미래에셋생명'],
+  ['heungkuk-life','흥국생명'],['tongyang-life','동양생명'],['metlife','메트라이프생명'],
+  ['kb-life','KB라이프생명'],['lina-life','라이나생명(처브)'],['abl-life','ABL생명'],
+  ['aia-life','AIA생명'],['im-life','iM라이프'],['fubon-hyundai-life','푸본현대생명'],
+  ['kdb-life','KDB생명'],['hana-life','하나생명'],
+  ['samsung-fire','삼성화재'],['db-insurance','DB손해보험'],['hyundai-marine','현대해상'],
+  ['meritz-fire','메리츠화재'],['kb-insurance','KB손해보험'],['hanwha-general','한화손해보험'],
+  ['heungkuk-fire','흥국화재'],['lotte-insurance','롯데손해보험'],['nh-fire','NH농협손해보험'],
+  ['axa','AXA손해보험'],['hana-insurance','하나손해보험']
+];
+
+var FIELDS = [
+  ['— 피보험자 —','grp'],
+  ['pName','피보험자 성명','text'],
+  ['pRrn','피보험자 주민번호','text'],
+  ['pTel','피보험자 휴대폰','text'],
+  ['— 청구 사유 —','grp'],
+  ['cDisease','질병 ✔','chk'],
+  ['cAccident','재해 ✔','chk'],
+  ['cDiag','진단 ✔','chk'],
+  ['cOper','수술 ✔','chk'],
+  ['cAdmit','입원 ✔','chk'],
+  ['cVisit','통원 ✔','chk'],
+  ['cDeath','사망 ✔','chk'],
+  ['cDisab','장해 ✔','chk'],
+  ['cSilAdmit','실손입원 ✔','chk'],
+  ['cSilVisit','실손통원 ✔','chk'],
+  ['dxName','병명','text'],
+  ['accDate','사고(진료)일자','text'],
+  ['— 수익자 —','grp'],
+  ['bName','수익자 성명','text'],
+  ['bRrn','수익자 주민번호','text'],
+  ['bTel','수익자 휴대폰','text'],
+  ['bAddr','수익자 주소','text'],
+  ['bEmail','수익자 이메일','text'],
+  ['idIssue','신분증 발급일자','text'],
+  ['— 받을 계좌 —','grp'],
+  ['bank','은행명','text'],
+  ['holder','예금주','text'],
+  ['acct','계좌번호','text'],
+  ['— 마무리 —','grp'],
+  ['today','작성일','text'],
+  ['signName','서명란 성명','text'],
+  ['sign','✍️ 서명','sig']
+];
+
+var KEY='salguClaimMap';
+var MAP = {};                    /* {보험사키: [ {k,page,x,y,size,type}, ... ] } */
+var curIns = null, curDoc = null, curPage = 0, numPages = 0;
+var curField = null, viewScale = 1;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ── 저장소 ─────────────────────────────────────────────── */
+function load() { try { MAP = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { MAP = {}; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(MAP)); } catch(e) {} }
+function marks() { return (MAP[curIns] = MAP[curIns] || []); }
+
+/* ── 초기화 ─────────────────────────────────────────────── */
+load();
+INS.forEach(function(v){
+  var o = document.createElement('option');
+  o.value = v[0]; o.textContent = v[1];
+  $('ins').appendChild(o);
+});
+$('ins').onchange = function(){ openIns(this.value); };
+$('size').onchange = drawMarks;
+buildFieldList();
+openIns(INS[0][0]);
+
+/* ── 항목 목록 ──────────────────────────────────────────── */
+function buildFieldList() {
+  var box = $('flist'); box.innerHTML = '';
+  FIELDS.forEach(function(f){
+    if (f[1] === 'grp') {
+      var g = document.createElement('div');
+      g.className = 'grp'; g.textContent = f[0]; box.appendChild(g); return;
+    }
+    var d = document.createElement('div');
+    d.className = 'f'; d.dataset.k = f[0];
+    d.innerHTML = '<span class="n">' + f[1] + '</span><span class="c zero">0</span>';
+    d.onclick = function(){ curField = f[0]; refreshList(); };
+    box.appendChild(d);
+  });
+  curField = FIELDS[1][0];
+  refreshList();
+}
+
+function refreshList() {
+  var list = marks();
+  Array.prototype.forEach.call(document.querySelectorAll('.f'), function(el){
+    var k = el.dataset.k;
+    var n = list.filter(function(m){ return m.k === k; }).length;
+    el.classList.toggle('cur', k === curField);
+    var c = el.querySelector('.c');
+    c.textContent = n; c.classList.toggle('zero', n === 0);
+  });
+  var cur = document.querySelector('.f.cur');
+  if (cur && cur.scrollIntoView) cur.scrollIntoView({ block:'nearest' });
+}
+
+function nextField() {
+  var keys = FIELDS.filter(function(f){ return f[1] !== 'grp'; }).map(function(f){ return f[0]; });
+  var i = keys.indexOf(curField);
+  if (i >= 0 && i < keys.length - 1) curField = keys[i + 1];
+  refreshList();
+}
+
+function fieldInfo(k) {
+  for (var i = 0; i < FIELDS.length; i++)
+    if (FIELDS[i][0] === k && FIELDS[i][1] !== 'grp') return { label: FIELDS[i][1], type: FIELDS[i][2] };
+  return { label: k, type: 'text' };
+}
+
+/* ── PDF 열기 ───────────────────────────────────────────── */
+function openIns(key) {
+  curIns = key; curPage = 0; curDoc = null;
+  $('hint').textContent = '불러오는 중...';
+  pdfjsLib.getDocument('claim-forms/' + key + '.pdf').promise.then(function(doc){
+    curDoc = doc; numPages = doc.numPages;
+    $('hint').textContent = '항목을 고르고 청구서 위를 클릭하세요. 작업은 자동 저장됩니다.';
+    renderPage();
+    refreshList();
+  }).catch(function(e){
+    $('hint').textContent = '청구서를 열 수 없습니다: claim-forms/' + key + '.pdf';
+    console.error(e);
+  });
+}
+
+function pageGo(d) {
+  if (!curDoc) return;
+  var n = curPage + d;
+  if (n < 0 || n >= numPages) return;
+  curPage = n; renderPage();
+}
+
+function renderPage() {
+  curDoc.getPage(curPage + 1).then(function(page){
+    var vp1 = page.getViewport({ scale: 1 });
+    viewScale = Math.min(1000 / vp1.width, 1.6);
+    var vp = page.getViewport({ scale: viewScale });
+    var cv = $('cv');
+    cv.width = vp.width; cv.height = vp.height;
+    page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function(){
+      $('pg').textContent = (curPage + 1) + ' / ' + numPages;
+      drawMarks();
+    });
+  });
+}
+
+/* ── 클릭해서 배치 ──────────────────────────────────────── */
+$('cv').onclick = function(e) {
+  if (!curDoc || !curField) return;
+  var r = this.getBoundingClientRect();
+  var x = (e.clientX - r.left) / r.width;
+  var y = (e.clientY - r.top) / r.height;
+  var info = fieldInfo(curField);
+  marks().push({
+    k: curField, page: curPage,
+    x: +x.toFixed(4), y: +y.toFixed(4),
+    size: +$('size').value || 11, type: info.type
+  });
+  save(); drawMarks(); nextField();
+};
+
+function drawMarks() {
+  var wrap = $('wrap');
+  Array.prototype.forEach.call(wrap.querySelectorAll('.mk'), function(el){ el.remove(); });
+  var cv = $('cv');
+  marks().forEach(function(m, i){
+    if (m.page !== curPage) return;
+    var info = fieldInfo(m.k);
+    var d = document.createElement('div');
+    d.className = 'mk' + (m.type === 'sig' ? ' sig' : (m.type === 'chk' ? ' chk' : ''));
+    d.style.left = (m.x * cv.width) + 'px';
+    d.style.top  = (m.y * cv.height) + 'px';
+    d.textContent = info.label;
+    d.title = '누르면 지웁니다';
+    d.onclick = function(ev){
+      ev.stopPropagation();
+      marks().splice(i, 1); save(); drawMarks(); refreshList();
+    };
+    wrap.appendChild(d);
+  });
+}
+
+function undoLast() {
+  var list = marks();
+  if (!list.length) return;
+  list.pop(); save(); drawMarks(); refreshList();
+}
+
+function clearIns() {
+  if (!confirm('이 보험사에 찍은 좌표를 전부 지울까요?')) return;
+  MAP[curIns] = []; save(); drawMarks(); refreshList();
+}
+
+/* ── 내보내기 · 불러오기 ────────────────────────────────── */
+function saveJson() {
+  var blob = new Blob([JSON.stringify(MAP, null, 1)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'claim-map.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  var n = Object.keys(MAP).filter(function(k){ return (MAP[k]||[]).length; }).length;
+  $('hint').textContent = 'claim-map.json 으로 저장했습니다 — 좌표가 있는 보험사 ' + n + '곳.';
+}
+
+$('jsonpick').onchange = function() {
+  var f = this.files && this.files[0]; if (!f) return;
+  var fr = new FileReader();
+  fr.onload = function(e){
+    try {
+      var obj = JSON.parse(e.target.result);
+      MAP = obj; save(); drawMarks(); refreshList();
+      $('hint').textContent = '불러왔습니다.';
+    } catch(err) { alert('JSON을 읽을 수 없습니다.'); }
+  };
+  fr.readAsText(f); this.value = '';
+};
+function loadJson() { $('jsonpick').click(); }
+</script>
+</body>
+</html>
