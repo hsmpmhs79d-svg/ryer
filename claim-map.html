@@ -83,6 +83,9 @@
     border-top: 2px solid #fca5a5; border-bottom: 2px solid #fca5a5; pointer-events: none;
   }
   #skipbtn.on { background: #b91c1c; color: #fff; border-color: #b91c1c; }
+  #splitbtn.on { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+  .tick { position: absolute; width: 2px; height: 15px; background: rgba(29,78,216,.55);
+          transform: translate(-1px, -50%); pointer-events: none; }
   .pg.skip { color: #b91c1c; text-decoration: line-through; }
 </style>
 </head>
@@ -95,6 +98,7 @@
   <span class="pg" id="pg">-</span>
   <button onclick="pageGo(1)">▶</button>
   <button id="skipbtn" onclick="toggleSkip()">이 쪽 안 보냄</button>
+  <button id="splitbtn" onclick="toggleSplit()" title="주민번호·계좌번호처럼 네모칸이 하나씩 나뉜 자리">▦ 칸 나눔</button>
   <span style="font-size:12.5px;color:#8a7566;">글자</span>
   <input type="number" id="size" value="11" min="6" max="30" style="width:62px">
   <span class="spacer"></span>
@@ -476,23 +480,56 @@ function renderPage() {
 }
 
 /* ── 클릭해서 배치 ──────────────────────────────────────── */
+/* ── 칸 나눔 (2026-08-26) ──
+   흥국생명처럼 네모칸이 한 글자씩 나뉜 자리.
+   첫 칸을 누르고 → 다음 칸을 누르면 간격을 재서 한 글자씩 떨어뜨려 찍는다. */
+var splitMode = 0, splitIdx = -1;
+
+function toggleSplit() {
+  splitMode = splitMode ? 0 : 1; splitIdx = -1;
+  $('splitbtn').classList.toggle('on', !!splitMode);
+  $('hint').textContent = splitMode
+    ? '칸 나눔 — 항목을 고른 뒤 ①첫 칸 가운데를 누르고, ②바로 다음 칸 가운데를 눌러주세요.'
+    : '칸 나눔을 껐습니다.';
+}
+
 $('cv').onclick = function(e) {
   if (!curDoc || !curField) return;
   var r = this.getBoundingClientRect();
   var x = (e.clientX - r.left) / r.width;
   var y = (e.clientY - r.top) / r.height;
   var info = fieldInfo(curField);
+
+  if (splitMode === 2 && splitIdx >= 0) {            /* 두 번째 클릭 = 간격 */
+    var m = marks()[splitIdx];
+    var st = Math.abs(x - m.x);
+    if (st < 0.002) { $('hint').textContent = '너무 가깝습니다. 다음 칸 가운데를 눌러주세요.'; return; }
+    m.step = +st.toFixed(4);
+    splitMode = 0; splitIdx = -1;
+    $('splitbtn').classList.remove('on');
+    save(); drawMarks(); refreshList(); nextField();
+    $('hint').textContent = '칸 간격을 기억했습니다. 한 글자씩 떨어뜨려 찍습니다.';
+    return;
+  }
+
   marks().push({
     k: curField, page: curPage,
     x: +x.toFixed(4), y: +y.toFixed(4),
     size: +$('size').value || 11, type: info.type
   });
-  save(); drawMarks(); nextField();
+  save(); drawMarks();
+
+  if (splitMode === 1) {                              /* 첫 번째 클릭 */
+    splitIdx = marks().length - 1; splitMode = 2;
+    $('hint').textContent = '이제 바로 다음 칸 가운데를 눌러주세요. 간격을 잽니다.';
+    return;
+  }
+  nextField();
 };
 
 function drawMarks() {
   var wrap = $('wrap');
-  Array.prototype.forEach.call(wrap.querySelectorAll('.mk'), function(el){ el.remove(); });
+  Array.prototype.forEach.call(wrap.querySelectorAll('.mk,.tick'), function(el){ el.remove(); });
   var cv = $('cv');
   marks().forEach(function(m, i){
     if (m.page !== curPage) return;
@@ -501,10 +538,22 @@ function drawMarks() {
     d.className = 'mk' + (m.type === 'sig' ? ' sig' : (m.type === 'chk' ? ' chk' : ''));
     d.style.left = (m.x * cv.width) + 'px';
     d.style.top  = (m.y * cv.height) + 'px';
-    d.textContent = info.label;
+    d.textContent = info.label + (m.step ? ' ▦' : '');
     d.title = '끌어서 옮기기 · 눌러서 지우기';
     bindMark(d, m, i, cv);
     wrap.appendChild(d);
+    /* 칸 나눔이면 다음 칸들을 눈금으로 미리 보여준다 */
+    if (m.step) {
+      for (var n = 1; n <= 13; n++) {
+        var tx = (m.x + m.step * n) * cv.width;
+        if (tx > cv.width - 2) break;
+        var tk = document.createElement('div');
+        tk.className = 'tick';
+        tk.style.left = tx + 'px';
+        tk.style.top = (m.y * cv.height) + 'px';
+        wrap.appendChild(tk);
+      }
+    }
   });
 }
 

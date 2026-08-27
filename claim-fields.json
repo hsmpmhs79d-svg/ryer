@@ -278,7 +278,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -586,7 +610,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -894,9 +942,33 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
    "type": "text",
    "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
+   "type": "text",
+   "on": false
   },
   {
    "k": "signName",
@@ -1202,9 +1274,33 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
    "type": "text",
    "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
+   "type": "text",
+   "on": false
   },
   {
    "k": "signName",
@@ -1510,7 +1606,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -1818,7 +1938,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -2126,7 +2270,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -2434,7 +2602,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -2742,7 +2934,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -3050,9 +3266,33 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
    "type": "text",
    "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
+   "type": "text",
+   "on": false
   },
   {
    "k": "signName",
@@ -3358,7 +3598,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -3666,9 +3930,33 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
    "type": "text",
    "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
+   "type": "text",
+   "on": false
   },
   {
    "k": "signName",
@@ -3974,7 +4262,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -4282,7 +4594,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -4590,7 +4926,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -4898,7 +5258,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -5206,7 +5590,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -5514,7 +5922,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -5822,9 +6254,33 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
    "type": "text",
    "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
+   "type": "text",
+   "on": false
   },
   {
    "k": "signName",
@@ -6130,7 +6586,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -6438,7 +6918,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -6746,7 +7250,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -7054,7 +7582,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -7362,7 +7914,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -7670,9 +8246,33 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
    "type": "text",
    "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
+   "type": "text",
+   "on": false
   },
   {
    "k": "signName",
@@ -7978,7 +8578,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -8286,7 +8910,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
@@ -8594,7 +9242,31 @@
   },
   {
    "k": "today",
-   "label": "작성일",
+   "label": "작성일 (한 칸에 전부)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY",
+   "label": "작성 연도 (20 뒤 2자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayY4",
+   "label": "작성 연도 (4자리)",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayM",
+   "label": "작성 월",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "todayD",
+   "label": "작성 일",
    "type": "text",
    "on": true
   },
