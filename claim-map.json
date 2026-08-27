@@ -89,6 +89,14 @@
    "type": "text"
   },
   {
+   "k": "idRrnIssue",
+   "page": 0,
+   "x": 0.3163,
+   "y": 0.815,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "idIssue",
    "page": 0,
    "x": 0.7281,
@@ -315,14 +323,6 @@
    "type": "text"
   },
   {
-   "k": "pJob",
-   "page": 0,
-   "x": 0.5034,
-   "y": 0.2874,
-   "size": 11,
-   "type": "text"
-  },
-  {
    "k": "pNat",
    "page": 0,
    "x": 0.2265,
@@ -407,6 +407,30 @@
    "page": 0,
    "x": 0.212,
    "y": 0.5279,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idRrnIssue",
+   "page": 0,
+   "x": 0.5879,
+   "y": 0.2494,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicNo",
+   "page": 0,
+   "x": 0.5217,
+   "y": 0.2684,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicSerial",
+   "page": 0,
+   "x": 0.7715,
+   "y": 0.2684,
    "size": 11,
    "type": "text"
   },
@@ -631,7 +655,7 @@
   {
    "k": "bEmail",
    "page": 0,
-   "x": 0.2313,
+   "x": 0.1691,
    "y": 0.2381,
    "size": 11,
    "type": "text"
@@ -771,6 +795,22 @@
    "page": 0,
    "x": 0.2623,
    "y": 0.1793,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.5294,
+   "y": 0.1793,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.2692,
+   "y": 0.2887,
    "size": 11,
    "type": "text"
   },
@@ -949,6 +989,14 @@
    "page": 0,
    "x": 0.619,
    "y": 0.2222,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.6,
+   "y": 0.284,
    "size": 11,
    "type": "text"
   },
@@ -1219,6 +1267,30 @@
  ],
  "hana-life": [
   {
+   "k": "pName",
+   "page": 0,
+   "x": 0.177,
+   "y": 0.29,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.5441,
+   "y": 0.29,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.5444,
+   "y": 0.3136,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "pNat",
    "page": 0,
    "x": 0.5324,
@@ -1233,6 +1305,14 @@
    "y": 0.1985,
    "size": 11,
    "type": "chk"
+  },
+  {
+   "k": "bName",
+   "page": 0,
+   "x": 0.1783,
+   "y": 0.3809,
+   "size": 11,
+   "type": "text"
   },
   {
    "k": "bRrn",
@@ -1255,6 +1335,30 @@
    "page": 0,
    "x": 0.1815,
    "y": 0.4044,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "bJob",
+   "page": 0,
+   "x": 0.5375,
+   "y": 0.428,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idRrnIssue",
+   "page": 0,
+   "x": 0.3668,
+   "y": 0.5458,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idRrnOrg",
+   "page": 0,
+   "x": 0.3198,
+   "y": 0.6401,
    "size": 11,
    "type": "text"
   },
@@ -1437,6 +1541,38 @@
  ],
  "hanwha-general": [
   {
+   "k": "pName",
+   "page": 0,
+   "x": 0.2263,
+   "y": 0.1528,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.204,
+   "y": 0.1787,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.1892,
+   "y": 0.2047,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pAddr",
+   "page": 0,
+   "x": 0.5473,
+   "y": 0.1528,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "pJob",
    "page": 0,
    "x": 0.5482,
@@ -1549,6 +1685,22 @@
    "type": "text"
   },
   {
+   "k": "bank",
+   "page": 0,
+   "x": 0.2221,
+   "y": 0.6171,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "holder",
+   "page": 0,
+   "x": 0.2221,
+   "y": 0.644,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "acct",
    "page": 0,
    "x": 0.5181,
@@ -1561,6 +1713,14 @@
    "page": 0,
    "x": 0.1854,
    "y": 0.8469,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "signName",
+   "page": 0,
+   "x": 0.2263,
+   "y": 0.1528,
    "size": 11,
    "type": "text"
   },
@@ -1923,8 +2083,16 @@
   {
    "k": "pRrn",
    "page": 0,
-   "x": 0.7166,
+   "x": 0.4559,
    "y": 0.2777,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.4352,
+   "y": 0.3717,
    "size": 11,
    "type": "text"
   },
@@ -2131,6 +2299,38 @@
  ],
  "im-life": [
   {
+   "k": "pName",
+   "page": 0,
+   "x": 0.1773,
+   "y": 0.4082,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.4455,
+   "y": 0.4082,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.7459,
+   "y": 0.4082,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pAddr",
+   "page": 0,
+   "x": 0.1773,
+   "y": 0.4271,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "pJob",
    "page": 0,
    "x": 0.7735,
@@ -2303,7 +2503,7 @@
   {
    "k": "pName",
    "page": 0,
-   "x": 0.6866,
+   "x": 0.2029,
    "y": 0.127,
    "size": 11,
    "type": "text"
@@ -2311,7 +2511,7 @@
   {
    "k": "pTel",
    "page": 0,
-   "x": 0.5967,
+   "x": 0.2126,
    "y": 0.163,
    "size": 11,
    "type": "text"
@@ -2471,7 +2671,7 @@
   {
    "k": "signName",
    "page": 0,
-   "x": 0.6866,
+   "x": 0.2029,
    "y": 0.127,
    "size": 11,
    "type": "text"
@@ -2883,7 +3083,7 @@
   {
    "k": "pRrn",
    "page": 0,
-   "x": 0.8152,
+   "x": 0.5938,
    "y": 0.1445,
    "size": 11,
    "type": "text"
@@ -2891,7 +3091,7 @@
   {
    "k": "pTel",
    "page": 0,
-   "x": 0.3948,
+   "x": 0.2624,
    "y": 0.1622,
    "size": 11,
    "type": "text"
@@ -3083,6 +3283,30 @@
  ],
  "lina-life": [
   {
+   "k": "pName",
+   "page": 0,
+   "x": 0.1492,
+   "y": 0.212,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.3906,
+   "y": 0.212,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.7184,
+   "y": 0.212,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "pJob",
    "page": 0,
    "x": 0.1751,
@@ -3174,6 +3398,14 @@
    "k": "bank",
    "page": 0,
    "x": 0.221,
+   "y": 0.3974,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "acct",
+   "page": 0,
+   "x": 0.4288,
    "y": 0.3974,
    "size": 11,
    "type": "text"
@@ -3509,9 +3741,25 @@
    "type": "text"
   },
   {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.4985,
+   "y": 0.2188,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pAddr",
+   "page": 0,
+   "x": 0.2203,
+   "y": 0.2457,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "pJob",
    "page": 0,
-   "x": 0.4914,
+   "x": 0.2245,
    "y": 0.1649,
    "size": 11,
    "type": "text"
@@ -3715,6 +3963,22 @@
    "page": 0,
    "x": 0.1857,
    "y": 0.1247,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.5563,
+   "y": 0.7403,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.3983,
+   "y": 0.2149,
    "size": 11,
    "type": "text"
   },
@@ -3977,10 +4241,10 @@
    "type": "text"
   },
   {
-   "k": "pJob",
+   "k": "pTel",
    "page": 0,
-   "x": 0.2428,
-   "y": 0.2755,
+   "x": 0.6379,
+   "y": 0.1262,
    "size": 11,
    "type": "text"
   },
@@ -4137,6 +4401,38 @@
    "type": "text"
   },
   {
+   "k": "bJob",
+   "page": 0,
+   "x": 0.2428,
+   "y": 0.2755,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idRrnIssue",
+   "page": 0,
+   "x": 0.3858,
+   "y": 0.2273,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicNo",
+   "page": 0,
+   "x": 0.5254,
+   "y": 0.2273,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicSerial",
+   "page": 0,
+   "x": 0.554,
+   "y": 0.2497,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "idIssue",
    "page": 0,
    "x": 0.3858,
@@ -4275,6 +4571,22 @@
    "type": "text"
   },
   {
+   "k": "pRrn",
+   "page": 0,
+   "x": 0.6198,
+   "y": 0.6974,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.5814,
+   "y": 0.2701,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "cDisease",
    "page": 0,
    "x": 0.2085,
@@ -4334,6 +4646,14 @@
    "k": "relation",
    "page": 0,
    "x": 0.8909,
+   "y": 0.6974,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "bank",
+   "page": 0,
+   "x": 0.1676,
    "y": 0.6974,
    "size": 11,
    "type": "text"
@@ -4605,6 +4925,62 @@
    "type": "text"
   },
   {
+   "k": "bJob",
+   "page": 0,
+   "x": 0.8227,
+   "y": 0.1623,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idRrnOrg",
+   "page": 0,
+   "x": 0.8995,
+   "y": 0.1813,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicNo",
+   "page": 0,
+   "x": 0.7467,
+   "y": 0.2003,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicSerial",
+   "page": 0,
+   "x": 0.8995,
+   "y": 0.2003,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idIssue",
+   "page": 0,
+   "x": 0.7099,
+   "y": 0.1813,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "bank",
+   "page": 0,
+   "x": 0.454,
+   "y": 0.5196,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "holder",
+   "page": 0,
+   "x": 0.2565,
+   "y": 0.5196,
+   "size": 11,
+   "type": "text"
+  },
+  {
    "k": "acct",
    "page": 0,
    "x": 0.6767,
@@ -4705,8 +5081,16 @@
   {
    "k": "pRrn",
    "page": 0,
-   "x": 0.5911,
+   "x": 0.4605,
    "y": 0.2083,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "pTel",
+   "page": 0,
+   "x": 0.5441,
+   "y": 0.2554,
    "size": 11,
    "type": "text"
   },
@@ -5153,10 +5537,34 @@
    "type": "text"
   },
   {
-   "k": "idIssue",
+   "k": "idLicNo",
    "page": 0,
-   "x": 0.3786,
-   "y": 0.4735,
+   "x": 0.3042,
+   "y": 0.4937,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicSerial",
+   "page": 0,
+   "x": 0.7733,
+   "y": 0.4937,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "bank",
+   "page": 0,
+   "x": 0.2879,
+   "y": 0.5442,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "holder",
+   "page": 0,
+   "x": 0.4946,
+   "y": 0.5442,
    "size": 11,
    "type": "text"
   },
@@ -5635,10 +6043,34 @@
    "type": "text"
   },
   {
-   "k": "idIssue",
+   "k": "idRrnIssue",
+   "page": 0,
+   "x": 0.3315,
+   "y": 0.5332,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicNo",
    "page": 0,
    "x": 0.3258,
    "y": 0.5521,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idLicSerial",
+   "page": 0,
+   "x": 0.6133,
+   "y": 0.5521,
+   "size": 11,
+   "type": "text"
+  },
+  {
+   "k": "idIssue",
+   "page": 0,
+   "x": 0.3315,
+   "y": 0.5332,
    "size": 11,
    "type": "text"
   },

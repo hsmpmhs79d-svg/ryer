@@ -27,11 +27,11 @@
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -146,7 +146,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -202,8 +202,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -287,7 +317,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -297,7 +327,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -376,13 +406,13 @@
    "k": "dxName",
    "label": "진단명·병명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -412,7 +442,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -468,8 +498,38 @@
    "on": false
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -482,19 +542,19 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g5",
@@ -553,7 +613,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -563,9 +623,9 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -666,7 +726,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -734,8 +794,38 @@
    "on": false
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -813,13 +903,13 @@
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -829,7 +919,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -914,7 +1004,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -926,7 +1016,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
@@ -944,7 +1034,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -1000,8 +1090,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -1095,7 +1215,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -1266,8 +1386,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -1351,7 +1501,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -1361,7 +1511,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -1446,7 +1596,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -1476,7 +1626,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -1523,7 +1673,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -1532,8 +1682,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -1605,19 +1785,19 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -1627,9 +1807,9 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -1742,7 +1922,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -1765,7 +1945,7 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bRrn",
@@ -1783,7 +1963,7 @@
    "k": "bAddr",
    "label": "수익자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bEmail",
@@ -1798,8 +1978,38 @@
    "on": false
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -1818,7 +2028,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -1871,29 +2081,29 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -1978,7 +2188,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -1996,7 +2206,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -2055,7 +2265,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -2064,8 +2274,38 @@
    "on": false
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -2078,13 +2318,13 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -2118,7 +2358,7 @@
    "k": "signName",
    "label": "서명란 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "sign",
@@ -2159,7 +2399,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -2330,8 +2570,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -2425,7 +2695,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -2510,7 +2780,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -2522,13 +2792,13 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -2587,7 +2857,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -2596,8 +2866,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -2622,7 +2922,7 @@
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g5",
@@ -2691,7 +2991,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -2862,8 +3162,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -2947,17 +3277,17 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": false
   },
@@ -3048,7 +3378,7 @@
    "k": "accPlace",
    "label": "사고장소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDesc",
@@ -3125,11 +3455,41 @@
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
+   "on": true
+  },
+  {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
    "on": false
   },
   {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -3148,7 +3508,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -3201,29 +3561,29 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -3308,13 +3668,13 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
    "label": "사고장소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDesc",
@@ -3326,7 +3686,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -3338,7 +3698,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -3385,17 +3745,47 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
+   "on": true
+  },
+  {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
    "on": false
   },
   {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -3414,7 +3804,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -3489,9 +3879,9 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -3574,7 +3964,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -3604,7 +3994,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -3651,7 +4041,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -3660,8 +4050,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -3755,9 +4175,9 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -3834,7 +4254,7 @@
    "k": "dxName",
    "label": "진단명·병명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDate",
@@ -3858,7 +4278,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -3926,8 +4346,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -3946,7 +4396,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -4021,7 +4471,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -4192,8 +4642,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -4287,7 +4767,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": false
   },
@@ -4390,7 +4870,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -4402,7 +4882,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -4455,11 +4935,41 @@
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
+   "on": true
+  },
+  {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
    "on": false
   },
   {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -4478,7 +4988,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -4531,29 +5041,29 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -4650,7 +5160,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
@@ -4668,7 +5178,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -4724,10 +5234,40 @@
    "on": true
   },
   {
-   "k": "idIssue",
-   "label": "신분증 발급일자",
+   "k": "bJob",
+   "label": "수익자 직업",
    "type": "text",
    "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idIssue",
+   "label": "그 밖의 신분증 발급일자",
+   "type": "text",
+   "on": true
   },
   {
    "k": "__g4",
@@ -4750,7 +5290,7 @@
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g5",
@@ -4809,17 +5349,17 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -4904,7 +5444,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -4981,17 +5521,47 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
+   "on": true
+  },
+  {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
    "on": false
   },
   {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -5069,13 +5639,13 @@
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -5085,7 +5655,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -5170,7 +5740,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -5188,7 +5758,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -5200,7 +5770,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -5247,7 +5817,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -5256,8 +5826,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -5282,7 +5882,7 @@
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g5",
@@ -5351,7 +5951,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -5522,8 +6122,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -5607,19 +6237,19 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pNat",
@@ -5788,8 +6418,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -5867,13 +6527,13 @@
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -5883,9 +6543,9 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -5968,7 +6628,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -6045,7 +6705,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -6054,8 +6714,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": false
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -6068,19 +6758,19 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g5",
@@ -6145,11 +6835,11 @@
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -6157,7 +6847,7 @@
    "k": "pNat",
    "label": "국적·영문명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g2",
@@ -6246,7 +6936,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
@@ -6320,10 +7010,40 @@
    "on": false
   },
   {
-   "k": "idIssue",
-   "label": "신분증 발급일자",
+   "k": "bJob",
+   "label": "수익자 직업",
    "type": "text",
-   "on": false
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idIssue",
+   "label": "그 밖의 신분증 발급일자",
+   "type": "text",
+   "on": true
   },
   {
    "k": "__g4",
@@ -6334,13 +7054,13 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -6405,19 +7125,19 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -6500,7 +7220,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accPlace",
@@ -6577,17 +7297,47 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
+   "on": true
+  },
+  {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
    "on": false
   },
   {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": false
   },
@@ -6681,7 +7431,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": false
   },
@@ -6760,7 +7510,7 @@
    "k": "dxName",
    "label": "진단명·병명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDate",
@@ -6772,7 +7522,7 @@
    "k": "accPlace",
    "label": "사고장소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDesc",
@@ -6796,7 +7546,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -6852,8 +7602,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": false
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -6866,13 +7646,13 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
@@ -6943,13 +7723,13 @@
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -7038,19 +7818,19 @@
    "k": "accPlace",
    "label": "사고장소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -7062,7 +7842,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -7115,11 +7895,41 @@
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
+   "on": true
+  },
+  {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
    "on": false
   },
   {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
@@ -7132,19 +7942,19 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "__g5",
@@ -7213,7 +8023,7 @@
   },
   {
    "k": "pJob",
-   "label": "직업·직장명",
+   "label": "피보험자 직업",
    "type": "text",
    "on": true
   },
@@ -7384,8 +8194,38 @@
    "on": true
   },
   {
+   "k": "bJob",
+   "label": "수익자 직업",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnIssue",
+   "label": "주민등록증 발급일자",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idRrnOrg",
+   "label": "주민등록증 발급기관",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicNo",
+   "label": "운전면허번호",
+   "type": "text",
+   "on": true
+  },
+  {
+   "k": "idLicSerial",
+   "label": "운전면허 일련번호",
+   "type": "text",
+   "on": true
+  },
+  {
    "k": "idIssue",
-   "label": "신분증 발급일자",
+   "label": "그 밖의 신분증 발급일자",
    "type": "text",
    "on": true
   },
