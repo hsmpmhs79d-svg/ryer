@@ -9,7 +9,7 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
@@ -56,7 +56,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -86,7 +86,7 @@
    "k": "cAdmit",
    "label": "입원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cVisit",
@@ -169,7 +169,7 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bRrn",
@@ -256,7 +256,7 @@
    "k": "signName",
    "label": "서명란 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "sign",
@@ -275,7 +275,7 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
@@ -293,7 +293,7 @@
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
@@ -340,7 +340,7 @@
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
@@ -376,13 +376,13 @@
    "k": "dxName",
    "label": "진단명·병명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "accPlace",
@@ -435,7 +435,7 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bRrn",
@@ -453,7 +453,7 @@
    "k": "bAddr",
    "label": "수익자 주소",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bEmail",
@@ -482,19 +482,19 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "__g5",
@@ -600,7 +600,7 @@
    "k": "cDisab",
    "label": "장해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDiag",
@@ -618,7 +618,7 @@
    "k": "cAdmit",
    "label": "입원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cVisit",
@@ -666,7 +666,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "policyNo",
@@ -725,7 +725,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -813,13 +813,13 @@
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -831,7 +831,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -932,7 +932,7 @@
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "policyNo",
@@ -1351,7 +1351,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -1380,13 +1380,13 @@
    "k": "cDisease",
    "label": "질병 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -1398,25 +1398,25 @@
    "k": "cDisab",
    "label": "장해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
    "label": "수술 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAdmit",
    "label": "입원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cVisit",
@@ -1458,7 +1458,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
@@ -1476,13 +1476,13 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "carNo",
    "label": "차량번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "driver",
@@ -1605,19 +1605,19 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -1629,7 +1629,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pNat",
@@ -1771,13 +1771,13 @@
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bAddr",
@@ -1789,7 +1789,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "relation",
@@ -1818,7 +1818,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
@@ -1895,7 +1895,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -1918,7 +1918,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -1936,25 +1936,25 @@
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
    "label": "수술 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAdmit",
    "label": "입원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cVisit",
    "label": "통원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cSilAdmit",
@@ -1984,19 +1984,19 @@
    "k": "accPlace",
    "label": "사고장소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "policyNo",
@@ -2014,7 +2014,7 @@
    "k": "carNo",
    "label": "차량번호",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "driver",
@@ -2037,13 +2037,13 @@
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bAddr",
@@ -2415,7 +2415,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pAddr",
@@ -2427,7 +2427,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -2450,7 +2450,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -2462,13 +2462,13 @@
    "k": "cDisab",
    "label": "장해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
@@ -2516,7 +2516,7 @@
    "k": "accPlace",
    "label": "사고장소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDesc",
@@ -2540,7 +2540,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "carNo",
@@ -2563,7 +2563,7 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bRrn",
@@ -2575,7 +2575,7 @@
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bAddr",
@@ -2593,7 +2593,7 @@
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "idIssue",
@@ -2622,7 +2622,7 @@
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "__g5",
@@ -2935,7 +2935,7 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
@@ -2947,7 +2947,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -2994,19 +2994,19 @@
    "k": "cDisab",
    "label": "장해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
    "label": "수술 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAdmit",
@@ -3054,7 +3054,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
@@ -3107,7 +3107,7 @@
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bAddr",
@@ -3148,7 +3148,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
@@ -3182,7 +3182,7 @@
    "k": "signName",
    "label": "서명란 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "sign",
@@ -3207,7 +3207,7 @@
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pTel",
@@ -3225,7 +3225,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
@@ -3242,13 +3242,13 @@
    "k": "cDisease",
    "label": "질병 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -3302,7 +3302,7 @@
    "k": "dxName",
    "label": "진단명·병명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "accDate",
@@ -3338,7 +3338,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "carNo",
@@ -3367,7 +3367,7 @@
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bTel",
@@ -3391,7 +3391,7 @@
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "idIssue",
@@ -3408,7 +3408,7 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
@@ -3448,7 +3448,7 @@
    "k": "signName",
    "label": "서명란 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "sign",
@@ -3514,7 +3514,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -3604,7 +3604,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "carNo",
@@ -3651,7 +3651,7 @@
    "k": "bEmail",
    "label": "이메일",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "relation",
@@ -3757,7 +3757,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pNat",
@@ -3780,7 +3780,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -3798,7 +3798,7 @@
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
@@ -3905,7 +3905,7 @@
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bAddr",
@@ -3946,7 +3946,7 @@
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
@@ -4283,7 +4283,7 @@
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pJob",
@@ -4312,7 +4312,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -4431,19 +4431,19 @@
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bAddr",
    "label": "수익자 주소",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bEmail",
@@ -4455,7 +4455,7 @@
    "k": "relation",
    "label": "피보험자와의 관계",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "idIssue",
@@ -4531,19 +4531,19 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pRrn",
    "label": "피보험자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -4572,13 +4572,13 @@
    "k": "cDisease",
    "label": "질병 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -4650,7 +4650,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "hospital",
@@ -4691,19 +4691,19 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bAddr",
@@ -4750,7 +4750,7 @@
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "__g5",
@@ -4809,13 +4809,13 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
    "label": "피보험자 주소",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pJob",
@@ -4838,7 +4838,7 @@
    "k": "cDisease",
    "label": "질병 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAccident",
@@ -4856,25 +4856,25 @@
    "k": "cDisab",
    "label": "장해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
    "label": "수술 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAdmit",
    "label": "입원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cVisit",
@@ -4916,7 +4916,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
@@ -5004,7 +5004,7 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "holder",
@@ -5104,13 +5104,13 @@
    "k": "cDisease",
    "label": "질병 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -5170,7 +5170,7 @@
    "k": "accDate",
    "label": "사고(발병)일시",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "accPlace",
@@ -5182,13 +5182,13 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "hospital",
    "label": "병원명(진료과)",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "policyNo",
@@ -5200,7 +5200,7 @@
    "k": "otherIns",
    "label": "타사 보험회사",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "carNo",
@@ -5223,13 +5223,13 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bTel",
@@ -5607,7 +5607,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -5642,7 +5642,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -5873,7 +5873,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -5885,7 +5885,7 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pNat",
@@ -5926,7 +5926,7 @@
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
@@ -6127,7 +6127,7 @@
    "k": "pName",
    "label": "피보험자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pRrn",
@@ -6151,13 +6151,13 @@
    "k": "pJob",
    "label": "직업·직장명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "pNat",
    "label": "국적·영문명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "__g2",
@@ -6246,7 +6246,7 @@
    "k": "accDesc",
    "label": "사고경위·청구내용",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "hospital",
@@ -6287,7 +6287,7 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bRrn",
@@ -6305,7 +6305,7 @@
    "k": "bAddr",
    "label": "수익자 주소",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "bEmail",
@@ -6323,7 +6323,7 @@
    "k": "idIssue",
    "label": "신분증 발급일자",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "__g4",
@@ -6334,13 +6334,13 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
@@ -6374,7 +6374,7 @@
    "k": "signName",
    "label": "서명란 성명",
    "type": "text",
-   "on": false
+   "on": true
   },
   {
    "k": "sign",
@@ -6405,7 +6405,7 @@
    "k": "pTel",
    "label": "피보험자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "pAddr",
@@ -6452,25 +6452,25 @@
    "k": "cDisab",
    "label": "장해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDiag",
    "label": "진단 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cOper",
    "label": "수술 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cAdmit",
    "label": "입원 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cVisit",
@@ -6760,7 +6760,7 @@
    "k": "dxName",
    "label": "진단명·병명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "accDate",
@@ -6819,19 +6819,19 @@
    "k": "bName",
    "label": "수익자 성명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bRrn",
    "label": "수익자 주민번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bTel",
    "label": "수익자 연락처",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "bAddr",
@@ -6866,13 +6866,13 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
@@ -6972,7 +6972,7 @@
    "k": "cAccident",
    "label": "재해 ✔",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "cDeath",
@@ -7132,19 +7132,19 @@
    "k": "bank",
    "label": "은행명",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "holder",
    "label": "예금주",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "acct",
    "label": "계좌번호",
    "type": "text",
-   "on": true
+   "on": false
   },
   {
    "k": "__g5",

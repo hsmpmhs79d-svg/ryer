@@ -82,6 +82,7 @@
   <span style="font-size:12.5px;color:#8a7566;">글자</span>
   <input type="number" id="size" value="11" min="6" max="30" style="width:62px">
   <span class="spacer"></span>
+  <span id="stat" style="font-size:12.5px;color:#166534;font-weight:700;"></span>
   <button onclick="resetToDefault()">기본 위치 다시 넣기</button>
   <button onclick="undoLast()">↩ 방금 취소</button>
   <button class="danger" onclick="clearIns()">이 보험사 초기화</button>
@@ -195,7 +196,17 @@ var $ = function(id){ return document.getElementById(id); };
 
 /* ── 저장소 ─────────────────────────────────────────────── */
 function load() { try { MAP = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { MAP = {}; } }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(MAP)); } catch(e) {} }
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(MAP)); updateStat(); }
+  catch(e) { $('stat').textContent = '⚠️ 저장 실패 — 전체 저장으로 파일을 받아두세요'; }
+}
+
+/* 작업 현황 — 자동 저장되고 있다는 걸 눈으로 확인시켜 준다 */
+function updateStat() {
+  var ins = 0, tot = 0;
+  for (var k in MAP) { if (MAP[k] && MAP[k].length) { ins++; tot += MAP[k].length; } }
+  $('stat').textContent = '💾 자동저장됨 · 보험사 ' + ins + '곳 / 좌표 ' + tot + '개';
+}
 function marks() { return (MAP[curIns] = MAP[curIns] || []); }
 
 /* ── 초기화 ─────────────────────────────────────────────── */
@@ -215,8 +226,17 @@ Promise.all([
   fetch('claim-map.json').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; })
 ]).then(function(d){
   ALLFIELDS = d[0] || {}; DEFAULTS = d[1] || {};
+  updateStat();
   openIns(INS[0][0]);
 });
+
+/* 파일로 한 번도 안 받았으면 창 닫을 때 확인 */
+var exported = false;
+window.onbeforeunload = function() {
+  var any = false;
+  for (var k in MAP) if (MAP[k] && MAP[k].length) { any = true; break; }
+  if (any && !exported) return '작업 내용은 이 브라우저에 저장되어 있습니다. 파일로도 받아두시겠어요?';
+};
 
 function clone(a) { return JSON.parse(JSON.stringify(a || [])); }
 
@@ -428,8 +448,9 @@ function saveJson() {
   a.href = URL.createObjectURL(blob);
   a.download = 'claim-map.json';
   document.body.appendChild(a); a.click(); a.remove();
+  exported = true;
   var n = Object.keys(MAP).filter(function(k){ return (MAP[k]||[]).length; }).length;
-  $('hint').textContent = 'claim-map.json 으로 저장했습니다 — 좌표가 있는 보험사 ' + n + '곳.';
+  $('hint').textContent = 'claim-map.json 으로 저장했습니다 — 좌표가 있는 보험사 ' + n + '곳. 이 파일을 저에게 주시면 됩니다.';
 }
 
 $('jsonpick').onchange = function() {
