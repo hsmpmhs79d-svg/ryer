@@ -439,7 +439,14 @@ function openIns(key) {
     MAP[key] = clone(DEFAULTS[key]); save();
   }
   $('hint').textContent = '불러오는 중...';
-  pdfjsLib.getDocument('claim-forms/' + key + '.pdf').promise.then(function(doc){
+  /* 한글 글꼴이 PDF에 안 들어 있는 청구서(삼성화재·하나생명 등)를 위해
+     글꼴·인코딩 자료를 함께 불러온다 (2026-08-27) */
+  pdfjsLib.getDocument({
+    url: 'claim-forms/' + key + '.pdf',
+    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+    cMapPacked: true,
+    standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'
+  }).promise.then(function(doc){
     curDoc = doc; numPages = doc.numPages;
     var lst = fieldsOf(key);
     var found = lst.filter(function(x){ return x.type !== 'grp' && x.on; }).length;

@@ -205,7 +205,12 @@ function addFiles(list) {
 
 function addPdf(fileIdx, bytes, name, done) {
   /* pdf.js는 넘긴 버퍼를 가져가 버리므로 복사본을 준다 */
-  pdfjsLib.getDocument({ data: bytes.slice(0) }).promise.then(function(doc) {
+  pdfjsLib.getDocument({
+    data: bytes.slice(0),
+    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+    cMapPacked: true,
+    standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'
+  }).promise.then(function(doc) {
     var p = 1;
     (function loop() {
       if (p > doc.numPages) { done(); return; }
