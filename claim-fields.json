@@ -289,8 +289,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -585,8 +597,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -881,8 +905,20 @@
    "on": false
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -1157,7 +1193,7 @@
    "k": "agree",
    "label": "✔ 무조건 체크 (동의·확인 칸)",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "__g6",
@@ -1177,10 +1213,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "fubon-hyundai-life": [
@@ -1473,8 +1521,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -1769,8 +1829,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -2065,8 +2137,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -2361,8 +2445,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -2657,8 +2753,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -2953,10 +3061,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "heungkuk-life": [
@@ -3249,8 +3369,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -3545,10 +3677,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "im-life": [
@@ -3821,7 +3965,7 @@
    "k": "agree",
    "label": "✔ 무조건 체크 (동의·확인 칸)",
    "type": "chk",
-   "on": false
+   "on": true
   },
   {
    "k": "__g6",
@@ -3841,8 +3985,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -4137,8 +4293,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -4433,10 +4601,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "kdb-life": [
@@ -4729,8 +4909,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -5025,10 +5217,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "lina-life": [
@@ -5321,8 +5525,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -5617,8 +5833,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -5913,8 +6141,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -6209,8 +6449,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -6505,8 +6757,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -6801,10 +7065,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "nh-life": [
@@ -7097,8 +7373,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -7393,8 +7681,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -7689,10 +7989,22 @@
    "on": true
   },
   {
-   "k": "sign",
-   "label": "✍️ 서명",
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
    "type": "sig",
    "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "sign",
+   "label": "✍️ 서명 (구분 없음)",
+   "type": "sig",
+   "on": false
   }
  ],
  "shinhan-life": [
@@ -7985,8 +8297,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }
@@ -8281,8 +8605,20 @@
    "on": true
   },
   {
+   "k": "signP",
+   "label": "✍️ 피보험자 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
+   "k": "signB",
+   "label": "✍️ 수익자(청구인) 서명",
+   "type": "sig",
+   "on": true
+  },
+  {
    "k": "sign",
-   "label": "✍️ 서명",
+   "label": "✍️ 서명 (구분 없음)",
    "type": "sig",
    "on": true
   }

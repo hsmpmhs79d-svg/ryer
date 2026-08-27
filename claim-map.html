@@ -54,6 +54,11 @@
   .f.off { opacity: .5; }
   .f.off .n::after { content: ' ?'; color: #cbbcae; }
   .grp.rest { color: #a08a76; border-top: 1px solid #f0e5d8; padding-top: 10px; }
+  .grp.mine { color: #7c2d12; border-top: 1px solid #f0e5d8; padding-top: 10px; }
+  .f .del { font-size: 12px; color: #cbbcae; padding: 0 3px; }
+  .f .del:hover { color: #b91c1c; }
+  .addrow { display: flex; gap: 5px; margin-top: 9px; }
+  .addrow button { flex: 1; padding: 7px 0; font-size: 12px; }
 
   #stage { flex: 1; min-width: 0; }
   #wrap { position: relative; display: inline-block; background: #fff;
@@ -108,6 +113,10 @@
       항상 체크돼 버립니다.
     </p>
     <div id="flist"></div>
+    <div class="addrow">
+      <button onclick="addCustom('text')" title="이 청구서에만 쓰는 글자 칸을 직접 만듭니다">+ 글자 항목</button>
+      <button onclick="addCustom('chk')" title="이 청구서에만 쓰는 체크 칸을 직접 만듭니다">+ 체크 항목</button>
+    </div>
   </div>
 
   <div id="stage">
@@ -193,7 +202,8 @@ var FIELDS = [
   ['sign','✍️ 서명','sig']
 ];
 
-var KEY='salguClaimMap';
+var KEY='salguClaimMap', CKEY='salguClaimCustom';
+var CUSTOM = {};                 /* 사용자가 직접 만든 항목 {보험사: [{k,label,type}]} */
 var MAP = {};                    /* {보험사키: [ {k,page,x,y,size,type}, ... ] } */
 var DEFAULTS = {};               /* claim-map.json — 자동으로 뽑아둔 기본 위치 */
 var curIns = null, curDoc = null, curPage = 0, numPages = 0;
@@ -201,7 +211,11 @@ var curField = null, viewScale = 1;
 var $ = function(id){ return document.getElementById(id); };
 
 /* ── 저장소 ─────────────────────────────────────────────── */
-function load() { try { MAP = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { MAP = {}; } }
+function load() {
+  try { MAP = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { MAP = {}; }
+  try { CUSTOM = JSON.parse(localStorage.getItem(CKEY) || '{}'); } catch(e) { CUSTOM = {}; }
+}
+function saveCustom() { try { localStorage.setItem(CKEY, JSON.stringify(CUSTOM)); } catch(e) {} }
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(MAP)); updateStat(); }
   catch(e) { $('stat').textContent = '⚠️ 저장 실패 — 전체 저장으로 파일을 받아두세요'; }
@@ -254,13 +268,45 @@ function resetToDefault() {
 }
 
 /* ── 항목 목록 ──────────────────────────────────────────── */
-/* 현재 보험사의 항목 목록 — [{k,label,type,on}] */
+/* 현재 보험사의 항목 목록 — [{k,label,type,on}] + 직접 추가한 항목 */
 function fieldsOf(ins) {
-  if (ALLFIELDS[ins] && ALLFIELDS[ins].length) return ALLFIELDS[ins];
-  return FIELDS.map(function(f){
+  var base;
+  if (ALLFIELDS[ins] && ALLFIELDS[ins].length) base = ALLFIELDS[ins];
+  else base = FIELDS.map(function(f){
     return f[1] === 'grp' ? { k:f[0], label:f[0], type:'grp' }
                           : { k:f[0], label:f[1], type:f[2], on:true };
   });
+  return base.concat((CUSTOM[ins] || []).map(function(c){
+    return { k:c.k, label:c.label, type:c.type, on:true, mine:true };
+  }));
+}
+
+/* ── 직접 항목 추가 (2026-08-26) ──
+   여기서 만든 이름은 나중에 청구서 작성 화면에서 그대로 입력칸이 됩니다. */
+function addCustom(type) {
+  var name = prompt(type === 'chk'
+    ? '체크 항목 이름을 적어주세요.\n예) 실손 대행신청 동의'
+    : '글자 항목 이름을 적어주세요.\n이 이름이 나중에 입력칸 이름이 됩니다.\n예) 증권번호, 사고접수번호');
+  if (name === null) return;
+  name = String(name).trim();
+  if (!name) return;
+  var list = (CUSTOM[curIns] = CUSTOM[curIns] || []);
+  if (list.some(function(c){ return c.label === name; })) { alert('같은 이름이 이미 있습니다.'); return; }
+  list.push({ k: 'x_' + Date.now().toString(36), label: name, type: type });
+  saveCustom(); buildFieldList();
+  curField = list[list.length - 1].k; refreshList();
+  $('hint').textContent = '"' + name + '" 항목을 만들었습니다. 청구서에서 들어갈 자리를 눌러주세요.';
+}
+
+function delCustom(k) {
+  var list = CUSTOM[curIns] || [];
+  var i = -1;
+  for (var n = 0; n < list.length; n++) if (list[n].k === k) i = n;
+  if (i < 0) return;
+  if (!confirm('"' + list[i].label + '" 항목을 지울까요? 찍어둔 위치도 같이 지워집니다.')) return;
+  list.splice(i, 1); saveCustom();
+  MAP[curIns] = marks().filter(function(m){ return m.k !== k; });
+  save(); buildFieldList(); drawMarks();
 }
 
 function buildFieldList() {
@@ -273,8 +319,12 @@ function buildFieldList() {
     d.className = 'f' + (off ? ' off' : '');
     d.dataset.k = it.k;
     d.title = off ? '이 청구서에서는 못 찾은 항목입니다. 직접 찍으셔도 됩니다.' : '';
-    d.innerHTML = '<span class="n">' + it.label + '</span><span class="c zero">0</span>';
-    d.onclick = function(){ curField = it.k; refreshList(); };
+    d.innerHTML = '<span class="n">' + it.label + '</span><span class="c zero">0</span>'
+                + (it.mine ? '<span class="del" title="이 항목 지우기">✕</span>' : '');
+    d.onclick = function(ev){
+      if (ev.target && ev.target.className === 'del') { ev.stopPropagation(); delCustom(it.k); return; }
+      curField = it.k; refreshList();
+    };
     box.appendChild(d);
     if (!first && !off) first = it.k;
   }
@@ -285,15 +335,24 @@ function buildFieldList() {
       var rest = list.slice(i + 1);
       var end = rest.findIndex(function(x){ return x.type === 'grp'; });
       var body = end < 0 ? rest : rest.slice(0, end);
-      if (!body.some(function(x){ return x.on; })) return;
+      if (!body.some(function(x){ return x.on && !x.mine; })) return;
       var g = document.createElement('div');
       g.className = 'grp'; g.textContent = it.label; box.appendChild(g); return;
     }
-    if (it.on) row(it, false);
+    if (it.on && !it.mine) row(it, false);
   });
 
+  /* 직접 추가한 항목 */
+  var mine = list.filter(function(it){ return it.mine; });
+  if (mine.length) {
+    var g3 = document.createElement('div');
+    g3.className = 'grp mine'; g3.textContent = '— 직접 추가한 항목 —';
+    box.appendChild(g3);
+    mine.forEach(function(it){ row(it, false); });
+  }
+
   /* 이 청구서에서 못 찾은 항목 */
-  var off = list.filter(function(it){ return it.type !== 'grp' && !it.on; });
+  var off = list.filter(function(it){ return it.type !== 'grp' && !it.on && !it.mine; });
   if (off.length) {
     var g2 = document.createElement('div');
     g2.className = 'grp rest';
@@ -449,7 +508,8 @@ function clearIns() {
 
 /* ── 내보내기 · 불러오기 ────────────────────────────────── */
 function saveJson() {
-  var blob = new Blob([JSON.stringify(MAP, null, 1)], { type: 'application/json' });
+  var out = { marks: MAP, custom: CUSTOM };
+  var blob = new Blob([JSON.stringify(out, null, 1)], { type: 'application/json' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'claim-map.json';
@@ -465,7 +525,9 @@ $('jsonpick').onchange = function() {
   fr.onload = function(e){
     try {
       var obj = JSON.parse(e.target.result);
-      MAP = obj; save(); drawMarks(); refreshList();
+      if (obj && obj.marks) { MAP = obj.marks; CUSTOM = obj.custom || {}; saveCustom(); }
+      else MAP = obj;                       /* 예전 형식도 그대로 읽는다 */
+      save(); buildFieldList(); drawMarks();
       $('hint').textContent = '불러왔습니다.';
     } catch(err) { alert('JSON을 읽을 수 없습니다.'); }
   };
