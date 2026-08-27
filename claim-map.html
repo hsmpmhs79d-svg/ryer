@@ -74,6 +74,16 @@
   .mk.sig { background: rgba(29,78,216,.86); }
   .mk.chk { background: rgba(22,101,52,.86); }
   #hint { font-size: 12.5px; color: #8a7566; margin: 0 0 9px; line-height: 1.6; }
+  /* 안 보내는 쪽 표시 */
+  #wrap.skip #cv { opacity: .3; }
+  #wrap.skip::after {
+    content: '이 쪽은 보내지 않습니다'; position: absolute; top: 50%; left: 0; right: 0;
+    transform: translateY(-50%); text-align: center; font-size: 22px; font-weight: 800;
+    color: #b91c1c; background: rgba(255,255,255,.9); padding: 14px 0; letter-spacing: -.5px;
+    border-top: 2px solid #fca5a5; border-bottom: 2px solid #fca5a5; pointer-events: none;
+  }
+  #skipbtn.on { background: #b91c1c; color: #fff; border-color: #b91c1c; }
+  .pg.skip { color: #b91c1c; text-decoration: line-through; }
 </style>
 </head>
 <body>
@@ -84,6 +94,7 @@
   <button onclick="pageGo(-1)">◀</button>
   <span class="pg" id="pg">-</span>
   <button onclick="pageGo(1)">▶</button>
+  <button id="skipbtn" onclick="toggleSkip()">이 쪽 안 보냄</button>
   <span style="font-size:12.5px;color:#8a7566;">글자</span>
   <input type="number" id="size" value="11" min="6" max="30" style="width:62px">
   <span class="spacer"></span>
@@ -202,8 +213,9 @@ var FIELDS = [
   ['sign','✍️ 서명','sig']
 ];
 
-var KEY='salguClaimMap', CKEY='salguClaimCustom';
+var KEY='salguClaimMap', CKEY='salguClaimCustom', SKEY='salguClaimSkip';
 var CUSTOM = {};                 /* 사용자가 직접 만든 항목 {보험사: [{k,label,type}]} */
+var SKIP = {};                   /* 보내지 않을 쪽 {보험사: [쪽번호]} */
 var MAP = {};                    /* {보험사키: [ {k,page,x,y,size,type}, ... ] } */
 var DEFAULTS = {};               /* claim-map.json — 자동으로 뽑아둔 기본 위치 */
 var curIns = null, curDoc = null, curPage = 0, numPages = 0;
@@ -214,8 +226,31 @@ var $ = function(id){ return document.getElementById(id); };
 function load() {
   try { MAP = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) { MAP = {}; }
   try { CUSTOM = JSON.parse(localStorage.getItem(CKEY) || '{}'); } catch(e) { CUSTOM = {}; }
+  try { SKIP   = JSON.parse(localStorage.getItem(SKEY) || '{}'); } catch(e) { SKIP = {}; }
 }
 function saveCustom() { try { localStorage.setItem(CKEY, JSON.stringify(CUSTOM)); } catch(e) {} }
+function saveSkip()   { try { localStorage.setItem(SKEY, JSON.stringify(SKIP)); } catch(e) {} }
+
+/* ── 안 보내는 쪽 표시 (2026-08-26) ──
+   PDF에서 페이지를 지우면 찍어둔 좌표가 밀리므로, 지우지 않고 표시만 한다.
+   청구서를 만들 때 표시된 쪽은 빠진다. */
+function skipList() { return (SKIP[curIns] = SKIP[curIns] || []); }
+function isSkipped(pg) { return skipList().indexOf(pg) >= 0; }
+
+function toggleSkip() {
+  if (!curDoc) return;
+  var l = skipList(), i = l.indexOf(curPage);
+  if (i >= 0) l.splice(i, 1); else l.push(curPage);
+  saveSkip(); paintSkip();
+}
+
+function paintSkip() {
+  var off = isSkipped(curPage);
+  $('wrap').classList.toggle('skip', off);
+  $('pg').classList.toggle('skip', off);
+  $('skipbtn').classList.toggle('on', off);
+  $('skipbtn').textContent = off ? '↩ 다시 보냄' : '이 쪽 안 보냄';
+}
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(MAP)); updateStat(); }
   catch(e) { $('stat').textContent = '⚠️ 저장 실패 — 전체 저장으로 파일을 받아두세요'; }
@@ -404,8 +439,10 @@ function openIns(key) {
     curDoc = doc; numPages = doc.numPages;
     var lst = fieldsOf(key);
     var found = lst.filter(function(x){ return x.type !== 'grp' && x.on; }).length;
+    var sk = skipList().length;
     $('hint').textContent = '이 청구서에서 찾은 항목 ' + found + '개 · 이미 찍혀 있는 표시 '
-      + marks().length + '개. 확인하고 어긋난 것만 옮기거나 지워주세요.';
+      + marks().length + '개' + (sk ? ' · 안 보내는 쪽 ' + sk + '장' : '')
+      + '. 확인하고 어긋난 것만 옮기거나 지워주세요.';
     buildFieldList();
     renderPage();
   }).catch(function(e){
@@ -432,6 +469,7 @@ function renderPage() {
     cv.width = vp.width; cv.height = vp.height;
     page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function(){
       $('pg').textContent = (curPage + 1) + ' / ' + numPages;
+      paintSkip();
       drawMarks();
     });
   });
@@ -508,7 +546,7 @@ function clearIns() {
 
 /* ── 내보내기 · 불러오기 ────────────────────────────────── */
 function saveJson() {
-  var out = { marks: MAP, custom: CUSTOM };
+  var out = { marks: MAP, custom: CUSTOM, skip: SKIP };
   var blob = new Blob([JSON.stringify(out, null, 1)], { type: 'application/json' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -525,7 +563,10 @@ $('jsonpick').onchange = function() {
   fr.onload = function(e){
     try {
       var obj = JSON.parse(e.target.result);
-      if (obj && obj.marks) { MAP = obj.marks; CUSTOM = obj.custom || {}; saveCustom(); }
+      if (obj && obj.marks) {
+        MAP = obj.marks; CUSTOM = obj.custom || {}; SKIP = obj.skip || {};
+        saveCustom(); saveSkip();
+      }
       else MAP = obj;                       /* 예전 형식도 그대로 읽는다 */
       save(); buildFieldList(); drawMarks();
       $('hint').textContent = '불러왔습니다.';
