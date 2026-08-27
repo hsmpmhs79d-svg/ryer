@@ -1658,8 +1658,8 @@ try {
       <button class="add-btn-mini" style="background:#d97706;border:none;" onclick="openConsultLib()" title="상담용 인포그래픽 자료 — 카테고리별 보기 (2026-07-15)">📚 상담자료</button>
     </div>
     <div class="status-sort-row">
-      <button class="status-sort-btn" id="ssort-done" onclick="toggleStatusSort('가입완료')" title="가입완료 고객을 리스트 상단으로">가입완료</button>
-      <button class="status-sort-btn" id="ssort-prospect" onclick="toggleStatusSort('가망고객')" title="가망고객을 리스트 상단으로">가망고객</button>
+      <button class="status-sort-btn" id="ssort-done" onclick="toggleStatusSort('가입완료')" title="가입완료 고객을 리스트 상단으로">가완</button>
+      <button class="status-sort-btn" id="ssort-prospect" onclick="toggleStatusSort('가망고객')" title="가망고객을 리스트 상단으로">가망</button>
       <button class="status-sort-btn" id="ssort-recall" onclick="toggleStatusSort('재연락')" title="재연락할 고객만 표시">재연락</button>
       <button class="status-sort-btn" id="ssort-absent" onclick="toggleStatusSort('부재중')" title="부재중 고객만 표시">부재중</button>
       <button class="status-sort-btn" id="ssort-reject" onclick="toggleStatusSort('거절')" title="거절 고객만 표시">거절</button>
@@ -16364,5 +16364,14 @@ button.silson-btn[onclick^="toggleSilsonRefPanel"]::before { --slic:url("data:im
 button.silson-btn[onclick^="editSilson"] { background:#fff !important; color:#513c2c !important; border:1.5px solid #ddccb8 !important; }
 button.silson-btn[onclick^="editSilson"]::before { --slic:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%2020h9%22%2F%3E%3Cpath%20d%3D%22M16.5%203.5a2.12%202.12%200%200%201%203%203L7%2019l-4%201%201-4z%22%2F%3E%3C%2Fsvg%3E"); background:#513c2c !important; }
 button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
+</style>
+<style id="salgu-sort-fit">
+/* ★ 상태 버튼 5개 중 '거절'이 잘리던 문제 (2026-08-26)
+   salgu-filter-icons 가 버튼마다 아이콘 14px + 간격 6px 를 더해 380px 패널을 넘겼다.
+   아이콘·간격·여백을 줄이고 버튼 글자를 '가완·가망'으로 줄여 한 줄에 들어가게 한다. */
+.status-sort-row { gap:4px; }
+.status-sort-btn { min-width:0; padding:6px 2px; gap:3px !important; letter-spacing:-.5px; }
+.status-sort-btn::before { width:12px; height:12px; }
+.add-btn-mini { min-width:0; }
 </style>
 </body></html>
