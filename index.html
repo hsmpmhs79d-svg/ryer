@@ -13682,7 +13682,7 @@ function copyContact(el) {
   /* ★ 보험금 청구 (2026-09-02) — 고객 정보를 청구서 작성 화면으로 넘긴다.
      주소창에 주민번호가 남지 않도록 브라우저 저장소에 잠깐 넣고, 받는 쪽에서 바로 지운다.
      서버로는 아무것도 보내지 않는다. */
-  window.SHOW_CLAIM_BTN = false;   /* ★ 시험 중 — 관리자에게만 보임. 공개할 때 true 로 바꾼다 */
+  window.SHOW_CLAIM_BTN = true;    /* ★ 2026-09-02 전체 공개 — 모든 사용자에게 보임 */
   window._canClaim = function() {
     if (window.SHOW_CLAIM_BTN) return true;
     try {
