@@ -206,15 +206,19 @@ function render() {
   document.getElementById('list').innerHTML = rows.map(function(u) {
     var st = statusOf(u);
     var acts = '';
-    if (st === 'paid' || st === 'pending' || st === 'existing' || st === 'rejected' || st === 'expired') {
-      acts += '<input type="date" id="exp-' + esc(u.email) + '" title="만료일 (비우면 무기한)">'
-           + '<button class="btn btn-green btn-sm" onclick="approve(\'' + esc(u.email) + '\')">승인</button>';
-    }
-    if (st === 'paid' || st === 'pending') {
-      acts += '<button class="btn btn-red btn-sm" onclick="reject(\'' + esc(u.email) + '\')">거절</button>';
-    }
-    if (st === 'approved') {
-      acts += '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
+    /* ★ 전체 탭은 '누가 어떻게 쓰나' 보는 곳 — 버튼 없이 명단만 (2026-09-02).
+       승인·이용중지는 각 상태 탭에서 한다. */
+    if (_tab !== 'all') {
+      if (st === 'paid' || st === 'pending' || st === 'existing' || st === 'rejected' || st === 'expired') {
+        acts += '<input type="date" id="exp-' + esc(u.email) + '" title="만료일 (비우면 무기한)">'
+             + '<button class="btn btn-green btn-sm" onclick="approve(\'' + esc(u.email) + '\')">승인</button>';
+      }
+      if (st === 'paid' || st === 'pending') {
+        acts += '<button class="btn btn-red btn-sm" onclick="reject(\'' + esc(u.email) + '\')">거절</button>';
+      }
+      if (st === 'approved') {
+        acts += '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
+      }
     }
     return '<div class="card">'
       + '<div class="info">'
