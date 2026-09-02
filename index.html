@@ -2998,14 +2998,14 @@ function selectCustomer(id) {
     +'<span class="cbadge" style="background:'+bg+';color:'+tc+'">'+(c.gender||'?')+'</span>'
     +getAgeTag(c,14)+getInsAgeTag(c,14)+' '+_tagChipsHtml(c)+'</div>'  /* ★ 카드 헤더는 나이 글자 14px (2026-07-15) · 태그 칩 (2026-08-15) */
     +'<div class="btn-group">'
+    /* ★ 보험금 청구 — 버튼줄 맨 앞 (2026-09-02) */
+    +(window._canClaim && window._canClaim() ? '<button class="btn-quick-msg" title="이 고객 정보로 보험금 청구서 작성" onclick="openClaim('+id+')">보험금 청구</button>' : '')
     +'<button class="btn-quick-msg" style="background:#7c3aed;" title="태그 달기/수정 — 이미 만든 태그를 눌러 고를 수 있어요" onclick="editCustomerTags('+id+')">🏷 태그</button>'   /* ★ 태그 (2026-08-15) */
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">퀵메시지</button>'
     /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
     +(c.status==='가입완료' ? '<button class="btn-quick-msg" style="background:#16a34a;" title="추가 계약 알림 등록 (1주년·암 보장개시·카드납)" onclick="openJoinAlertModal('+id+',true)">추가가입</button>' : '')
     /* ★ 카드납 해제 (2026-09-02) — 켰다가 되돌릴 수 있게 */
     +(c.cardPay ? '<button class="btn-quick-msg" style="background:#f97316;" title="매월 15일 카드결제 알림 끄기" onclick="cancelCardPay('+id+')">카드납 해제</button>' : '')
-    /* ★ 보험금 청구 (2026-09-02) */
-    +(window._canClaim && window._canClaim() ? '<button class="btn-quick-msg" title="이 고객 정보로 보험금 청구서 작성" onclick="openClaim('+id+')">보험금 청구</button>' : '')
     +'<button class="btn-copy-info" id="btn-copy-info" title="고객 기본 정보만 복사 (설계요청 제외)" onclick="copyCustomerInfo('+id+')">복사</button>'
     +'<button class="btn-copy-info" id="btn-copy-info-dr" title="고객 정보 + 설계요청 함께 복사" onclick="copyCustomerInfoWithDr('+id+')">정보+설계요청</button>'
     +'<button class="btn-edit" onclick="openEditModal('+id+')">수정</button>'
@@ -3035,8 +3035,9 @@ function selectCustomer(id) {
     +'</div>'
     +'<div class="info-item"><div class="label">직업</div><div class="value" onclick="copyField(this,\'직업\')">'+v(c.job)+'</div></div>'
     +'<div class="info-item"><div class="label">운전 여부</div><div class="value" onclick="copyField(this,\'운전 여부\')">'+v(c.driving)+'</div></div>'
-    /* ★ 보험금 받을 계좌 (2026-09-02) — 값이 있을 때만 */
-    +((c.bank||c.account) ? '<div class="info-item full-width"><div class="label">보험금 받을 계좌</div><div class="value" onclick="copyField(this,\'계좌\')">'+v((c.bank||'')+' '+(c.account||'')+((c.holder&&c.holder!==c.name)?' ('+c.holder+')':''))+'</div></div>' : '')
+    /* ★ 보험금 받을 계좌 (2026-09-02) — 비어 있어도 칸은 보이게 */
+    +'<div class="info-item full-width"><div class="label">보험금 받을 계좌 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(청구서에 들어감)</span></div>'
+    +'<div class="value" onclick="copyField(this,\'계좌\')">'+v(((c.bank||'')+' '+(c.account||'')).trim()+((c.holder&&c.holder!==c.name)?' ('+c.holder+')':''))+'</div></div>'
     +'<div class="info-item full-width"><div class="label">병력 / 고지사항</div><div class="value" onclick="copyField(this,\'병력/고지사항\')">'+(c.medical_history?c.medical_history:'<span class="empty">미입력</span>')+'</div></div>'
     +(c.notes?'<div class="info-item full-width"><div class="label">메모</div><div class="value" onclick="copyField(this,\'메모\')">'+c.notes+'</div></div>':'')
     +'</div>'
@@ -12676,7 +12677,8 @@ function copyContact(el) {
       + '<option value="거절"' + (_sst==='거절'?' selected':'') + '>🚫 거절</option>'
       + '</select>';
     html += '<div class="mv-section">'
-         +   '<div class="mv-section-title">👤 인적사항' + statusSelect
+         +   '<div class="mv-section-title mv-head2">👤 인적사항' + statusSelect
+         +     '<div class="mv-btns">'
          /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
          +     ((_sst === '가입완료') ? '<button class="mv-edit-btn" onclick="openJoinAlertModal(' + c.id + ',true)" style="background:#d1fae5;color:#065f46;border:1px solid #10b981;margin-right:6px;">추가가입</button>' : '')
          /* ★ 카드납 해제 (2026-09-02) — 켰다가 되돌릴 수 있게 */
@@ -12685,6 +12687,7 @@ function copyContact(el) {
          +     ((window._canClaim && window._canClaim()) ? '<button class="mv-edit-btn" onclick="openClaim(' + c.id + ')" style="background:#dbeafe;color:#1e40af;border:1px solid #60a5fa;margin-right:6px;">보험금 청구</button>' : '')
          +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#fdeadd;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">복사</button>'
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">수정</button>'
+         +     '</div>'
          +   '</div>'
          +   '<div class="mv-detail">'
          +     row('이름', c.name)
@@ -12710,6 +12713,9 @@ function copyContact(el) {
               : '')
          +     row('직업', c.job)
          +     row('운전여부', c.driving)
+         /* ★ 보험금 받을 계좌 (2026-09-02) — 비어 있어도 칸은 보이게 */
+         +     row('보험금 계좌', ((c.bank||'') + ' ' + (c.account||'')).trim()
+                 + ((c.holder && c.holder !== c.name) ? ' (' + c.holder + ')' : ''))
          +     row('병력', _history)
          +     row('메모', _memo)
          +   '</div>'
@@ -16361,9 +16367,6 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
         if (wrap) { wrap.style.marginRight = '0'; wrap.style.marginLeft = '6px'; nameRow.appendChild(wrap); }
         var jb = bg2.querySelector('button[onclick^="openJoinAlertModal"]');
         if (jb) nameRow.appendChild(jb);
-        /* ★ 보험금 청구도 이름 줄로 (2026-09-02) — 아래 버튼줄이 넘치지 않게 */
-        var cb2 = bg2.querySelector('button[onclick^="openClaim("]');
-        if (cb2) nameRow.appendChild(cb2);
       } catch(e) {}
     }
     var _rp = document.getElementById('right-panel');
@@ -16492,15 +16495,27 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .add-btn-mini { min-width:0; }
 </style>
 
+<style id="salgu-mv-head">
+/* ★ 모바일 인적사항 줄 정리 (2026-09-02)
+   제목·상태는 윗줄, 버튼들은 아랫줄에 고르게 깔리도록 나눈다. */
+.mv-section-title.mv-head2 { display:block; }
+.mv-section-title.mv-head2 > select { width:100%; margin-top:9px; }
+.mv-btns { display:flex; gap:6px; margin-top:9px; }
+.mv-btns .mv-edit-btn { flex:1; margin-right:0 !important; padding:9px 4px !important;
+  font-size:12.5px !important; white-space:nowrap; letter-spacing:-.4px; }
+</style>
+
 <style id="salgu-cardbtn-fit">
 /* ★ 고객카드 버튼줄 잘림 문제 (2026-09-02)
    salgu-cardbtns 가 nowrap 이라 버튼이 늘면 오른쪽이 잘린다.
    글자는 그대로 두고 여백·아이콘·간격만 줄여 한 줄에 들어가게 한다. */
 .card-header .btn-group { gap:3px !important; flex-wrap:wrap !important; }
 .card-header .btn-group button {
-  padding:6px 7px !important; font-size:12px !important; gap:3px !important; letter-spacing:-.4px;
+  padding:5px 6px !important; font-size:11.5px !important; gap:3px !important; letter-spacing:-.5px;
 }
-.card-header .btn-group button::before { width:12px !important; height:12px !important; }
+.card-header .btn-group button::before { width:11px !important; height:11px !important; }
+/* 보험금 청구 버튼은 서류 아이콘으로 (btn-quick-msg 말풍선을 이긴다) */
+.card-header .btn-group button[onclick^="openClaim("] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M14%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V8z%22%2F%3E%3Cpolyline%20points%3D%2214%202%2014%208%2020%208%22%2F%3E%3Cpath%20d%3D%22M9%2015l2%202%204-4%22%2F%3E%3C%2Fsvg%3E"); background:#fff !important; }
 /* 카드납 해제 버튼은 카드 아이콘으로 */
 .card-header .btn-group button[onclick^="cancelCardPay"] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%2222%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3Cline%20x1%3D%221%22%20y1%3D%2210%22%20x2%3D%2223%22%20y2%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
 </style>
