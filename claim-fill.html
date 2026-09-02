@@ -130,6 +130,7 @@
     <button id="savebtn" onclick="saveFile()" style="width:100%;padding:14px;border:1.5px solid #0f766e;border-radius:10px;
       background:#fff;color:#0f766e;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;">
       📁 파일로 저장 · 보험사 앱으로 보내기</button>
+    <div id="filelist"></div>
     <p id="faxhelp" class="sub" style="margin:10px 0 0;line-height:1.7"></p>
   </div>
 
@@ -187,6 +188,12 @@ var FAX = {
   'axa':'', 'hana-insurance':'0505-170-0765'
 };
 var madeBlob = null, madeName = '';     /* 방금 만든 PDF (팩스로 넘길 것) */
+var ITEMS = [], MADE = [];              /* 만들 쪽 목록 · 완성된 파일들 */
+/* ★ 팩스앱 용량 제한 대응 (2026-09-02)
+   SK 모바일팩스는 8MB 초과를 거절한다. 여유를 두고 7MB 에서 끊어 나눈다.
+   서류 사진은 흑백 1240px(A4 약 110dpi)로 줄인다 — 팩스 화질에는 넉넉하다. */
+var SPLIT_BYTES = 7 * 1048576;
+var FAX_PX = 1240, FAX_Q = 0.62;
 /* ★ 이 기기가 '다른 앱으로 넘기기'를 할 수 있는지 (2026-09-02)
    휴대폰이면 대개 되고, PC 브라우저는 대개 안 된다. 안 되면 다운로드로 간다. */
 var CAN_SHARE = (function(){
@@ -440,7 +447,8 @@ function build() {
 }
 
 async function run() {
-  var L = PDFLib, out = await L.PDFDocument.create();
+  var L = PDFLib;
+  ITEMS = []; MADE = [];
   var auto = autoValues();
   var marks = DATA.marks[curIns] || [];
   var skip = DATA.skip[curIns] || [];
@@ -496,46 +504,83 @@ async function run() {
       }
     });
 
-    var img = await out.embedJpg(dataUrlToBytes(cv.toDataURL('image/jpeg', 0.8)));
-    var pg = out.addPage([vp1.width, vp1.height]);
-    pg.drawImage(img, { x:0, y:0, width: vp1.width, height: vp1.height });
+    ITEMS.push({ jpg: dataUrlToBytes(cv.toDataURL('image/jpeg', 0.8)),
+                 w: vp1.width, h: vp1.height, form: true });
   }
 
-  /* 병원 서류 붙이기 — 팩스로 보낼 수 있게 사진을 줄여서 넣는다 (2026-09-02).
-     원본 그대로 넣으면 PDF가 수십 MB가 되어 팩스앱이 못 받는다.
-     A4 150dpi 정도면 팩스(흑백 200dpi)로는 충분하다. */
+  /* 병원 서류 — 팩스용으로 흑백·저해상도로 줄여서 담는다 (2026-09-02).
+     팩스는 흑백 200dpi로 나가므로 색과 고해상도는 버려도 손해가 없다.
+     원본 그대로 넣으면 PDF가 수십 MB가 되어 팩스앱이 아예 못 받는다. */
   for (var i = 0; i < ATT.length; i++) {
-    msg('서류 붙이는 중... ' + (i + 1) + ' / ' + ATT.length);
+    msg('서류 줄이는 중... ' + (i + 1) + ' / ' + ATT.length);
     if (/\.pdf$/i.test(ATT[i].name)) {
       var bytes = new Uint8Array(await ATT[i].arrayBuffer());
       var src = await L.PDFDocument.load(bytes, { ignoreEncryption:true });
-      var idx = src.getPageIndices();
-      var cps = await out.copyPages(src, idx);
-      cps.forEach(function(p){ out.addPage(p); });
+      src.getPageIndices().forEach(function(ix){ ITEMS.push({ src: src, idx: ix }); });
     } else {
-      var sh = await shrinkImage(ATT[i], 1654, 0.72);
-      var im = await out.embedJpg(sh.bytes);
-      /* A4 한 장에 맞춰 가운데 놓는다 — 팩스로 보낼 때 쪽 크기가 들쭉날쭉하지 않게 */
-      var PW = 595, PH = 842;
-      var p2 = out.addPage([PW, PH]);
-      var r = Math.min(PW / sh.w, PH / sh.h);
-      var dw = sh.w * r, dh = sh.h * r;
-      p2.drawImage(im, { x:(PW - dw) / 2, y:(PH - dh) / 2, width:dw, height:dh });
+      var sh = await shrinkImage(ATT[i], FAX_PX, FAX_Q);
+      ITEMS.push({ jpg: sh.bytes, w: sh.w, h: sh.h, a4: true });
     }
+    await sleep(0);
   }
 
-  var name = ($('fname').value || '보험금청구').replace(/[\\/:*?"<>|]/g, '').trim() || '보험금청구';
-  var blob = new Blob([await out.save()], { type:'application/pdf' });
+  /* ── 8MB 안에 들어가게 묶는다. 넘치면 여러 개로 나눈다 (2026-09-02)
+     SK 모바일팩스는 8MB 넘으면 거절한다. 앱이 "나누어 보내라"고 안내한다. */
+  var base = ($('fname').value || '보험금청구').replace(/[\\/:*?"<>|]/g, '').trim() || '보험금청구';
+  var groups = [[]], acc = 0;
+  ITEMS.forEach(function(it){
+    var sz = it.jpg ? it.jpg.length : 90000;          /* PDF 쪽은 어림값 */
+    var g = groups[groups.length - 1];
+    if (g.length && acc + sz > SPLIT_BYTES) { groups.push([]); acc = 0; g = groups[groups.length - 1]; }
+    g.push(it); acc += sz;
+  });
+
+  MADE = [];
+  for (var gi = 0; gi < groups.length; gi++) {
+    msg('파일 만드는 중... ' + (gi + 1) + ' / ' + groups.length);
+    var out = await L.PDFDocument.create();
+    for (var k = 0; k < groups[gi].length; k++) {
+      var it = groups[gi][k];
+      if (it.jpg) {
+        var im = await out.embedJpg(it.jpg);
+        if (it.a4) {
+          var PW = 595, PH = 842;
+          var p2 = out.addPage([PW, PH]);
+          var r = Math.min(PW / it.w, PH / it.h);
+          var dw = it.w * r, dh = it.h * r;
+          p2.drawImage(im, { x:(PW - dw) / 2, y:(PH - dh) / 2, width:dw, height:dh });
+        } else {
+          var p1 = out.addPage([it.w, it.h]);
+          p1.drawImage(im, { x:0, y:0, width:it.w, height:it.h });
+        }
+      } else {
+        var cp = await out.copyPages(it.src, [it.idx]);
+        out.addPage(cp[0]);
+      }
+      if (k % 8 === 7) await sleep(0);
+    }
+    var nm = base + (groups.length > 1 ? '_' + (gi + 1) + '차(' + groups.length + '개중)' : '') + '.pdf';
+    MADE.push({ blob: new Blob([await out.save()], { type:'application/pdf' }),
+                name: nm, pages: groups[gi].length });
+  }
+
+  /* 첫 파일은 바로 내려받아 준다 */
+  madeBlob = MADE[0].blob; madeName = MADE[0].name;
+  downloadOne(0);
+  showFaxCard();
+  var tot = MADE.reduce(function(a, m){ return a + m.blob.size; }, 0);
+  msg('완료 — 모두 ' + ITEMS.length + '쪽 · ' + sizeText(tot)
+      + (MADE.length > 1 ? ' · 8MB를 넘어 ' + MADE.length + '개로 나눴습니다' : ''));
+}
+
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+function sizeText(n){ return n < 1048576 ? Math.round(n / 1024) + 'KB' : (n / 1048576).toFixed(1) + 'MB'; }
+function downloadOne(i) {
+  var m = MADE[i]; if (!m) return;
   var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob); a.download = name + '.pdf';
+  a.href = URL.createObjectURL(m.blob); a.download = m.name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
-  /* ★ 팩스로 넘길 수 있게 보관 (2026-09-02) */
-  madeBlob = blob; madeName = name + '.pdf';
-  showFaxCard();
-  var mb = (blob.size / 1048576);
-  msg('완료 — ' + name + '.pdf · ' + (mb < 1 ? Math.round(blob.size / 1024) + 'KB' : mb.toFixed(1) + 'MB')
-      + (mb > 15 ? '  ⚠ 용량이 커서 팩스앱이 거절할 수 있습니다. 서류 장수를 줄여보세요.' : ''));
 }
 
 /* ── 팩스로 보내기 (2026-09-02) ────────────────────────── */
@@ -567,8 +612,57 @@ function showFaxCard() {
       : '청구서 PDF는 이미 <b>다운로드 폴더</b>에 받아져 있습니다.';
   }
   $('savebtn').textContent = CAN_SHARE ? '📁 파일로 저장 · 보험사 앱으로 보내기' : '📥 PDF 다시 받기';
+  drawFileList();
   $('card-fax').style.display = 'block';
   $('card-fax').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* ★ 나눠진 파일 목록 (2026-09-02) — 8MB 제한 때문에 여러 개가 될 수 있다 */
+function drawFileList() {
+  var box = $('filelist');
+  if (!box) return;
+  if (!MADE.length || MADE.length === 1) {
+    box.innerHTML = MADE.length
+      ? '<div style="margin-top:11px;font-size:13px;color:#64748b">' + esc(MADE[0].name)
+        + ' · ' + MADE[0].pages + '쪽 · ' + sizeText(MADE[0].blob.size) + '</div>'
+      : '';
+    $('sharebtn').disabled = false; $('savebtn').disabled = false;
+    return;
+  }
+  /* 여러 개 — 위 버튼은 숨기고 파일마다 따로 */
+  $('sharebtn').style.display = 'none';
+  $('savebtn').style.display = 'none';
+  var h = '<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;padding:12px 14px;'
+        + 'font-size:13.5px;color:#9a3412;line-height:1.75;margin-bottom:12px">'
+        + '팩스앱이 <b>8MB</b>까지만 받아서 <b>' + MADE.length + '개</b>로 나눴습니다.<br>'
+        + '아래에서 <b>하나씩 차례대로</b> 보내주세요.</div>';
+  MADE.forEach(function(m, i){
+    h += '<div style="border:1.5px solid #e7d3bd;border-radius:10px;padding:11px 13px;margin-bottom:9px;background:#fff">'
+      +   '<div style="font-size:14px;font-weight:800;color:#7c2d12">' + (i + 1) + '. ' + esc(m.name) + '</div>'
+      +   '<div style="font-size:12.5px;color:#64748b;margin:3px 0 9px">' + m.pages + '쪽 · ' + sizeText(m.blob.size) + '</div>'
+      +   '<button onclick="sendOne(' + i + ')" style="width:100%;padding:11px;border:none;border-radius:9px;'
+      +     'background:#0f766e;color:#fff;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit">'
+      +     (CAN_SHARE ? '📤 이 파일 보내기' : '📥 이 파일 받기') + '</button>'
+      + '</div>';
+  });
+  box.innerHTML = h;
+}
+
+/* 나눠진 파일 하나를 보내거나 받는다 */
+async function sendOne(i) {
+  var m = MADE[i]; if (!m) return;
+  var no = FAX[curIns] || '';
+  if (no) { try { await navigator.clipboard.writeText(no); } catch (e) {} }
+  var f = new File([m.blob], m.name, { type:'application/pdf' });
+  if (CAN_SHARE) {
+    try {
+      await navigator.share({ files:[f], title:m.name });
+      msg((i + 1) + '번째 보냈습니다' + (no ? ' — 받는 번호 ' + no + ' (복사됨)' : ''));
+      return;
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  downloadOne(i);
+  msg((i + 1) + '번째 파일을 받았습니다 — ' + m.name);
 }
 
 /* 파일로 저장 · 보험사 앱으로 넘기기 — 팩스번호는 건드리지 않는다 */
@@ -634,6 +728,15 @@ async function shrinkImage(file, maxSide, q) {
   cx.fillStyle = '#fff'; cx.fillRect(0, 0, cw, ch);
   cx.drawImage(bmp, 0, 0, cw, ch);
   if (bmp.close) { try { bmp.close(); } catch (e3) {} }
+  /* 팩스는 흑백으로 나가므로 회색조로 바꾼다 — 용량이 크게 줄고 글씨는 더 또렷해진다 */
+  try {
+    var d = cx.getImageData(0, 0, cw, ch), a = d.data;
+    for (var i = 0; i < a.length; i += 4) {
+      var g = (a[i] * 0.299 + a[i+1] * 0.587 + a[i+2] * 0.114) | 0;
+      a[i] = a[i+1] = a[i+2] = g;
+    }
+    cx.putImageData(d, 0, 0);
+  } catch (e4) {}
   return { bytes: dataUrlToBytes(cv.toDataURL('image/jpeg', q)), w: cw, h: ch };
 }
 
