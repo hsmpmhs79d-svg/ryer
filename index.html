@@ -11572,7 +11572,10 @@ function copyContact(el) {
           '<p style="color:#64748b;font-size:14px;margin-bottom:14px;">살구는 승인된 분만 이용하실 수 있습니다.<br>아래 정보를 입력해 신청해 주세요.</p>' +
           emailBox +
           '<input id="sg-name" placeholder="이름 (필수)" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:8px;box-sizing:border-box;">' +
-          '<input id="sg-phone" placeholder="전화번호 (필수)" inputmode="tel" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:12px;box-sizing:border-box;">' +
+          '<input id="sg-phone" placeholder="전화번호 (필수)" inputmode="tel" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:13px;box-sizing:border-box;">' +
+          '<div style="text-align:left;font-size:13px;font-weight:800;color:#92400e;margin-bottom:7px;">이용 기간 선택</div>' +
+          _sgPlanCards() +
+          '<div style="height:13px;"></div>' +
           '<button onclick="window.salguApply()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;">이용 신청하기</button>' +
           contact + other;
       } else if (status === 'pending') {
@@ -11599,6 +11602,7 @@ function copyContact(el) {
           contact + other;
       }
       window.__pendingEmail__ = email || '';
+      window.__sgScreen__ = status || 'none';   /* 요금제 고를 때 같은 화면을 다시 그리려고 */
       banner('', '');
     } catch(e) { afterLogin(); }   /* 화면 그리기 실패해도 막지 않음 */
   }
@@ -11608,18 +11612,79 @@ function copyContact(el) {
     showPendingScreen(window.__pendingEmail__ || '', 'none');
   };
 
+  /* ═══ 요금제 3종 (2026-09-02) ═══
+     키('6m'/'1y'/'2y')는 워커·D1과 맞춰져 있으므로 바꾸지 말 것. 금액만 고치면 됨. */
+  var SG_PLANS = [
+    { k: '6m', label: '6개월', price: 29000, per: '월 4,834원', tag: '' },
+    { k: '1y', label: '1년',   price: 49000, per: '월 4,084원', tag: '추천' },
+    { k: '2y', label: '2년',   price: 89000, per: '월 3,709원', tag: '가장 저렴' }
+  ];
+  function _sgPlanKey() {
+    var p = window.__sgPlan__;
+    for (var i = 0; i < SG_PLANS.length; i++) if (SG_PLANS[i].k === p) return p;
+    return '1y';
+  }
+  function _sgPlanOf(k) {
+    for (var i = 0; i < SG_PLANS.length; i++) if (SG_PLANS[i].k === k) return SG_PLANS[i];
+    return SG_PLANS[1];
+  }
+  function _sgWon(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+  /* 3단계 요금 카드 — 신청 폼과 승인 대기 화면 양쪽에서 같이 쓴다 */
+  function _sgPlanCards() {
+    var cur = _sgPlanKey();
+    var h = '<div style="display:flex;flex-direction:column;gap:7px;text-align:left;">';
+    for (var i = 0; i < SG_PLANS.length; i++) {
+      var p = SG_PLANS[i], on = (p.k === cur);
+      h += '<div onclick="window.salguSetPlan(\'' + p.k + '\')" style="cursor:pointer;display:flex;align-items:center;gap:10px;' +
+             'border:2px solid ' + (on ? '#f59e0b' : '#e6d8c4') + ';background:' + (on ? '#fffbeb' : '#fff') + ';' +
+             'border-radius:10px;padding:10px 12px;">' +
+           '<div style="width:17px;height:17px;border-radius:50%;flex-shrink:0;border:2px solid ' + (on ? '#f59e0b' : '#cfc0aa') + ';' +
+             'background:' + (on ? '#f59e0b' : '#fff') + ';box-shadow:' + (on ? 'inset 0 0 0 3px #fff' : 'none') + ';"></div>' +
+           '<div style="flex:1;min-width:0;">' +
+             '<b style="font-size:15px;color:#7c2d12;">' + p.label + '</b>' +
+             (p.tag ? ' <span style="background:#f59e0b;color:#fff;font-size:10.5px;font-weight:800;padding:2px 6px;border-radius:8px;">' + p.tag + '</span>' : '') +
+             '<div style="font-size:11.5px;color:#a08a76;margin-top:1px;">' + p.per + ' 꼴</div>' +
+           '</div>' +
+           '<b style="font-size:16px;color:' + (on ? '#b45309' : '#7c2d12') + ';white-space:nowrap;">' + _sgWon(p.price) + '원</b>' +
+           '</div>';
+    }
+    return h + '</div>';
+  }
+  /* 요금제 고르기 — 화면을 다시 그리고, 승인 대기 중이면 서버에도 알려둔다 */
+  window.salguSetPlan = function(k) {
+    window.__sgPlan__ = k;
+    var st = window.__sgScreen__ || 'none';
+    if (st === 'pending') {
+      try {
+        if (_accessToken) {
+          fetch('https://salgu-api.wmmryer.workers.dev/plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _accessToken },
+            body: JSON.stringify({ plan: k })
+          }).catch(function(){});
+        }
+      } catch (ePl) {}
+    }
+    try { showPendingScreen(window.__pendingEmail__ || '', st); } catch (e) {}
+  };
+
   /* ─── 이용료 입금 안내 + 입금 완료 신고 (2026-08-24) ─── */
   var SG_ACCT = '1000-7691-2971';
   function _sgPayBox() {
     var done = localStorage.getItem('sgPaidSent') === (window.__pendingEmail__ || '');
+    var p = _sgPlanOf(_sgPlanKey());
     return '<div style="background:#fffbeb;border:1.5px solid #fcd34d;border-radius:10px;padding:13px 15px;margin-top:14px;text-align:left;">' +
-      '<div style="font-size:14.5px;font-weight:800;color:#92400e;margin-bottom:7px;">💰 이용료 49,000원 (1회 결제)</div>' +
+      '<div style="font-size:14.5px;font-weight:800;color:#92400e;margin-bottom:8px;">💰 이용 기간을 골라주세요</div>' +
+      _sgPlanCards() +
+      '<div style="border-top:1.5px dashed #f3d9a0;margin:11px 0 9px;"></div>' +
       '<div style="font-size:14px;color:#334155;line-height:1.7;">토스뱅크 · 예금주 <b>여상현</b></div>' +
       '<div style="display:flex;align-items:center;gap:7px;margin:3px 0 6px;">' +
         '<b style="font-size:17px;color:#7c2d12;letter-spacing:.4px;">' + SG_ACCT + '</b>' +
         '<button id="sg-copy-acct" onclick="window.salguCopyAcct()" style="background:#fff;border:1.5px solid #e0c9a6;color:#92400e;border-radius:6px;padding:3px 9px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;">복사</button>' +
       '</div>' +
-      '<div style="font-size:12.5px;color:#8a7566;line-height:1.6;">입금자명은 <b>신청하신 이름</b>으로 보내주세요.<br>입금 후 아래 버튼을 누르시면 팀장에게 바로 알림이 갑니다.</div>' +
+      '<div style="background:#fff;border:1.5px solid #f3d9a0;border-radius:8px;padding:9px 11px;font-size:14px;color:#7c2d12;line-height:1.6;">' +
+        '보내실 금액 <b style="font-size:16.5px;color:#b45309;">' + _sgWon(p.price) + '원</b> <span style="color:#a08a76;font-size:12.5px;">(' + p.label + ' 이용)</span></div>' +
+      '<div style="font-size:12.5px;color:#8a7566;line-height:1.6;margin-top:7px;">입금자명은 <b>신청하신 이름</b>으로 보내주세요.<br>입금 후 아래 버튼을 누르시면 팀장에게 바로 알림이 갑니다.</div>' +
       '<button id="sg-paid-btn" onclick="window.salguPaid()"' + (done ? ' disabled' : '') +
         ' style="width:100%;margin-top:11px;background:' + (done ? '#cbd5e1' : '#f59e0b') + ';color:#fff;border:none;border-radius:9px;padding:11px;font-size:15px;font-weight:800;cursor:' + (done ? 'default' : 'pointer') + ';font-family:inherit;">' +
         (done ? '✅ 입금 완료를 알렸습니다' : '입금 완료 알리기') + '</button>' +
@@ -11678,11 +11743,12 @@ function copyContact(el) {
     fetch('https://salgu-api.wmmryer.workers.dev/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: window.__pendingEmail__ || '', name: name, phone: phone })
+      body: JSON.stringify({ email: window.__pendingEmail__ || '', name: name, phone: phone, plan: _sgPlanKey() })
     }).then(function(r){ return r.json(); })
       .then(function(j){
         if (j && j.ok) {
-          alert('✅ 신청이 접수되었습니다!\n관리자 승인 후 이용하실 수 있습니다.');
+          var _p = _sgPlanOf(_sgPlanKey());
+          alert('✅ 신청이 접수되었습니다!\n\n선택하신 기간: ' + _p.label + ' (' + _sgWon(_p.price) + '원)\n입금 후 [입금 완료 알리기]를 눌러주세요.');
           showPendingScreen(window.__pendingEmail__ || '', 'pending');
         } else {
           alert('신청 실패: ' + ((j && j.error) || '잠시 후 다시 시도해주세요'));
@@ -11733,6 +11799,7 @@ function copyContact(el) {
               .then(function(r){ return r.ok ? r.json() : null; })
               .then(function(j){
                 if (!j || !j.status || j.status === 'approved') { afterLogin(); return; }  /* 승인 또는 응답 이상 → 통과 */
+                try { if (j.plan) window.__sgPlan__ = j.plan; } catch (ePl) {}   /* 이미 고른 요금제 복원 (2026-09-02) */
                 showPendingScreen(_me, j.status);   /* none=신청 폼 / pending=대기 / expired=만료 / rejected=중지 */
               })
               .catch(function(){ afterLogin(); });   /* 서버 오류 → 통과 */

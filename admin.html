@@ -34,6 +34,7 @@
   .b-approved { background:#dcfce7; color:#15803d; }
   .b-rejected { background:#fee2e2; color:#b91c1c; }
   .b-expired { background:#f1f5f9; color:#64748b; }
+  .b-plan { background:#fffbeb; color:#b45309; border:1.5px solid #fcd34d; }
   .acts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
   .acts input[type=date] { padding:6px 8px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; }
   .empty { text-align:center; color:#94a3b8; padding:40px 0; font-size:14.5px; }
@@ -210,7 +211,7 @@ function render() {
        승인·이용중지는 각 상태 탭에서 한다. */
     if (_tab !== 'all') {
       if (st === 'paid' || st === 'pending' || st === 'existing' || st === 'rejected' || st === 'expired') {
-        acts += '<input type="date" id="exp-' + esc(u.email) + '" title="만료일 (비우면 무기한)">'
+        acts += '<input type="date" id="exp-' + esc(u.email) + '" value="' + planExpiry(u) + '" title="만료일 — 고른 요금제대로 미리 채워둠 (비우면 무기한)">'
              + '<button class="btn btn-green btn-sm" onclick="approve(\'' + esc(u.email) + '\')">승인</button>';
       }
       if (st === 'paid' || st === 'pending') {
@@ -219,11 +220,14 @@ function render() {
       if (st === 'approved') {
         acts += '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
       }
+      /* 초대 멤버 표시를 손으로 켜고 끄기 — 잘못 잡힌 사람 바로잡을 때 */
+      acts += '<button class="btn btn-g btn-sm" title="초대 멤버 표시 켜기/끄기" onclick="setTier(\'' + esc(u.email) + '\',' + (isInvited(u) ? 'false' : 'true') + ')">'
+           + (isInvited(u) ? '🌱 해제' : '🌱 초대') + '</button>';
     }
     return '<div class="card">'
       + '<div class="info">'
       +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span>'
-      +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + '</div>'
+      +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + planHtml(u) + '</div>'
       +   '<div class="sub">' + esc(u.email) + (u.phone ? ' · ' + esc(u.phone) : '') + '</div>'
       +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : '') + '</div>'
       +   '<div class="usage">' + usageHtml(u) + '</div>'
@@ -236,8 +240,32 @@ function render() {
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 /* ★ 초대 멤버 (2026-09-02) — 살구를 이미 쓰고 있어서 자동으로 명단에 담긴 사람들.
-   승인해도 memo 의 '자동 수집' 표시는 남으므로 승인 뒤에도 계속 구분된다. */
-function isInvited(u) { return /자동 수집/.test(u.memo || ''); }
+   1순위는 전용 칸 tier='invited' (재신청·입금신고로 memo 가 바뀌어도 안 지워짐).
+   2순위는 옛날 memo 표시 — tier 백필 전 데이터를 위한 안전망. */
+function isInvited(u) {
+  if (String(u.tier || '') === 'invited') return true;
+  return /자동 수집/.test(u.memo || '');
+}
+
+/* ★ 요금제 (2026-09-02) — 값은 워커·본체와 맞춰져 있음 */
+var PLAN = {
+  '6m': { label:'6개월', months:6,  price:29000 },
+  '1y': { label:'1년',   months:12, price:49000 },
+  '2y': { label:'2년',   months:24, price:89000 }
+};
+function planOf(u) { return PLAN[String(u.plan || '')] ? String(u.plan) : ''; }
+function planHtml(u) {
+  var k = planOf(u); if (!k) return '';
+  var p = PLAN[k];
+  return ' <span class="badge b-plan">' + p.label + ' · ' + p.price.toLocaleString() + '원</span>';
+}
+/* 오늘부터 요금제 기간만큼 뒤 (만료일 기본값). 요금제가 없으면 빈 값 = 무기한 */
+function planExpiry(u) {
+  var k = planOf(u); if (!k) return '';
+  var d = new Date(Date.now() + 9*3600*1000);
+  d.setMonth(d.getMonth() + PLAN[k].months);
+  return d.toISOString().slice(0, 10);
+}
 /* 승인 월 ('2026-08') · 승인 전이면 'none' */
 function apprMonth(u) { var a = String(u.approved_at || '').trim(); return a ? a.slice(0, 7) : 'none'; }
 function activeDays(u) { var n = parseInt(u.active_days, 10); return isNaN(n) ? 0 : n; }
@@ -368,12 +396,14 @@ function usageHtml(u) {
 function dlExcel() {
   var rows = sortRows(_users.filter(passFilter).filter(function(u){ return inTab(u, _tab); }));
   if (!rows.length) { toast('이 탭에는 저장할 명단이 없습니다'); return; }
-  var head = ['이름','이메일','전화번호','구분','상태','만료일','신청일','승인일','승인월','최근접속','사용일수','첫접속','고객수','기기','메모'];
+  var head = ['이름','이메일','전화번호','구분','요금제','금액','상태','만료일','신청일','승인일','승인월','최근접속','사용일수','첫접속','고객수','기기','메모'];
   var LBL2 = { all:'전체', paid:'입금확인 대기', pending:'대기', existing:'기존 사용자', approved:'승인', rejected:'거절', expired:'만료' };
   function cell(v){ v = String(v==null?'':v); return '"' + v.replace(/"/g,'""') + '"'; }
   var lines = [head.map(cell).join(',')];
   rows.forEach(function(u){
-    lines.push([u.name||'', u.email||'', u.phone||'', isInvited(u)?'초대 멤버':'신규', LBL2[statusOf(u)]||u.status||'',
+    var _pk = planOf(u);
+    lines.push([u.name||'', u.email||'', u.phone||'', isInvited(u)?'초대 멤버':'신규',
+      _pk?PLAN[_pk].label:'', _pk?PLAN[_pk].price:'', LBL2[statusOf(u)]||u.status||'',
       u.expires_at||'', (u.created_at||'').slice(0,16), (u.approved_at||'').slice(0,16),
       apprMonth(u)==='none'?'':apprMonth(u), seenText(u), activeDays(u)||'', String(u.first_seen||'').slice(0,10),
       (u.cust_count==null?'':u.cust_count), (u.device==='M'?'모바일':(u.device==='P'?'PC':'')),
@@ -392,9 +422,18 @@ function dlExcel() {
 function approve(email) {
   var expEl = document.getElementById('exp-' + email);
   var exp = expEl && expEl.value ? expEl.value : null;
-  if (!confirm(email + ' 님을 승인할까요?' + (exp ? '\n만료일: ' + exp : '\n(만료일 없음 — 무기한)'))) return;
+  var u0 = null;
+  for (var i = 0; i < _users.length; i++) if (String(_users[i].email).toLowerCase() === String(email).toLowerCase()) { u0 = _users[i]; break; }
+  var pk = u0 ? planOf(u0) : '';
+  var pTxt = pk ? ('\n요금제: ' + PLAN[pk].label + ' · ' + PLAN[pk].price.toLocaleString() + '원') : '';
+  if (!confirm(email + ' 님을 승인할까요?' + pTxt + (exp ? '\n만료일: ' + exp : '\n(만료일 없음 — 무기한)'))) return;
   api('/admin/approve', { method:'POST', body: JSON.stringify({ email: email, expires_at: exp }) })
     .then(function(r){ if (r.ok) { toast('✅ 승인됨'); load(); } else toast('실패: ' + (r.error||'')); });
+}
+function setTier(email, on) {
+  if (!confirm(email + (on ? ' 님을 초대 멤버로 표시할까요?' : ' 님의 초대 멤버 표시를 해제할까요?'))) return;
+  api('/admin/tier', { method:'POST', body: JSON.stringify({ email: email, tier: on ? 'invited' : '' }) })
+    .then(function(r){ if (r.ok) { toast('처리됨'); load(); } else toast('실패: ' + (r.error||'')); });
 }
 function reject(email) {
   if (!confirm(email + ' 님의 이용을 중지(거절)할까요?')) return;
