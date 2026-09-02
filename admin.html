@@ -45,6 +45,14 @@
   .addbox b { color:#7c2d12; font-size:14px; }
   .addrow { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
   .addrow input { padding:8px 11px; border:1.5px solid #cbd5e1; border-radius:8px; font-size:14px; font-family:inherit; flex:1; min-width:140px; }
+  /* ★ 걸러보기 줄 (2026-09-02) */
+  .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+  .filters input, .filters select { padding:8px 11px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13.5px; font-family:inherit; background:#fff; color:#334155; }
+  .filters input { flex:1; min-width:190px; }
+  .summary { background:#fff; border:1.5px solid #f0e4d6; border-radius:12px; padding:11px 16px; margin-bottom:12px; font-size:13.5px; color:#475569; display:flex; gap:14px; flex-wrap:wrap; }
+  .summary b { color:#7c2d12; font-size:15px; }
+  .b-invited { background:#ecfdf5; color:#047857; border:1.5px solid #a7f3d0; }
+  .usage { font-size:12.5px; color:#475569; margin-top:3px; }
   .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#0f172a; color:#fff; padding:11px 22px; border-radius:10px; font-size:14px; display:none; z-index:99; }
 </style>
 </head>
@@ -79,6 +87,8 @@
       </div>
     </div>
 
+    <div class="summary" id="summary"></div>
+    <div class="filters" id="filters"></div>
     <div class="tabs" id="tabs"></div>
     <div id="list"></div>
   </div>
@@ -91,6 +101,8 @@
 var API = 'https://salgu-api.wmmryer.workers.dev';
 var CLIENT_ID = '491677189712-agtga4sn5ed3gje4n0lk02veoj3ttl2c.apps.googleusercontent.com';
 var _token = null, _users = [], _tab = 'pending', _tc = null;
+/* ★ 걸러보기·정렬 상태 (2026-09-02) */
+var _q = '', _grp = 'all', _mon = 'all', _sort = 'seen', _view = 'all', _fbuilt = false;
 
 function toast(m) {
   var t = document.getElementById('toast');
@@ -148,15 +160,38 @@ function statusOf(u) {
 var LBL = { paid:'💰 입금확인 대기', pending:'⏳ 대기', existing:'👥 기존 사용자', approved:'✅ 승인', rejected:'🚫 거절', expired:'⌛ 만료' };
 var CLS = { paid:'b-paid', pending:'b-pending', existing:'b-existing', approved:'b-approved', rejected:'b-rejected', expired:'b-expired' };
 
+function renderSummary() {
+  var n = _users.length, inv = 0, appr = 0, hot = 0, idle = 0, never = 0, soon = 0;
+  _users.forEach(function(u){
+    if (isInvited(u)) inv++;
+    if (statusOf(u) === 'approved') appr++;
+    var d = seenDays(u);
+    if (d === null) never++; else if (d <= 7) hot++; else if (d >= 30) idle++;
+    var x = daysToExpire(u); if (x !== null && x >= 0 && x <= 30) soon++;
+  });
+  document.getElementById('summary').innerHTML =
+      '<span>전체 <b>' + n + '</b>명</span>'
+    + '<span>✅ 승인 <b>' + appr + '</b></span>'
+    + '<span>🌱 초대 멤버 <b>' + inv + '</b></span>'
+    + '<span>🔥 이번 주 접속 <b>' + hot + '</b></span>'
+    + '<span>😴 휴면 <b>' + idle + '</b></span>'
+    + '<span>🚫 미접속 <b>' + never + '</b></span>'
+    + '<span>⏰ 만료 임박 <b>' + soon + '</b></span>';
+}
+
 function render() {
+  if (!_fbuilt) buildFilters();
+  renderSummary();
+  fillMonths();
+  var base = _users.filter(passFilter);
   var counts = { paid:0, pending:0, existing:0, approved:0, rejected:0, expired:0 };
-  _users.forEach(function(u){ counts[statusOf(u)] = (counts[statusOf(u)]||0)+1; });
+  base.forEach(function(u){ counts[statusOf(u)] = (counts[statusOf(u)]||0)+1; });
   var tabs = ['paid','pending','existing','approved','expired','rejected'];
   document.getElementById('tabs').innerHTML = tabs.map(function(t){
     return '<div class="tab' + (_tab===t?' on':'') + '" onclick="_tab=\'' + t + '\';render()">' + LBL[t] + '<span class="n">' + (counts[t]||0) + '</span></div>';
   }).join('');
 
-  var rows = _users.filter(function(u){ return statusOf(u) === _tab; });
+  var rows = sortRows(base.filter(function(u){ return statusOf(u) === _tab; }));
   if (!rows.length) { document.getElementById('list').innerHTML = '<div class="empty">해당하는 사람이 없습니다</div>'; return; }
   document.getElementById('list').innerHTML = rows.map(function(u) {
     var st = statusOf(u);
@@ -173,10 +208,11 @@ function render() {
     }
     return '<div class="card">'
       + '<div class="info">'
-      +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span></div>'
+      +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span>'
+      +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + '</div>'
       +   '<div class="sub">' + esc(u.email) + (u.phone ? ' · ' + esc(u.phone) : '') + '</div>'
       +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : '') + '</div>'
-      +   '<div class="sub">' + seenHtml(u) + '</div>'
+      +   '<div class="usage">' + usageHtml(u) + '</div>'
       +   (u.memo ? '<div class="memo">📝 ' + esc(u.memo) + '</div>' : '')
       + '</div>'
       + '<div class="acts">' + acts + '</div>'
@@ -184,6 +220,102 @@ function render() {
   }).join('');
 }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+/* ★ 초대 멤버 (2026-09-02) — 살구를 이미 쓰고 있어서 자동으로 명단에 담긴 사람들.
+   승인해도 memo 의 '자동 수집' 표시는 남으므로 승인 뒤에도 계속 구분된다. */
+function isInvited(u) { return /자동 수집/.test(u.memo || ''); }
+/* 승인 월 ('2026-08') · 승인 전이면 'none' */
+function apprMonth(u) { var a = String(u.approved_at || '').trim(); return a ? a.slice(0, 7) : 'none'; }
+function activeDays(u) { var n = parseInt(u.active_days, 10); return isNaN(n) ? 0 : n; }
+
+/* ★ 걸러보기 줄 (2026-09-02) */
+function buildFilters() {
+  document.getElementById('filters').innerHTML =
+      '<input id="f-q" placeholder="🔍 이름 · 이메일 · 전화 검색" value="' + esc(_q) + '" oninput="_q=this.value;render()">'
+    + '<select id="f-grp" onchange="_grp=this.value;render()">'
+    +   '<option value="all">구분 — 전체</option>'
+    +   '<option value="inv">🌱 초대 멤버만</option>'
+    +   '<option value="new">🆕 그 외(신규)만</option>'
+    + '</select>'
+    + '<select id="f-view" onchange="_view=this.value;render()">'
+    +   '<option value="all">보기 — 전체</option>'
+    +   '<option value="hot">🔥 이번 주 접속한 사람</option>'
+    +   '<option value="idle">😴 휴면 (30일 이상 안 들어옴)</option>'
+    +   '<option value="never">🚫 한 번도 안 들어옴</option>'
+    +   '<option value="soon">⏰ 만료 임박 (30일 이내)</option>'
+    + '</select>'
+    + '<select id="f-mon" onchange="_mon=this.value;render()"></select>'
+    + '<select id="f-sort" onchange="_sort=this.value;render()">'
+    +   '<option value="seen">정렬 — 최근 접속 순</option>'
+    +   '<option value="idle">정렬 — 오래 안 들어온 순</option>'
+    +   '<option value="days">정렬 — 많이 쓴 순</option>'
+    +   '<option value="appr">정렬 — 승인일 최신 순</option>'
+    +   '<option value="reg">정렬 — 신청일 최신 순</option>'
+    +   '<option value="name">정렬 — 이름 순</option>'
+    + '</select>';
+  document.getElementById('f-grp').value = _grp;
+  document.getElementById('f-sort').value = _sort;
+  document.getElementById('f-view').value = _view;
+  _fbuilt = true;
+}
+/* 승인 월 목록은 명단이 바뀔 때만 다시 만든다 */
+function fillMonths() {
+  var sel = document.getElementById('f-mon');
+  if (!sel) return;
+  var cnt = {};
+  _users.forEach(function(u){ var m = apprMonth(u); cnt[m] = (cnt[m]||0) + 1; });
+  var months = Object.keys(cnt).filter(function(m){ return m !== 'none'; }).sort().reverse();
+  var html = '<option value="all">승인월 — 전체</option>';
+  var asc = months.slice().reverse();   /* 오래된 달이 1기 */
+  months.forEach(function(m){
+    var gi = asc.indexOf(m) + 1;
+    html += '<option value="' + m + '">' + gi + '기 · ' + m.replace('-', '년 ') + '월 (' + cnt[m] + ')</option>';
+  });
+  if (cnt['none']) html += '<option value="none">아직 승인 전 (' + cnt['none'] + ')</option>';
+  if (sel.getAttribute('data-sig') !== html.length + ':' + months.join()) {
+    sel.innerHTML = html;
+    sel.setAttribute('data-sig', html.length + ':' + months.join());
+  }
+  sel.value = _mon;
+  if (!sel.value) { _mon = 'all'; sel.value = 'all'; }
+}
+/* 만료까지 남은 날 (만료일 없으면 null) */
+function daysToExpire(u) {
+  var e = String(u.expires_at || '').trim();
+  if (!e) return null;
+  var t = Date.parse(e + 'T00:00:00Z');
+  if (isNaN(t)) return null;
+  return Math.ceil((t - (Date.now() + 9 * 3600 * 1000)) / 86400000);
+}
+function passFilter(u) {
+  if (_grp === 'inv' && !isInvited(u)) return false;
+  if (_grp === 'new' && isInvited(u)) return false;
+  if (_view !== 'all') {
+    var d = seenDays(u);
+    if (_view === 'hot'   && !(d !== null && d <= 7)) return false;
+    if (_view === 'idle'  && !(d !== null && d >= 30)) return false;
+    if (_view === 'never' && d !== null) return false;
+    if (_view === 'soon') { var x = daysToExpire(u); if (x === null || x < 0 || x > 30) return false; }
+  }
+  if (_mon !== 'all' && apprMonth(u) !== _mon) return false;
+  var q = _q.trim().toLowerCase();
+  if (q) {
+    var hay = ((u.name||'') + ' ' + (u.email||'') + ' ' + (u.phone||'') + ' ' + (u.memo||'')).toLowerCase();
+    if (hay.indexOf(q) === -1) return false;
+  }
+  return true;
+}
+function sortRows(rows) {
+  var r = rows.slice();
+  function seen(u){ return String(u.last_seen || ''); }
+  if (_sort === 'seen')      r.sort(function(a,b){ return seen(b).localeCompare(seen(a)); });
+  else if (_sort === 'idle') r.sort(function(a,b){ return seen(a).localeCompare(seen(b)); });  /* 기록 없음이 맨 앞 */
+  else if (_sort === 'days') r.sort(function(a,b){ return activeDays(b) - activeDays(a); });
+  else if (_sort === 'appr') r.sort(function(a,b){ return String(b.approved_at||'').localeCompare(String(a.approved_at||'')); });
+  else if (_sort === 'reg')  r.sort(function(a,b){ return String(b.created_at||'').localeCompare(String(a.created_at||'')); });
+  else if (_sort === 'name') r.sort(function(a,b){ return String(a.name||'힣').localeCompare(String(b.name||'힣'), 'ko'); });
+  return r;
+}
 
 /* ★ 최근 접속 (2026-09-02) — 서버가 /check 때 남긴 last_seen (한국 시간) */
 function seenText(u) {
@@ -206,18 +338,32 @@ function seenHtml(u) {
   var col = (d !== null && d >= 30) ? '#b45309' : '#0f766e';
   return '최근 접속 <b style="color:' + col + '">' + esc(txt) + ago + '</b>';
 }
+/* 최근 접속 + 실제로 쓴 날 수 + 첫 접속 — 한 줄로 */
+function usageHtml(u) {
+  var parts = [seenHtml(u)];
+  var n = activeDays(u);
+  if (n) parts.push('사용 <b>' + n + '일</b>');
+  var f = String(u.first_seen || '').slice(0, 10);
+  if (f) parts.push('첫 접속 ' + esc(f));
+  var c = parseInt(u.cust_count, 10);
+  if (!isNaN(c)) parts.push('고객 <b>' + c + '명</b>' + (u.device === 'M' ? ' 📱' : (u.device === 'P' ? ' 💻' : '')));
+  return parts.join(' · ');
+}
 
 /* 현재 보고 있는 탭의 명단을 엑셀(CSV)로 저장 (2026-08-10) */
 function dlExcel() {
-  var rows = _users.filter(function(u){ return statusOf(u) === _tab; });
+  var rows = sortRows(_users.filter(passFilter).filter(function(u){ return statusOf(u) === _tab; }));
   if (!rows.length) { toast('이 탭에는 저장할 명단이 없습니다'); return; }
-  var head = ['이름','이메일','전화번호','상태','만료일','신청일','승인일','최근접속','메모'];
+  var head = ['이름','이메일','전화번호','구분','상태','만료일','신청일','승인일','승인월','최근접속','사용일수','첫접속','고객수','기기','메모'];
   var LBL2 = { paid:'입금확인 대기', pending:'대기', existing:'기존 사용자', approved:'승인', rejected:'거절', expired:'만료' };
   function cell(v){ v = String(v==null?'':v); return '"' + v.replace(/"/g,'""') + '"'; }
   var lines = [head.map(cell).join(',')];
   rows.forEach(function(u){
-    lines.push([u.name||'', u.email||'', u.phone||'', LBL2[statusOf(u)]||u.status||'',
-      u.expires_at||'', (u.created_at||'').slice(0,16), (u.approved_at||'').slice(0,16), seenText(u), u.memo||''].map(cell).join(','));
+    lines.push([u.name||'', u.email||'', u.phone||'', isInvited(u)?'초대 멤버':'신규', LBL2[statusOf(u)]||u.status||'',
+      u.expires_at||'', (u.created_at||'').slice(0,16), (u.approved_at||'').slice(0,16),
+      apprMonth(u)==='none'?'':apprMonth(u), seenText(u), activeDays(u)||'', String(u.first_seen||'').slice(0,10),
+      (u.cust_count==null?'':u.cust_count), (u.device==='M'?'모바일':(u.device==='P'?'PC':'')),
+      u.memo||''].map(cell).join(','));
   });
   var today = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
   var blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' });

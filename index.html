@@ -11791,6 +11791,23 @@ function copyContact(el) {
           }, 5000);
         }
       } catch(e) {}
+      /* ★ 사용 현황 보고 (2026-09-02) — 관리자 페이지에서 '이 사람이 살구를 실제로 쓰고 있는지'만
+         보기 위한 것. 보내는 것은 고객 "수"(숫자 하나)와 PC/모바일 여부뿐이다.
+         고객 이름·전화·메모 등 내용은 절대 보내지 않는다. 본인 확인은 로그인 토큰으로 하므로
+         이메일조차 보낼 필요가 없다. 12초 뒤 1회, 실패하면 그냥 버린다(살구 동작과 무관). */
+      try {
+        setTimeout(function() {
+          try {
+            if (!_accessToken) return;
+            var _ucnt = (window.customers && window.customers.length) || 0;
+            fetch('https://salgu-api.wmmryer.workers.dev/usage', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _accessToken },
+              body: JSON.stringify({ customers: _ucnt, device: window.__IS_MOBILE__ ? 'M' : 'P' })
+            }).catch(function(){});
+          } catch (eUse) {}
+        }, 12000);
+      } catch (eUse0) {}
       /* ★ 이용 중지 강제 적용 (2026-08-10) — 서버가 명시적으로 '중지(rejected)' 또는
          '만료(expired)'라고 답한 계정만 차단 화면 표시. 그 외 모든 경우(미등록·대기·승인·
          서버 오류·응답 없음)는 전부 통과 → 기존 사용자에게 영향 없음 (fail-open) */
