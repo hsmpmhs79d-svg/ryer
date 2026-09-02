@@ -41,6 +41,27 @@
   #drop { border:2.5px dashed #e0c9a6; border-radius:11px; background:#fffaf4;
           padding:20px; text-align:center; cursor:pointer; font-size:13.5px; color:#8a7566; }
   #drop:hover { border-color:#c2410c; background:#fff3e8; }
+  /* ★ 첨부 서류 썸네일 (2026-09-02) */
+  .attbtns { display:flex; gap:8px; margin-top:10px; }
+  .attbtns button { flex:1; padding:12px 8px; border:1.5px solid #e0c9a6; border-radius:10px;
+    background:#fff; color:#7c2d12; font-size:14.5px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .attbtns button:active { background:#fff3e8; }
+  .attgrid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px; margin-top:12px; }
+  .att { position:relative; border:1.5px solid #eddfcc; border-radius:9px; overflow:hidden; background:#fffaf4; }
+  .att .th { width:100%; height:104px; object-fit:cover; display:block; background:#f6ece1; }
+  .att .pdfic { height:104px; display:flex; align-items:center; justify-content:center;
+    font-size:13px; font-weight:800; color:#b45309; text-align:center; padding:6px; word-break:break-all; }
+  .att .no { position:absolute; top:4px; left:4px; background:rgba(15,23,42,.78); color:#fff;
+    font-size:12px; font-weight:800; width:21px; height:21px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; }
+  .att .del { position:absolute; top:4px; right:4px; background:rgba(220,38,38,.92); color:#fff;
+    border:none; width:22px; height:22px; border-radius:50%; font-size:13px; font-weight:800;
+    cursor:pointer; line-height:1; font-family:inherit; }
+  .att .mv { display:flex; border-top:1px solid #eddfcc; }
+  .att .mv button { flex:1; border:none; background:#fff; color:#7c2d12; font-size:15px;
+    padding:5px 0; cursor:pointer; font-family:inherit; }
+  .att .mv button:first-child { border-right:1px solid #eddfcc; }
+  .attcount { font-size:13.5px; color:#7c2d12; font-weight:700; margin-top:11px; }
   #files { font-size:12.5px; color:#8a7566; margin-top:8px; line-height:1.8; }
   #foot { position:fixed; left:0; right:0; bottom:0; background:#fff;
           border-top:1.5px solid #ecdcc8; padding:11px 16px; display:flex;
@@ -81,9 +102,27 @@
 
   <div class="card">
     <h2>5. 병원 서류 (선택)</h2>
-    <div id="drop">여기에 병원 서류를 끌어다 놓거나 눌러서 고르세요 · PDF, JPG, PNG</div>
+    <div id="drop">여기를 눌러 서류를 고르세요 · PDF, JPG, PNG<br><span style="font-size:12.5px;color:#a08a76">여러 장 한 번에 고를 수 있습니다</span></div>
+    <div class="attbtns">
+      <button type="button" onclick="$('shot').click()">📷 사진 찍기</button>
+      <button type="button" onclick="$('pick').click()">🖼 사진·파일 고르기</button>
+    </div>
     <input type="file" id="pick" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none">
+    <input type="file" id="shot" accept="image/*" capture="environment" style="display:none">
     <div id="files"></div>
+  </div>
+
+  <!-- ★ 팩스 전송 (2026-09-02) — 만든 PDF를 휴대폰 팩스앱으로 넘긴다 -->
+  <div class="card" id="card-fax" style="display:none">
+    <h2>6. 보내기</h2>
+    <div id="faxno" class="sub" style="margin:0 0 12px;"></div>
+    <button id="sharebtn" onclick="shareFax()" style="display:none;width:100%;padding:14px;border:none;border-radius:10px;
+      background:#0f766e;color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:9px;">
+      📠 휴대폰 팩스앱으로 보내기</button>
+    <button id="savebtn" onclick="saveFile()" style="width:100%;padding:14px;border:1.5px solid #0f766e;border-radius:10px;
+      background:#fff;color:#0f766e;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;">
+      📁 파일로 저장 · 보험사 앱으로 보내기</button>
+    <p id="faxhelp" class="sub" style="margin:10px 0 0;line-height:1.7"></p>
   </div>
 
   <div id="msg"></div>
@@ -125,9 +164,26 @@ var INS = [
   ['axa','AXA손해보험'],['hana-insurance','하나손해보험']
 ];
 
+/* ★ 보험금 청구 FAX (2026-09-02) — 살구 '보험사 연락처' 표와 같은 번호.
+   빈 값은 고객이 고객센터에서 가상팩스번호를 받아야 하는 곳. */
+var FAX = {
+  'samsung-life':'', 'hanwha-life':'', 'kyobo-life':'', 'shinhan-life':'',
+  'nh-life':'02-6971-6040', 'mirae-life':'', 'heungkuk-life':'',
+  'tongyang-life':'02-3289-4516', 'metlife':'', 'kb-life':'02-390-4629',
+  'lina-life':'02-6944-1200', 'abl-life':'02-3299-5544', 'aia-life':'02-2021-4540',
+  'im-life':'0505-083-5420', 'fubon-hyundai-life':'0505-106-0311', 'kdb-life':'02-2669-6500',
+  'hana-life':'',
+  'samsung-fire':'0505-162-0872', 'db-insurance':'0505-181-4862', 'hyundai-marine':'0507-774-6060',
+  'meritz-fire':'0505-021-3400', 'kb-insurance':'0505-136-6500', 'hanwha-general':'0502-779-1004',
+  'heungkuk-fire':'0504-800-0700', 'lotte-insurance':'0507-333-9999', 'nh-fire':'0505-060-7000',
+  'axa':'', 'hana-insurance':'0505-170-0765'
+};
+var madeBlob = null, madeName = '';     /* 방금 만든 PDF (팩스로 넘길 것) */
+
 var DATA = { marks:{}, custom:{}, skip:{} };   /* claim-data.json */
 var LABELS = {};                               /* claim-fields.json 라벨 */
 var curIns = null, VAL = {}, SIG = {}, ATT = [];
+function hideFaxCard(){ var c = $('card-fax'); if (c) c.style.display = 'none'; madeBlob = null; }
 var $ = function(id){ return document.getElementById(id); };
 function msg(t){ $('msg').textContent = t || ''; }
 
@@ -149,7 +205,7 @@ Promise.all([
     var o = document.createElement('option'); o.value = v[0]; o.textContent = v[1];
     $('ins').appendChild(o);
   });
-  $('ins').onchange = function(){ openIns(this.value); };
+  $('ins').onchange = function(){ hideFaxCard(); openIns(this.value); };
   if ($('ins').options.length) openIns($('ins').options[0].value);
 });
 
@@ -269,17 +325,49 @@ function clearPad(k) {
 /* ── 병원 서류 첨부 ────────────────────────────────────── */
 $('drop').onclick = function(){ $('pick').click(); };
 $('pick').onchange = function(){ addFiles(this.files); this.value = ''; };
+$('shot').onchange = function(){ addFiles(this.files); this.value = ''; };
 $('drop').ondragover = function(e){ e.preventDefault(); };
 $('drop').ondrop = function(e){ e.preventDefault(); addFiles(e.dataTransfer.files); };
 
 function addFiles(list) {
   Array.prototype.forEach.call(list, function(f){
-    if (!/\.(pdf|jpe?g|png)$/i.test(f.name)) return;
+    if (!/\.(pdf|jpe?g|png)$/i.test(f.name) && f.type.indexOf('image/') !== 0) return;
     ATT.push(f);
   });
-  $('files').textContent = ATT.length
-    ? '붙일 서류 ' + ATT.length + '개 — ' + ATT.map(function(f){ return f.name; }).join(', ')
-    : '';
+  drawAtt();
+}
+/* ★ 첨부 서류를 그림으로 보여준다 (2026-09-02) — 순서·누락을 눈으로 확인하려고 */
+function drawAtt() {
+  var box = $('files');
+  if (!ATT.length) { box.innerHTML = ''; return; }
+  var h = '<div class="attcount">붙일 서류 ' + ATT.length + '장 · 위에서부터 이 순서로 붙습니다</div><div class="attgrid">';
+  ATT.forEach(function(f, i){
+    var isPdf = /\.pdf$/i.test(f.name);
+    h += '<div class="att">'
+      +   (isPdf ? '<div class="pdfic">📄 PDF<br>' + esc(f.name.slice(0, 18)) + '</div>'
+                 : '<img class="th" id="th' + i + '" alt="">')
+      +   '<span class="no">' + (i + 1) + '</span>'
+      +   '<button class="del" onclick="delAtt(' + i + ')" title="빼기">✕</button>'
+      +   '<div class="mv"><button onclick="mvAtt(' + i + ',-1)">◀</button>'
+      +   '<button onclick="mvAtt(' + i + ',1)">▶</button></div>'
+      + '</div>';
+  });
+  box.innerHTML = h + '</div>';
+  ATT.forEach(function(f, i){
+    if (/\.pdf$/i.test(f.name)) return;
+    var el = $('th' + i); if (!el) return;
+    var u = URL.createObjectURL(f);
+    el.src = u; el.onload = function(){ URL.revokeObjectURL(u); };
+  });
+}
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){
+  return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]; }); }
+function delAtt(i){ ATT.splice(i, 1); drawAtt(); }
+function mvAtt(i, d){
+  var j = i + d;
+  if (j < 0 || j >= ATT.length) return;
+  var t = ATT[i]; ATT[i] = ATT[j]; ATT[j] = t;
+  drawAtt();
 }
 
 /* ── 값 채우기 ─────────────────────────────────────────── */
@@ -390,7 +478,72 @@ async function run() {
   a.href = URL.createObjectURL(blob); a.download = name + '.pdf';
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  /* ★ 팩스로 넘길 수 있게 보관 (2026-09-02) */
+  madeBlob = blob; madeName = name + '.pdf';
+  showFaxCard();
   msg('완료 — ' + name + '.pdf 로 저장했습니다. 열어서 확인해보세요.');
+}
+
+/* ── 팩스로 보내기 (2026-09-02) ────────────────────────── */
+function showFaxCard() {
+  var no = FAX[curIns] || '';
+  var nm = '';
+  for (var i = 0; i < INS.length; i++) if (INS[i][0] === curIns) nm = INS[i][1];
+  if (no) {
+    $('faxno').innerHTML = '받는 곳 <b>' + nm + '</b> · 청구 팩스 '
+      + '<b style="font-size:17px;color:#0f766e">' + no + '</b>';
+    $('sharebtn').style.display = 'block';
+    $('faxhelp').innerHTML = '<b>팩스앱으로 보내기</b> — 팩스번호가 자동으로 복사되고 공유창이 열립니다. '
+      + '모바일팩스 앱을 고른 뒤 받는 번호 칸에 붙여넣기만 하시면 됩니다.<br>'
+      + '<b>파일로 저장</b> — 휴대폰에 PDF로 남겨둘 때 쓰세요.';
+  } else {
+    $('faxno').innerHTML = '<b style="color:#b45309">' + nm + '</b> 은 고정 청구 팩스번호가 없습니다. '
+      + '아래 버튼으로 파일을 받아 <b>' + nm + ' 앱</b>에 직접 올리시거나, '
+      + '고객센터에서 <b>가상 팩스번호</b>를 받아 팩스앱으로 보내시면 됩니다.';
+    $('sharebtn').style.display = 'none';
+    $('faxhelp').innerHTML = '공유창이 열리면 <b>파일에 저장</b>을 고르시거나, 목록에 뜨는 <b>보험사 앱</b>을 바로 고르셔도 됩니다.';
+  }
+  $('card-fax').style.display = 'block';
+  $('card-fax').scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+/* 파일로 저장 · 보험사 앱으로 넘기기 — 팩스번호는 건드리지 않는다 */
+async function saveFile() {
+  if (!madeBlob) { msg('먼저 [청구서 만들기]를 눌러주세요.'); return; }
+  var f = new File([madeBlob], madeName, { type:'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files:[f] })) {
+    try {
+      await navigator.share({ files:[f], title:madeName });
+      msg('보냈습니다 — ' + madeName);
+      return;
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  downloadMade();
+  msg('휴대폰에 저장했습니다 — ' + madeName);
+}
+
+function downloadMade() {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(madeBlob); a.download = madeName;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+}
+
+async function shareFax() {
+  if (!madeBlob) { msg('먼저 [청구서 만들기]를 눌러주세요.'); return; }
+  var no = FAX[curIns] || '';
+  if (no) { try { await navigator.clipboard.writeText(no); } catch (e) {} }
+  var f = new File([madeBlob], madeName, { type:'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files:[f] })) {
+    try {
+      await navigator.share({ files:[f], title:madeName });
+      msg(no ? ('팩스앱에서 받는 번호에 붙여넣기 하세요 — ' + no) : '팩스앱에서 받는 번호를 넣어주세요.');
+      return;
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  downloadMade();
+  msg('이 기기에서는 바로 넘기기가 안 돼 파일로 저장했습니다. 팩스앱에서 직접 첨부해주세요.'
+      + (no ? ' 팩스번호 ' + no + ' (복사됨)' : ''));
 }
 
 function dataUrlToBytes(url) {
