@@ -28,6 +28,13 @@
          border:1.5px solid #e0c9a6; border-radius:20px; font-size:13.5px; background:#fffdfb; }
   .chk input { width:16px; height:16px; accent-color:#c2410c; cursor:pointer; }
   .chk.on { background:#fff3e8; border-color:#c2410c; font-weight:700; }
+  /* ★ 2026-09-02 */
+  .samebox { grid-column:1/-1; display:flex; align-items:center; gap:8px; cursor:pointer;
+    background:#f0fdf4; border:1.5px solid #bbf7d0; border-radius:9px; padding:9px 12px;
+    font-size:13.5px; color:#166534; margin:2px 0 4px; }
+  .samebox input { width:17px; height:17px; accent-color:#16a34a; cursor:pointer; }
+  .samebox.on { background:#dcfce7; border-color:#16a34a; }
+  .fld input.locked { background:#f1f5f9; color:#64748b; }
   .sigbox { display:flex; gap:12px; flex-wrap:wrap; }
   .sigone { flex:1; min-width:250px; }
   .sigone .t { font-size:12.5px; font-weight:700; color:#8a7566; margin-bottom:5px; }
@@ -269,6 +276,75 @@ function labelOf(k) {
 /* 오늘 날짜·사고일자에서 자동으로 채워지는 항목 */
 var AUTO = ['today','todayY','todayY4','todayM','todayD','accY','accM','accD','accH'];
 
+/* ═══ 칸마다 넣어줄 예시 (2026-09-02) ═══
+   빈 칸에 흐리게 떠서 '무엇을 어떤 모양으로' 적어야 하는지 알려준다. */
+var EX = {
+  pName:'홍길동', pRrn:'800101-1234567', pTel:'010-1234-5678',
+  pAddr:'서울시 양천구 목동로 123, 101동 1001호', pJob:'회사원', pNat:'대한민국',
+  bName:'홍길동', bRrn:'800101-1234567', bTel:'010-1234-5678',
+  bAddr:'서울시 양천구 목동로 123, 101동 1001호', bEmail:'hong@naver.com', bJob:'회사원',
+  relation:'본인',
+  bank:'국민은행', holder:'홍길동', acct:'123456-01-123456',
+  dxName:'급성 기관지염 (J20)', accDate:'2026-08-01', accPlace:'자택',
+  accDesc:'기침·발열로 내원하여 통원 치료', hospital:'서울내과의원',
+  policyNo:'1234567890', otherIns:'없음', carNo:'12가3456', driver:'본인',
+  idRrnIssue:'2013-03-04', idRrnOrg:'양천구청',
+  idLicNo:'11-12-345678-90', idLicSerial:'AB1234', idIssue:'2013-03-04',
+  signName:'홍길동'
+};
+function exOf(k) {
+  if (EX[k]) return EX[k];
+  var s = String(labelOf(k)).replace(/\s+/g, '');
+  if (/친권자|법정대리인|후견인|보호자|배우자|피상속인/.test(s)) return '홍길동';
+  if (/발급기관|발행기관|관청|청장/.test(s)) return '양천구청';
+  if (/발급|발행/.test(s)) return '2013-03-04';
+  if (/연\/월\/일|년\/월\/일/.test(s)) return '2026-08-01';
+  if (/접수|방법|팩스/.test(s)) return '팩스';
+  if (/기간/.test(s)) return '2026-08-01 ~ 2026-08-05';
+  if (/일수/.test(s)) return '5';
+  if (/횟수|회수/.test(s)) return '3';
+  if (/부위/.test(s)) return '좌측 무릎';
+  if (/수술/.test(s)) return '충수절제술';
+  if (/원인/.test(s)) return '넘어짐';
+  if (/장소/.test(s)) return '자택';
+  if (/\(년\)|년도|연도|년$/.test(s)) return '2026';
+  if (/\(월\)|월$/.test(s)) return '9';
+  if (/\(일\)|일자$|일$/.test(s)) return '28';
+  if (/\(시\)|시$/.test(s)) return '14';
+  if (/성명|이름/.test(s)) return '홍길동';
+  if (/주민/.test(s)) return '800101-1234567';
+  if (/전화|연락처|휴대/.test(s)) return '010-1234-5678';
+  if (/주소/.test(s)) return '서울시 양천구 목동로 123';
+  if (/은행/.test(s)) return '국민은행';
+  if (/계좌/.test(s)) return '123456-01-123456';
+  if (/금액|보험금/.test(s)) return '1,000,000';
+  if (/병원|의료기관/.test(s)) return '서울내과의원';
+  if (/병명|진단|상해|질병|코드/.test(s)) return '급성 기관지염';
+  if (/직업/.test(s)) return '회사원';
+  if (/관계/.test(s)) return '본인';
+  if (/이메일|메일/.test(s)) return 'hong@naver.com';
+  if (/면허/.test(s)) return '11-12-345678-90';
+  if (/번호|증권/.test(s)) return '1234567890';
+  if (/사유|내용|경위|상황/.test(s)) return '기침·발열로 통원 치료';
+  return '';
+}
+
+/* ═══ 칸 순서 (2026-09-02) ═══
+   이름 적었다가 계좌 나왔다가 하지 않게, 뜻이 같은 것끼리 묶어 차례로 보여준다.
+   keys 가 null 인 마지막 묶음은 '위에 안 들어간 나머지 전부'. */
+var GROUPS = [
+  { t:'1. 피보험자 — 치료받으신 분',   keys:['pName','pRrn','pTel','pAddr','pJob','pNat'] },
+  { t:'2. 수익자 — 보험금 받으실 분',  keys:['bName','bRrn','bTel','bAddr','bEmail','bJob','relation'], same:true },
+  { t:'3. 청구 사유',                  keys:['dxName','accDate','accPlace','accDesc','hospital','policyNo','otherIns','carNo','driver'], acc:true },
+  { t:'4. 보험금 받을 계좌',           keys:['bank','holder','acct'] },
+  { t:'5. 신분증',                     keys:['idRrnIssue','idRrnOrg','idLicNo','idLicSerial','idIssue'] },
+  { t:'6. 서명에 들어갈 이름',         keys:['signName'] },
+  { t:'7. 그 밖에 적을 것',            keys:null }
+];
+/* 피보험자 → 수익자로 옮겨 적을 짝 */
+var PAIRS = [['pName','bName'],['pRrn','bRrn'],['pTel','bTel'],['pAddr','bAddr'],['pJob','bJob']];
+var SAME = true;   /* 대부분 본인이 청구하므로 기본은 '같은 사람' */
+
 function openIns(key) {
   curIns = key; VAL = {}; SIG = {};
   var marks = DATA.marks[key] || [];
@@ -300,33 +376,60 @@ function openIns(key) {
   });
   $('card-chk').style.display = chks.length ? '' : 'none';
 
-  /* 글자 항목 */
+  /* 글자 항목 — 뜻이 같은 것끼리 묶어 차례로 (2026-09-02) */
   var tb = $('txts'); tb.innerHTML = '';
   var acc = texts.some(function(k){ return k.indexOf('acc') === 0; });
-  if (acc) {
-    var g = document.createElement('div'); g.className = 'grp'; g.textContent = '— 사고(진료) 날짜 —';
-    tb.appendChild(g);
-    var d = document.createElement('div'); d.className = 'fld';
-    d.innerHTML = '<label>사고(진료)일자</label><input type="date" id="accdate">';
-    tb.appendChild(d);
-  }
   var rest = texts.filter(function(k){ return AUTO.indexOf(k) < 0; });
-  if (rest.length) {
-    var g2 = document.createElement('div'); g2.className = 'grp'; g2.textContent = '— 적어 넣을 내용 —';
-    tb.appendChild(g2);
+  var pKeys = {}; PAIRS.forEach(function(p){ pKeys[p[0]] = p[1]; });
+
+  function addGrp(t) {
+    var g = document.createElement('div'); g.className = 'grp'; g.textContent = '— ' + t + ' —';
+    tb.appendChild(g);
   }
-  rest.forEach(function(k){
+  function addFld(k) {
     var d = document.createElement('div'); d.className = 'fld';
     var id = 't_' + k;
     /* ★ 살구에서 넘어온 값은 미리 채워둔다 (2026-09-02) */
     var pre = (FROM && FROM[k]) ? FROM[k] : '';
+    var ex = exOf(k);
     d.innerHTML = '<label>' + labelOf(k) + (pre ? ' <span style="color:#0f766e;font-size:11.5px;font-weight:700">· 살구에서 가져옴</span>' : '')
-      + '</label><input type="text" id="' + id + '" value="' + String(pre).replace(/"/g, '&quot;') + '">';
+      + '</label><input type="text" id="' + id + '" value="' + String(pre).replace(/"/g, '&quot;') + '"'
+      + (ex ? ' placeholder="예) ' + ex.replace(/"/g, '&quot;') + '"' : '') + '>';
     tb.appendChild(d);
     if (pre) VAL[k] = pre;
-    d.querySelector('input').oninput = function(){ VAL[k] = this.value; };
+    d.querySelector('input').oninput = function(){
+      VAL[k] = this.value;
+      if (SAME && pKeys[k]) applySame();     /* 피보험자를 고치면 수익자도 따라간다 */
+    };
+  }
+  function addSameBox() {
+    var w = document.createElement('label');
+    w.className = 'samebox' + (SAME ? ' on' : '');
+    w.innerHTML = '<input type="checkbox" id="samechk"' + (SAME ? ' checked' : '') + '>'
+      + '<span>수익자(청구인)가 <b>피보험자와 같은 사람</b>입니다 — 체크하면 위 내용이 그대로 들어갑니다</span>';
+    tb.appendChild(w);
+    w.querySelector('input').onchange = function(){
+      SAME = this.checked; w.classList.toggle('on', SAME); applySame();
+    };
+  }
+
+  var used = {}, shown = 0;
+  GROUPS.forEach(function(G){
+    var keys = G.keys ? G.keys.filter(function(k){ return rest.indexOf(k) >= 0; })
+                      : rest.filter(function(k){ return !used[k]; });
+    var wantAcc = !!(G.acc && acc);
+    if (!keys.length && !wantAcc) return;
+    addGrp(G.t);
+    if (wantAcc) {
+      var d = document.createElement('div'); d.className = 'fld';
+      d.innerHTML = '<label>사고(진료)일자</label><input type="date" id="accdate">';
+      tb.appendChild(d);
+    }
+    if (G.same) addSameBox();
+    keys.forEach(function(k){ used[k] = 1; addFld(k); shown++; });
   });
-  $('card-txt').style.display = (rest.length || acc) ? '' : 'none';
+  applySame();
+  $('card-txt').style.display = (shown || acc) ? '' : 'none';
 
   /* 서명 */
   var sb = $('sigs'); sb.innerHTML = '';
@@ -341,6 +444,31 @@ function openIns(key) {
   });
   $('card-sig').style.display = sigs.length ? '' : 'none';
   msg('');
+}
+
+/* 수익자 칸을 피보험자와 맞추거나 풀어준다 (2026-09-02).
+   체크가 켜져 있으면 피보험자 값을 그대로 옮겨 적고 잠근다.
+   끄면 비우고 직접 적을 수 있게 한다 — 수익자가 다른 사람인 경우. */
+function applySame() {
+  PAIRS.forEach(function(p){
+    var bi = $('t_' + p[1]); if (!bi) return;
+    if (SAME) {
+      /* 그 보험사 서식에 피보험자 칸이 아예 없을 수도 있다(예: NH농협생명 주소).
+         그럴 땐 살구에서 넘어온 값을 바로 쓴다. */
+      var pi = $('t_' + p[0]);
+      bi.value = pi ? pi.value : (VAL[p[0]] || (FROM && FROM[p[0]]) || '');
+      VAL[p[1]] = bi.value;
+      bi.readOnly = true; bi.classList.add('locked');
+    } else {
+      bi.readOnly = false; bi.classList.remove('locked');
+      bi.value = ''; VAL[p[1]] = '';
+    }
+  });
+  var r = $('t_relation');
+  if (r) {
+    if (SAME) { r.value = '본인'; VAL.relation = '본인'; r.readOnly = true; r.classList.add('locked'); }
+    else { r.readOnly = false; r.classList.remove('locked'); r.value = ''; VAL.relation = ''; }
+  }
 }
 
 /* ── 서명 패드 ─────────────────────────────────────────── */

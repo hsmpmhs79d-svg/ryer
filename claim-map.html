@@ -64,15 +64,34 @@
   #wrap { position: relative; display: inline-block; background: #fff;
           border: 1.5px solid #ecdcc8; border-radius: 8px; overflow: hidden; }
   #cv { display: block; cursor: crosshair; max-width: 100%; }
+  /* ★ 2026-09-02 — 표시를 '실제로 인쇄될 크기' 그대로 보여준다.
+     예전에는 이름표가 곧 표시라서 실제보다 크고 뒤로 밀려 보였고,
+     서명은 얼마나 넓게 들어가는지 가늠할 수 없었다.
+     이제 네모가 실제 글자·서명이 차지하는 자리, 이름표는 그 위에 작게 붙는다. */
   .mk {
     position: absolute; transform: translate(0, -50%);
-    background: rgba(194,65,12,.86); color: #fff; font-size: 10px; font-weight: 700;
-    padding: 1px 5px; border-radius: 4px; white-space: nowrap; cursor: pointer;
-    border: 1px solid #fff; line-height: 1.5;
+    background: rgba(251,191,36,.30); color: #7c2d12;
+    border: 1px dashed rgba(194,65,12,.9); border-radius: 2px;
+    padding: 0; white-space: nowrap; cursor: pointer; line-height: 1.15;
+    display: inline-flex; align-items: center; box-sizing: border-box;
+    font-family: "Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   }
-  .mk:hover { background: #b91c1c; }
-  .mk.sig { background: rgba(29,78,216,.86); }
-  .mk.chk { background: rgba(22,101,52,.86); }
+  .mk .tag {
+    position: absolute; left: -1px; bottom: 100%; margin-bottom: 2px;
+    background: rgba(194,65,12,.92); color: #fff;
+    font: 700 9px/1.5 sans-serif; padding: 0 4px; border-radius: 3px;
+    white-space: nowrap; pointer-events: none; letter-spacing: -.2px;
+  }
+  .mk:hover { background: rgba(185,28,28,.35); border-color: #b91c1c; z-index: 5; }
+  .mk:hover .tag { background: #b91c1c; z-index: 6; }
+  .mk.sig { background: rgba(29,78,216,.16); border-color: rgba(29,78,216,.9); color: #1d4ed8;
+            justify-content: center; font-weight: 800; }
+  .mk.sig .tag { background: rgba(29,78,216,.92); }
+  .mk.chk { background: rgba(22,101,52,.20); border-color: rgba(22,101,52,.9); color: #166534;
+            justify-content: center; font-weight: 800; }
+  .mk.chk .tag { background: rgba(22,101,52,.92); }
+  .mk.ctr { transform: translate(-50%, -50%); }
+  body.notag .mk .tag { display: none; }
   #hint { font-size: 12.5px; color: #8a7566; margin: 0 0 9px; line-height: 1.6; }
   /* 안 보내는 쪽 표시 */
   #wrap.skip #cv { opacity: .3; }
@@ -103,6 +122,7 @@
   <input type="number" id="size" value="11" min="6" max="30" style="width:62px">
   <span class="spacer"></span>
   <span id="stat" style="font-size:12.5px;color:#166534;font-weight:700;"></span>
+  <button id="tagbtn" onclick="document.body.classList.toggle('notag');this.textContent=document.body.classList.contains('notag')?'이름표 보기':'이름표 감추기';">이름표 감추기</button>
   <button onclick="resetToDefault()">기본 위치 다시 넣기</button>
   <button onclick="undoLast()">↩ 방금 취소</button>
   <button class="danger" onclick="clearIns()">이 보험사 초기화</button>
@@ -534,6 +554,61 @@ $('cv').onclick = function(e) {
   nextField();
 };
 
+/* 실제로 그 자리에 들어갈 만한 글자 — 자리를 얼마나 차지하는지 눈으로 재보라고 (2026-09-02) */
+var SAMPLE = {
+  pName:'홍길동', pRrn:'800101-1234567', pTel:'010-1234-5678',
+  pAddr:'서울시 양천구 목동로 123, 101동 1001호', pJob:'회사원', pNat:'대한민국',
+  bName:'홍길동', bRrn:'800101-1234567', bTel:'010-1234-5678',
+  bAddr:'서울시 양천구 목동로 123, 101동 1001호', bEmail:'hong@naver.com', bJob:'회사원',
+  relation:'본인', bank:'국민은행', holder:'홍길동', acct:'123456-01-123456',
+  dxName:'급성 기관지염', accDate:'2026-08-01', accPlace:'자택',
+  accDesc:'기침·발열로 통원 치료', hospital:'서울내과의원',
+  policyNo:'1234567890', otherIns:'없음', carNo:'12가3456', driver:'본인',
+  idRrnIssue:'2013-03-04', idRrnOrg:'양천구청',
+  idLicNo:'11-12-345678-90', idLicSerial:'AB1234', idIssue:'2013-03-04',
+  signName:'홍길동', today:'2026-09-02', todayY:'26', todayY4:'2026',
+  todayM:'9', todayD:'2', accY:'26', accM:'8', accD:'1', accH:'14'
+};
+function sampleOf(k, label) {
+  if (SAMPLE[k]) return SAMPLE[k];
+  var s = String(label || k).replace(/\s+/g, '');
+  if (/친권자|법정대리인|후견인|보호자|배우자|피상속인/.test(s)) return '홍길동';
+  if (/발급기관|발행기관|관청|청장/.test(s)) return '양천구청';
+  if (/발급|발행/.test(s)) return '2013-03-04';
+  if (/연\/월\/일|년\/월\/일/.test(s)) return '2026-08-01';
+  if (/접수|방법|팩스/.test(s)) return '팩스';
+  if (/기간/.test(s)) return '2026-08-01 ~ 2026-08-05';
+  if (/일수/.test(s)) return '5';
+  if (/횟수|회수/.test(s)) return '3';
+  if (/부위/.test(s)) return '좌측 무릎';
+  if (/수술/.test(s)) return '충수절제술';
+  if (/원인/.test(s)) return '넘어짐';
+  if (/장소/.test(s)) return '자택';
+  if (/\(년\)|년도|연도|년$/.test(s)) return '2026';
+  if (/\(월\)|월$/.test(s)) return '9';
+  if (/\(일\)|일자$|일$/.test(s)) return '28';
+  if (/\(시\)|시$/.test(s)) return '14';
+  if (/성명|이름/.test(s)) return '홍길동';
+  if (/주민/.test(s)) return '800101-1234567';
+  if (/전화|연락처|휴대/.test(s)) return '010-1234-5678';
+  if (/주소/.test(s)) return '서울시 양천구 목동로 123';
+  if (/은행/.test(s)) return '국민은행';
+  if (/계좌/.test(s)) return '123456-01-123456';
+  if (/금액|보험금/.test(s)) return '1,000,000';
+  if (/병원|의료기관/.test(s)) return '서울내과의원';
+  if (/병명|진단|상해|질병|코드/.test(s)) return '급성 기관지염';
+  if (/직업/.test(s)) return '회사원';
+  if (/관계/.test(s)) return '본인';
+  if (/이메일|메일/.test(s)) return 'hong@naver.com';
+  if (/면허/.test(s)) return '11-12-345678-90';
+  if (/번호|증권/.test(s)) return '1234567890';
+  if (/사유|내용|경위|상황/.test(s)) return '기침·발열로 통원 치료';
+  return '○○○';
+}
+function esc(t) {
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function drawMarks() {
   var wrap = $('wrap');
   Array.prototype.forEach.call(wrap.querySelectorAll('.mk,.tick'), function(el){ el.remove(); });
@@ -542,11 +617,31 @@ function drawMarks() {
     if (m.page !== curPage) return;
     var info = fieldInfo(m.k);
     var d = document.createElement('div');
-    d.className = 'mk' + (m.type === 'sig' ? ' sig' : (m.type === 'chk' ? ' chk' : ''));
+    /* ★ 2026-09-02 — 인쇄될 크기 그대로.
+       청구서를 만들 때는 글자 크기가 (m.size 포인트 × 그 그림의 pt→px 배율)로 찍힌다.
+       여기서도 같은 계산(viewScale)을 쓰면 화면에서 본 크기 = 실제 크기가 된다. */
+    var fs = Math.max(6, (m.size || 11) * viewScale);
+    d.className = 'mk' + (m.type === 'sig' ? ' sig' : (m.type === 'chk' ? ' chk' : ''))
+                + (m.step ? ' ctr' : '');
     d.style.left = (m.x * cv.width) + 'px';
     d.style.top  = (m.y * cv.height) + 'px';
-    d.textContent = info.label + (m.step ? ' ▦' : '');
-    d.title = '끌어서 옮기기 · 눌러서 지우기';
+    var tag = '<span class="tag">' + esc(info.label) + (m.step ? ' ▦' : '') + '</span>';
+    if (m.type === 'sig') {
+      /* 서명은 높이 = 글자크기 × 3.2, 가로세로 비율은 서명판과 같은 2.5 : 1 */
+      var sh = fs * 3.2, sw = sh * 2.5;
+      d.style.width = sw + 'px'; d.style.height = sh + 'px';
+      d.style.fontSize = Math.max(8, fs * 1.1) + 'px';
+      d.innerHTML = '✍ 서명' + tag;
+    } else if (m.type === 'chk') {
+      d.style.fontSize = (fs * 1.15) + 'px';
+      d.innerHTML = '✓' + tag;
+    } else {
+      d.style.fontSize = fs + 'px';
+      var t = sampleOf(m.k, info.label);
+      if (m.step) t = String(t).charAt(0);      /* 칸 나눔은 한 글자씩 가운데 정렬 */
+      d.innerHTML = esc(t) + tag;
+    }
+    d.title = '끌어서 옮기기 · 눌러서 지우기 — 네모가 실제 인쇄되는 크기입니다';
     bindMark(d, m, i, cv);
     wrap.appendChild(d);
     /* 칸 나눔이면 다음 칸들을 눈금으로 미리 보여준다 */

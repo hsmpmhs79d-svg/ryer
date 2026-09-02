@@ -13769,9 +13769,10 @@ function copyContact(el) {
     var rrn = String(c.resident_number || c.jumin || '');
     var pack = {
       t: Date.now(),
+      /* ★ 2026-09-02: 고객 정보는 '피보험자' 칸에만 넣는다.
+         수익자(청구인)는 청구서 화면의 '피보험자와 같은 사람' 체크로 채워진다 —
+         수익자가 다른 사람인 경우를 위해 자동으로 겹쳐 쓰지 않는다. */
       pName: c.name || '', pRrn: rrn, pTel: c.phone || '', pAddr: c.address || '', pJob: c.job || '',
-      bName: c.name || '', bRrn: rrn, bTel: c.phone || '', bAddr: c.address || '', bJob: c.job || '',
-      relation: '본인',
       bank: c.bank || '', holder: c.holder || c.name || '', acct: c.account || '',
       signName: c.name || ''
     };
