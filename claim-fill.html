@@ -78,6 +78,8 @@
   <h1>🍑 보험금 청구서 작성</h1>
   <p class="sub">보험사를 고르고 내용을 채우면, 청구서에 글자가 찍힌 PDF가 만들어집니다.</p>
   <div class="safe">🔒 입력하신 내용과 서류는 <b>서버로 전송되지 않습니다.</b> 이 브라우저 안에서만 처리됩니다.</div>
+  <div id="whobar" style="display:none;background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:11px;
+    padding:11px 15px;margin-bottom:16px;font-size:14px;color:#065f46;"></div>
 
   <div class="card">
     <h2>1. 보험사</h2>
@@ -180,6 +182,21 @@ var FAX = {
 };
 var madeBlob = null, madeName = '';     /* 방금 만든 PDF (팩스로 넘길 것) */
 
+/* ★ 살구에서 넘어온 고객 정보 (2026-09-02)
+   읽자마자 지운다. 주소창·서버 어디에도 남지 않는다. */
+var FROM = null;
+(function(){
+  try {
+    var raw = localStorage.getItem('__salguClaim__');
+    localStorage.removeItem('__salguClaim__');
+    if (!raw) return;
+    var o = JSON.parse(raw);
+    if (!o || !o.t || Date.now() - o.t > 300000) return;   /* 5분 지난 것은 버림 */
+    delete o.t;
+    FROM = o;
+  } catch (e) {}
+})();
+
 var DATA = { marks:{}, custom:{}, skip:{} };   /* claim-data.json */
 var LABELS = {};                               /* claim-fields.json 라벨 */
 var curIns = null, VAL = {}, SIG = {}, ATT = [];
@@ -188,6 +205,15 @@ var $ = function(id){ return document.getElementById(id); };
 function msg(t){ $('msg').textContent = t || ''; }
 
 /* ── 자료 불러오기 ─────────────────────────────────────── */
+if (FROM && FROM.pName) {
+  var wb = document.getElementById('whobar');
+  wb.innerHTML = '👤 <b>' + String(FROM.pName).replace(/</g,'&lt;') + '</b> 님의 정보를 살구에서 가져왔습니다. '
+    + '비어 있는 칸만 채우시면 됩니다.';
+  wb.style.display = 'block';
+  var fn = document.getElementById('fname');
+  if (fn) fn.value = String(FROM.pName).replace(/[\\/:*?"<>|]/g, '') + '_보험금청구';
+}
+
 Promise.all([
   fetch('claim-data.json').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
   fetch('claim-fields.json').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; })
@@ -270,8 +296,12 @@ function openIns(key) {
   rest.forEach(function(k){
     var d = document.createElement('div'); d.className = 'fld';
     var id = 't_' + k;
-    d.innerHTML = '<label>' + labelOf(k) + '</label><input type="text" id="' + id + '">';
+    /* ★ 살구에서 넘어온 값은 미리 채워둔다 (2026-09-02) */
+    var pre = (FROM && FROM[k]) ? FROM[k] : '';
+    d.innerHTML = '<label>' + labelOf(k) + (pre ? ' <span style="color:#0f766e;font-size:11.5px;font-weight:700">· 살구에서 가져옴</span>' : '')
+      + '</label><input type="text" id="' + id + '" value="' + String(pre).replace(/"/g, '&quot;') + '">';
     tb.appendChild(d);
+    if (pre) VAL[k] = pre;
     d.querySelector('input').oninput = function(){ VAL[k] = this.value; };
   });
   $('card-txt').style.display = (rest.length || acc) ? '' : 'none';

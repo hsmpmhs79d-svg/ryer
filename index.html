@@ -1885,6 +1885,23 @@ try {
           <input type="text" id="f-meeting-address" placeholder="미팅 약속 장소 (선택, copy에 포함 안 됨)">
         </div>
       </div>
+      <!-- ★ 보험금 받을 계좌 (2026-09-02) — 청구서에 들어가는 항목 -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>은행명</label>
+          <input type="text" id="f-bank" placeholder="국민은행">
+        </div>
+        <div class="form-group">
+          <label>예금주</label>
+          <input type="text" id="f-holder" placeholder="비우면 고객 이름">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>계좌번호 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(보험금 청구서에 들어갑니다)</span></label>
+          <input type="text" id="f-account" placeholder="123456-01-123456">
+        </div>
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label>직업</label>
@@ -2987,6 +3004,8 @@ function selectCustomer(id) {
     +(c.status==='가입완료' ? '<button class="btn-quick-msg" style="background:#16a34a;" title="추가 계약 알림 등록 (1주년·암 보장개시·카드납)" onclick="openJoinAlertModal('+id+',true)">추가가입</button>' : '')
     /* ★ 카드납 해제 (2026-09-02) — 켰다가 되돌릴 수 있게 */
     +(c.cardPay ? '<button class="btn-quick-msg" style="background:#f97316;" title="매월 15일 카드결제 알림 끄기" onclick="cancelCardPay('+id+')">카드납 해제</button>' : '')
+    /* ★ 보험금 청구 (2026-09-02) */
+    +(window._canClaim && window._canClaim() ? '<button class="btn-quick-msg" title="이 고객 정보로 보험금 청구서 작성" onclick="openClaim('+id+')">보험금 청구</button>' : '')
     +'<button class="btn-copy-info" id="btn-copy-info" title="고객 기본 정보만 복사 (설계요청 제외)" onclick="copyCustomerInfo('+id+')">복사</button>'
     +'<button class="btn-copy-info" id="btn-copy-info-dr" title="고객 정보 + 설계요청 함께 복사" onclick="copyCustomerInfoWithDr('+id+')">정보+설계요청</button>'
     +'<button class="btn-edit" onclick="openEditModal('+id+')">수정</button>'
@@ -3016,6 +3035,8 @@ function selectCustomer(id) {
     +'</div>'
     +'<div class="info-item"><div class="label">직업</div><div class="value" onclick="copyField(this,\'직업\')">'+v(c.job)+'</div></div>'
     +'<div class="info-item"><div class="label">운전 여부</div><div class="value" onclick="copyField(this,\'운전 여부\')">'+v(c.driving)+'</div></div>'
+    /* ★ 보험금 받을 계좌 (2026-09-02) — 값이 있을 때만 */
+    +((c.bank||c.account) ? '<div class="info-item full-width"><div class="label">보험금 받을 계좌</div><div class="value" onclick="copyField(this,\'계좌\')">'+v((c.bank||'')+' '+(c.account||'')+((c.holder&&c.holder!==c.name)?' ('+c.holder+')':''))+'</div></div>' : '')
     +'<div class="info-item full-width"><div class="label">병력 / 고지사항</div><div class="value" onclick="copyField(this,\'병력/고지사항\')">'+(c.medical_history?c.medical_history:'<span class="empty">미입력</span>')+'</div></div>'
     +(c.notes?'<div class="info-item full-width"><div class="label">메모</div><div class="value" onclick="copyField(this,\'메모\')">'+c.notes+'</div></div>':'')
     +'</div>'
@@ -5022,6 +5043,10 @@ function openEditModal(id) {
   document.getElementById('f-medical').value=c.medical_history||'';
   document.getElementById('f-notes').value=c.notes||'';
   var _fpe=document.getElementById('f-preexisting'); if(_fpe) _fpe.checked=!!c.preexisting;   /* ★ 유병자 (2026-08-21) */
+  /* ★ 보험금 받을 계좌 (2026-09-02) */
+  var _fb=document.getElementById('f-bank');    if(_fb) _fb.value = c.bank || '';
+  var _fh=document.getElementById('f-holder');  if(_fh) _fh.value = c.holder || '';
+  var _fa=document.getElementById('f-account'); if(_fa) _fa.value = c.account || '';
   setJobField(c.job||''); setDrvField(c.driving||'');
   document.getElementById('modal-overlay').classList.add('show');
   _attachCustomerFormFormat();
@@ -5054,6 +5079,10 @@ function saveCustomer() {
     job:getJobVal(), driving:getDrvVal(),
     medical_history:document.getElementById('f-medical').value.trim(),
     notes:document.getElementById('f-notes').value.trim(),
+    /* ★ 보험금 받을 계좌 (2026-09-02) */
+    bank:((document.getElementById('f-bank')||{}).value||'').trim(),
+    holder:((document.getElementById('f-holder')||{}).value||'').trim(),
+    account:((document.getElementById('f-account')||{}).value||'').trim(),
     preexisting:!!(document.getElementById('f-preexisting')||{}).checked};   /* ★ 유병자 (2026-08-21) */
   if(editingId!==null){
     var idx=customers.findIndex(function(x){return x.id===editingId;});
@@ -12649,6 +12678,8 @@ function copyContact(el) {
          +     ((_sst === '가입완료') ? '<button class="mv-edit-btn" onclick="openJoinAlertModal(' + c.id + ',true)" style="background:#d1fae5;color:#065f46;border:1px solid #10b981;margin-right:6px;">추가가입</button>' : '')
          /* ★ 카드납 해제 (2026-09-02) — 켰다가 되돌릴 수 있게 */
          +     (c.cardPay ? '<button class="mv-edit-btn" onclick="cancelCardPay(' + c.id + ')" style="background:#ffedd5;color:#9a3412;border:1px solid #fb923c;margin-right:6px;">카드납 해제</button>' : '')
+         /* ★ 보험금 청구 (2026-09-02) */
+         +     ((window._canClaim && window._canClaim()) ? '<button class="mv-edit-btn" onclick="openClaim(' + c.id + ')" style="background:#dbeafe;color:#1e40af;border:1px solid #60a5fa;margin-right:6px;">보험금 청구</button>' : '')
          +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#fdeadd;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">복사</button>'
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">수정</button>'
          +   '</div>'
@@ -13645,6 +13676,38 @@ function copyContact(el) {
       return !(g && !g.completed && typeof g.content === 'string' && g.content.indexOf(CARD_PAY_PREFIX) === 0);
     });
   };
+  /* ★ 보험금 청구 (2026-09-02) — 고객 정보를 청구서 작성 화면으로 넘긴다.
+     주소창에 주민번호가 남지 않도록 브라우저 저장소에 잠깐 넣고, 받는 쪽에서 바로 지운다.
+     서버로는 아무것도 보내지 않는다. */
+  window.SHOW_CLAIM_BTN = false;   /* ★ 시험 중 — 관리자에게만 보임. 공개할 때 true 로 바꾼다 */
+  window._canClaim = function() {
+    if (window.SHOW_CLAIM_BTN) return true;
+    try {
+      var me = String(window._userEmail || '').trim().toLowerCase();
+      return me === 'wmmryer@gmail.com' || me === 'ryersang@gmail.com';
+    } catch (e) { return false; }
+  };
+  window.openClaim = function(cid) {
+    var c = (window.customers || []).find(function(x){ return x.id === cid; });
+    if (!c) return;
+    var rrn = String(c.resident_number || c.jumin || '');
+    var pack = {
+      t: Date.now(),
+      pName: c.name || '', pRrn: rrn, pTel: c.phone || '', pAddr: c.address || '', pJob: c.job || '',
+      bName: c.name || '', bRrn: rrn, bTel: c.phone || '', bAddr: c.address || '', bJob: c.job || '',
+      relation: '본인',
+      bank: c.bank || '', holder: c.holder || c.name || '', acct: c.account || '',
+      signName: c.name || ''
+    };
+    try { localStorage.setItem('__salguClaim__', JSON.stringify(pack)); } catch (e) {
+      alert('고객 정보를 넘기지 못했습니다. 청구서 화면에서 직접 입력해주세요.');
+    }
+    var url = 'claim-fill.html?from=salgu';
+    var w = null;
+    try { w = window.open(url, '_blank'); } catch (e) {}
+    if (!w) location.href = url;
+  };
+
   /* ★ 카드납 해제 (2026-09-02) — 가입완료 때 체크한 카드납을 되돌린다.
      아직 지나지 않은 '💳 카드결제' 알림만 지우고, 완료 처리된 기록과 다른 할일·선물은 건드리지 않는다. */
   window.cancelCardPay = function(cid) {
