@@ -2985,6 +2985,8 @@ function selectCustomer(id) {
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">퀵메시지</button>'
     /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
     +(c.status==='가입완료' ? '<button class="btn-quick-msg" style="background:#16a34a;" title="추가 계약 알림 등록 (1주년·암 보장개시·카드납)" onclick="openJoinAlertModal('+id+',true)">추가가입</button>' : '')
+    /* ★ 카드납 해제 (2026-09-02) — 켰다가 되돌릴 수 있게 */
+    +(c.cardPay ? '<button class="btn-quick-msg" style="background:#f97316;" title="매월 15일 카드결제 알림 끄기" onclick="cancelCardPay('+id+')">카드납 해제</button>' : '')
     +'<button class="btn-copy-info" id="btn-copy-info" title="고객 기본 정보만 복사 (설계요청 제외)" onclick="copyCustomerInfo('+id+')">복사</button>'
     +'<button class="btn-copy-info" id="btn-copy-info-dr" title="고객 정보 + 설계요청 함께 복사" onclick="copyCustomerInfoWithDr('+id+')">정보+설계요청</button>'
     +'<button class="btn-edit" onclick="openEditModal('+id+')">수정</button>'
@@ -12628,6 +12630,8 @@ function copyContact(el) {
          +   '<div class="mv-section-title">👤 인적사항' + statusSelect
          /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
          +     ((_sst === '가입완료') ? '<button class="mv-edit-btn" onclick="openJoinAlertModal(' + c.id + ',true)" style="background:#d1fae5;color:#065f46;border:1px solid #10b981;margin-right:6px;">추가가입</button>' : '')
+         /* ★ 카드납 해제 (2026-09-02) — 켰다가 되돌릴 수 있게 */
+         +     (c.cardPay ? '<button class="mv-edit-btn" onclick="cancelCardPay(' + c.id + ')" style="background:#ffedd5;color:#9a3412;border:1px solid #fb923c;margin-right:6px;">카드납 해제</button>' : '')
          +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#fdeadd;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">복사</button>'
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">수정</button>'
          +   '</div>'
@@ -13623,6 +13627,28 @@ function copyContact(el) {
     c.gifts = c.gifts.filter(function(g) {
       return !(g && !g.completed && typeof g.content === 'string' && g.content.indexOf(CARD_PAY_PREFIX) === 0);
     });
+  };
+  /* ★ 카드납 해제 (2026-09-02) — 가입완료 때 체크한 카드납을 되돌린다.
+     아직 지나지 않은 '💳 카드결제' 알림만 지우고, 완료 처리된 기록과 다른 할일·선물은 건드리지 않는다. */
+  window.cancelCardPay = function(cid) {
+    var c = (window.customers || []).find(function(x){ return x.id === cid; });
+    if (!c) return;
+    if (!confirm(c.name + '님의 카드납 알림을 해제할까요?\n아직 지나지 않은 \uD83D\uDCB3 카드결제 알림이 삭제됩니다.')) return;
+    c.cardPay = false;
+    window._removeCardPayAlerts(c);
+    c._updated = Date.now();
+    if (IS_MOBILE) {
+      mvCommit();
+      if (typeof renderMobile === 'function') renderMobile();
+    } else {
+      if (typeof autoSave === 'function') autoSave();
+      if (typeof renderList === 'function') renderList();
+      if (typeof renderGiftPanel === 'function') renderGiftPanel();
+      if (typeof updateGiftHeaderBadge === 'function') updateGiftHeaderBadge();
+      if (typeof checkNotifications === 'function') checkNotifications();
+      try { if (typeof selectedId !== 'undefined' && selectedId === c.id && typeof selectCustomer === 'function') selectCustomer(c.id); } catch(e) {}
+    }
+    if (typeof showToast === 'function') showToast('카드납 해제됨', 'green');
   };
   // 전체 고객 top-up — checkNotifications 시작 시 호출됨, 1시간에 1번만 실제 실행 (재진입·중복 방지)
   var _cardTopUpLast = 0;

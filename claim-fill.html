@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>살구 · 보험금 청구서 작성</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family:'Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif;
+         background:#fdf4ec; margin:0; color:#3f3229; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 110px; }
+  h1 { font-size:21px; color:#7c2d12; margin:0 0 4px; letter-spacing:-.4px; }
+  .sub { font-size:13.5px; color:#8a7566; margin:0 0 14px; line-height:1.7; }
+  .safe { background:#f0fdf4; border:1.5px solid #86efac; border-radius:9px;
+          padding:9px 13px; font-size:12.5px; color:#166534; margin-bottom:16px; line-height:1.6; }
+  .card { background:#fff; border:1.5px solid #ecdcc8; border-radius:12px;
+          padding:14px 16px; margin-bottom:13px; }
+  .card h2 { font-size:14.5px; color:#7c2d12; margin:0 0 10px; }
+  select, input[type=text], input[type=date] {
+    font-family:inherit; font-size:14.5px; padding:9px 11px; width:100%;
+    border:1.5px solid #e0c9a6; border-radius:8px; background:#fffdfb; }
+  select:focus, input:focus { outline:none; border-color:#c2410c; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:10px; }
+  .fld label { display:block; font-size:12px; font-weight:700; color:#8a7566; margin-bottom:4px; }
+  .grp { grid-column:1/-1; font-size:11.5px; font-weight:800; color:#c2410c; margin:6px 0 -2px; }
+  .chks { display:flex; flex-wrap:wrap; gap:7px; }
+  .chk { display:flex; align-items:center; gap:6px; padding:7px 11px; cursor:pointer;
+         border:1.5px solid #e0c9a6; border-radius:20px; font-size:13.5px; background:#fffdfb; }
+  .chk input { width:16px; height:16px; accent-color:#c2410c; cursor:pointer; }
+  .chk.on { background:#fff3e8; border-color:#c2410c; font-weight:700; }
+  .sigbox { display:flex; gap:12px; flex-wrap:wrap; }
+  .sigone { flex:1; min-width:250px; }
+  .sigone .t { font-size:12.5px; font-weight:700; color:#8a7566; margin-bottom:5px; }
+  canvas.pad { width:100%; height:120px; border:1.5px dashed #e0c9a6; border-radius:9px;
+               background:#fffdfb; touch-action:none; cursor:crosshair; display:block; }
+  button { font-family:inherit; cursor:pointer; border-radius:8px; border:1.5px solid #e0c9a6;
+           background:#fff; color:#7c2d12; padding:7px 12px; font-size:13px; font-weight:700; }
+  button:hover { background:#fff3e8; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  .mini { font-size:12px; padding:5px 9px; }
+  #drop { border:2.5px dashed #e0c9a6; border-radius:11px; background:#fffaf4;
+          padding:20px; text-align:center; cursor:pointer; font-size:13.5px; color:#8a7566; }
+  #drop:hover { border-color:#c2410c; background:#fff3e8; }
+  #files { font-size:12.5px; color:#8a7566; margin-top:8px; line-height:1.8; }
+  #foot { position:fixed; left:0; right:0; bottom:0; background:#fff;
+          border-top:1.5px solid #ecdcc8; padding:11px 16px; display:flex;
+          gap:10px; align-items:center; justify-content:center; }
+  #make { background:#c2410c; color:#fff; border:none; padding:12px 30px; font-size:15.5px; }
+  #make:hover { background:#9a3412; }
+  #msg { font-size:13px; color:#8a7566; }
+  .warn { background:#fef2f2; border:1.5px solid #fca5a5; color:#b91c1c;
+          border-radius:9px; padding:11px 13px; font-size:13px; line-height:1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🍑 보험금 청구서 작성</h1>
+  <p class="sub">보험사를 고르고 내용을 채우면, 청구서에 글자가 찍힌 PDF가 만들어집니다.</p>
+  <div class="safe">🔒 입력하신 내용과 서류는 <b>서버로 전송되지 않습니다.</b> 이 브라우저 안에서만 처리됩니다.</div>
+
+  <div class="card">
+    <h2>1. 보험사</h2>
+    <select id="ins"></select>
+    <p id="insinfo" class="sub" style="margin:9px 0 0;"></p>
+  </div>
+
+  <div class="card" id="card-chk" style="display:none">
+    <h2>2. 청구 유형 — 해당하는 것만 고르세요</h2>
+    <div class="chks" id="chks"></div>
+  </div>
+
+  <div class="card" id="card-txt" style="display:none">
+    <h2>3. 내용</h2>
+    <div class="grid" id="txts"></div>
+  </div>
+
+  <div class="card" id="card-sig" style="display:none">
+    <h2>4. 서명</h2>
+    <div class="sigbox" id="sigs"></div>
+  </div>
+
+  <div class="card">
+    <h2>5. 병원 서류 (선택)</h2>
+    <div id="drop">여기에 병원 서류를 끌어다 놓거나 눌러서 고르세요 · PDF, JPG, PNG</div>
+    <input type="file" id="pick" accept=".pdf,.jpg,.jpeg,.png" multiple style="display:none">
+    <div id="files"></div>
+  </div>
+
+  <div id="msg"></div>
+</div>
+
+<div id="foot">
+  <input type="text" id="fname" placeholder="저장할 이름" value="보험금청구" style="width:200px">
+  <button id="make" onclick="build()">청구서 만들기</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   살구 보험금 청구서 작성 (2026-08-27)
+   claim-map.html 에서 잡아둔 좌표(claim-data.json)대로 청구서에 글자를 찍는다.
+   - 서버 전송 없음. 전부 브라우저 안에서 처리
+   - 한글은 화면에 그려서 이미지로 넣기 때문에 글꼴 걱정이 없다
+   ══════════════════════════════════════════════════════════════ */
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+var PDFOPT = {
+  cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+  cMapPacked: true,
+  standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/standard_fonts/'
+};
+
+var INS = [
+  ['samsung-life','삼성생명'],['hanwha-life','한화생명'],['kyobo-life','교보생명'],
+  ['shinhan-life','신한라이프'],['nh-life','NH농협생명'],['mirae-life','미래에셋생명'],
+  ['heungkuk-life','흥국생명'],['tongyang-life','동양생명'],['metlife','메트라이프생명'],
+  ['kb-life','KB라이프생명'],['lina-life','라이나생명(처브)'],['abl-life','ABL생명'],
+  ['aia-life','AIA생명'],['im-life','iM라이프'],['fubon-hyundai-life','푸본현대생명'],
+  ['kdb-life','KDB생명'],['hana-life','하나생명'],
+  ['samsung-fire','삼성화재'],['db-insurance','DB손해보험'],['hyundai-marine','현대해상'],
+  ['meritz-fire','메리츠화재'],['kb-insurance','KB손해보험'],['hanwha-general','한화손해보험'],
+  ['heungkuk-fire','흥국화재'],['lotte-insurance','롯데손해보험'],['nh-fire','NH농협손해보험'],
+  ['axa','AXA손해보험'],['hana-insurance','하나손해보험']
+];
+
+var DATA = { marks:{}, custom:{}, skip:{} };   /* claim-data.json */
+var LABELS = {};                               /* claim-fields.json 라벨 */
+var curIns = null, VAL = {}, SIG = {}, ATT = [];
+var $ = function(id){ return document.getElementById(id); };
+function msg(t){ $('msg').textContent = t || ''; }
+
+/* ── 자료 불러오기 ─────────────────────────────────────── */
+Promise.all([
+  fetch('claim-data.json').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+  fetch('claim-fields.json').then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; })
+]).then(function(d){
+  if (!d[0]) {
+    document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
+      '<div class="warn">청구서 좌표 파일(claim-data.json)을 찾을 수 없습니다. 관리자에게 알려주세요.</div>');
+    return;
+  }
+  DATA = d[0].marks ? d[0] : { marks:d[0], custom:{}, skip:{} };
+  var F = d[1] || {};
+  for (var ins in F) F[ins].forEach(function(it){ if (it.type !== 'grp') LABELS[it.k] = it.label; });
+  INS.forEach(function(v){
+    if (!(DATA.marks[v[0]] || []).length) return;
+    var o = document.createElement('option'); o.value = v[0]; o.textContent = v[1];
+    $('ins').appendChild(o);
+  });
+  $('ins').onchange = function(){ openIns(this.value); };
+  if ($('ins').options.length) openIns($('ins').options[0].value);
+});
+
+function labelOf(k) {
+  if (LABELS[k]) return LABELS[k];
+  var c = (DATA.custom[curIns] || []).filter(function(x){ return x.k === k; })[0];
+  if (c) return c.label;
+  var M = { todayY:'작성 연도(2자리)', todayY4:'작성 연도(4자리)', todayM:'작성 월', todayD:'작성 일',
+            accY:'사고 연도(2자리)', accM:'사고 월', accD:'사고 일', accH:'사고 시' };
+  return M[k] || k;
+}
+
+/* 오늘 날짜·사고일자에서 자동으로 채워지는 항목 */
+var AUTO = ['today','todayY','todayY4','todayM','todayD','accY','accM','accD','accH'];
+
+function openIns(key) {
+  curIns = key; VAL = {}; SIG = {};
+  var marks = DATA.marks[key] || [];
+  var seen = {}, texts = [], chks = [], sigs = [];
+  marks.forEach(function(m){
+    if (seen[m.k]) return; seen[m.k] = 1;
+    if (m.type === 'chk') chks.push(m.k);
+    else if (m.type === 'sig') sigs.push(m.k);
+    else texts.push(m.k);
+  });
+
+  var sk = (DATA.skip[key] || []).length;
+  $('insinfo').textContent = '찍어둔 자리 ' + marks.length + '곳'
+    + (sk ? ' · 안 보내는 쪽 ' + sk + '장은 빼고 만듭니다' : '');
+
+  /* 청구 유형 체크 */
+  var cb = $('chks'); cb.innerHTML = '';
+  chks.forEach(function(k){
+    var id = 'c_' + k;
+    var l = document.createElement('label');
+    l.className = 'chk';
+    l.innerHTML = '<input type="checkbox" id="' + id + '"><span>' + labelOf(k).replace(' ✔','') + '</span>';
+    l.querySelector('input').onchange = function(){
+      VAL[k] = this.checked; l.classList.toggle('on', this.checked);
+    };
+    /* '무조건 체크'는 기본으로 켜둔다 */
+    if (k === 'agree') { l.querySelector('input').checked = true; VAL[k] = true; l.classList.add('on'); }
+    cb.appendChild(l);
+  });
+  $('card-chk').style.display = chks.length ? '' : 'none';
+
+  /* 글자 항목 */
+  var tb = $('txts'); tb.innerHTML = '';
+  var acc = texts.some(function(k){ return k.indexOf('acc') === 0; });
+  if (acc) {
+    var g = document.createElement('div'); g.className = 'grp'; g.textContent = '— 사고(진료) 날짜 —';
+    tb.appendChild(g);
+    var d = document.createElement('div'); d.className = 'fld';
+    d.innerHTML = '<label>사고(진료)일자</label><input type="date" id="accdate">';
+    tb.appendChild(d);
+  }
+  var rest = texts.filter(function(k){ return AUTO.indexOf(k) < 0; });
+  if (rest.length) {
+    var g2 = document.createElement('div'); g2.className = 'grp'; g2.textContent = '— 적어 넣을 내용 —';
+    tb.appendChild(g2);
+  }
+  rest.forEach(function(k){
+    var d = document.createElement('div'); d.className = 'fld';
+    var id = 't_' + k;
+    d.innerHTML = '<label>' + labelOf(k) + '</label><input type="text" id="' + id + '">';
+    tb.appendChild(d);
+    d.querySelector('input').oninput = function(){ VAL[k] = this.value; };
+  });
+  $('card-txt').style.display = (rest.length || acc) ? '' : 'none';
+
+  /* 서명 */
+  var sb = $('sigs'); sb.innerHTML = '';
+  sigs.forEach(function(k){
+    var box = document.createElement('div'); box.className = 'sigone';
+    box.innerHTML = '<div class="t">' + labelOf(k).replace('✍️ ','') + '</div>'
+      + '<canvas class="pad" id="p_' + k + '"></canvas>'
+      + '<button class="mini" style="margin-top:6px" data-k="' + k + '">지우고 다시</button>';
+    sb.appendChild(box);
+    box.querySelector('button').onclick = function(){ clearPad(k); };
+    initPad(k);
+  });
+  $('card-sig').style.display = sigs.length ? '' : 'none';
+  msg('');
+}
+
+/* ── 서명 패드 ─────────────────────────────────────────── */
+function initPad(k) {
+  var cv = $('p_' + k);
+  var r = cv.getBoundingClientRect();
+  cv.width = Math.max(300, Math.round(r.width)); cv.height = 120;
+  var x = cv.getContext('2d');
+  x.lineWidth = 2.4; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = '#111';
+  var down = false, px = 0, py = 0;
+  function pos(e) {
+    var b = cv.getBoundingClientRect();
+    var t = e.touches ? e.touches[0] : e;
+    return [ (t.clientX - b.left) * cv.width / b.width, (t.clientY - b.top) * cv.height / b.height ];
+  }
+  function start(e){ e.preventDefault(); down = true; var p = pos(e); px = p[0]; py = p[1]; }
+  function move(e){
+    if (!down) return; e.preventDefault();
+    var p = pos(e);
+    x.beginPath(); x.moveTo(px, py); x.lineTo(p[0], p[1]); x.stroke();
+    px = p[0]; py = p[1]; SIG[k] = true;
+  }
+  function end(){ down = false; }
+  cv.onmousedown = start; cv.onmousemove = move;
+  document.addEventListener('mouseup', end);
+  cv.ontouchstart = start; cv.ontouchmove = move; cv.ontouchend = end;
+}
+function clearPad(k) {
+  var cv = $('p_' + k);
+  cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
+  SIG[k] = false;
+}
+
+/* ── 병원 서류 첨부 ────────────────────────────────────── */
+$('drop').onclick = function(){ $('pick').click(); };
+$('pick').onchange = function(){ addFiles(this.files); this.value = ''; };
+$('drop').ondragover = function(e){ e.preventDefault(); };
+$('drop').ondrop = function(e){ e.preventDefault(); addFiles(e.dataTransfer.files); };
+
+function addFiles(list) {
+  Array.prototype.forEach.call(list, function(f){
+    if (!/\.(pdf|jpe?g|png)$/i.test(f.name)) return;
+    ATT.push(f);
+  });
+  $('files').textContent = ATT.length
+    ? '붙일 서류 ' + ATT.length + '개 — ' + ATT.map(function(f){ return f.name; }).join(', ')
+    : '';
+}
+
+/* ── 값 채우기 ─────────────────────────────────────────── */
+function pad2(n){ return ('0' + n).slice(-2); }
+function autoValues() {
+  var v = {}, d = new Date();
+  v.today  = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+  v.todayY4 = String(d.getFullYear());
+  v.todayY  = String(d.getFullYear()).slice(2);
+  v.todayM  = String(d.getMonth()+1);
+  v.todayD  = String(d.getDate());
+  var ad = $('accdate') && $('accdate').value;
+  if (ad) {
+    var p = ad.split('-');
+    v.accDate = ad; v.accY = p[0].slice(2); v.accM = String(+p[1]); v.accD = String(+p[2]);
+  }
+  return v;
+}
+
+/* ── 청구서 만들기 ─────────────────────────────────────── */
+function build() {
+  var b = $('make'); b.disabled = true; b.textContent = '만드는 중...';
+  run().catch(function(e){ console.error(e); msg('실패: ' + (e.message || e)); })
+       .then(function(){ b.disabled = false; b.textContent = '청구서 만들기'; });
+}
+
+async function run() {
+  var L = PDFLib, out = await L.PDFDocument.create();
+  var auto = autoValues();
+  var marks = DATA.marks[curIns] || [];
+  var skip = DATA.skip[curIns] || [];
+
+  msg('청구서를 여는 중...');
+  var doc = await pdfjsLib.getDocument(Object.assign({ url:'claim-forms/' + curIns + '.pdf' }, PDFOPT)).promise;
+
+  for (var pi = 0; pi < doc.numPages; pi++) {
+    if (skip.indexOf(pi) >= 0) continue;
+    msg('만드는 중... ' + (pi + 1) + ' / ' + doc.numPages + '쪽');
+    var page = await doc.getPage(pi + 1);
+    var vp1 = page.getViewport({ scale: 1 });
+    var scale = 1654 / vp1.height;                    /* 약 150dpi */
+    var vp = page.getViewport({ scale: scale });
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+    var cx = cv.getContext('2d');
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height);
+    await page.render({ canvasContext: cx, viewport: vp }).promise;
+
+    /* 이 쪽에 찍을 것들 */
+    var ratio = cv.width / vp1.width;                 /* pt → px */
+    marks.forEach(function(m){
+      if (m.page !== pi) return;
+      var X = m.x * cv.width, Y = m.y * cv.height;
+      var px = Math.max(9, (m.size || 11) * ratio);
+      cx.fillStyle = '#111';
+      cx.font = px + 'px "Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+      cx.textAlign = 'left'; cx.textBaseline = 'middle';
+
+      if (m.type === 'chk') {
+        if (!VAL[m.k]) return;
+        cx.font = 'bold ' + (px * 1.15) + 'px sans-serif';
+        cx.fillText('✓', X, Y);
+        return;
+      }
+      if (m.type === 'sig') {
+        var pad = $('p_' + m.k);
+        if (!pad || !SIG[m.k]) return;
+        var h = px * 3.2, w = h * (pad.width / pad.height);
+        cx.drawImage(pad, X, Y - h / 2, w, h);
+        return;
+      }
+      var t = (VAL[m.k] != null && VAL[m.k] !== '') ? VAL[m.k] : (auto[m.k] || '');
+      t = String(t);
+      if (!t) return;
+      if (m.step) {                                   /* 칸 나눔 — 한 글자씩 */
+        var st = m.step * cv.width;
+        cx.textAlign = 'center';
+        for (var i = 0; i < t.length; i++) cx.fillText(t[i], X + st * i, Y);
+      } else {
+        cx.fillText(t, X, Y);
+      }
+    });
+
+    var img = await out.embedJpg(dataUrlToBytes(cv.toDataURL('image/jpeg', 0.88)));
+    var pg = out.addPage([vp1.width, vp1.height]);
+    pg.drawImage(img, { x:0, y:0, width: vp1.width, height: vp1.height });
+  }
+
+  /* 병원 서류 붙이기 */
+  for (var i = 0; i < ATT.length; i++) {
+    msg('서류 붙이는 중... ' + (i + 1) + ' / ' + ATT.length);
+    var bytes = new Uint8Array(await ATT[i].arrayBuffer());
+    if (/\.pdf$/i.test(ATT[i].name)) {
+      var src = await L.PDFDocument.load(bytes, { ignoreEncryption:true });
+      var idx = src.getPageIndices();
+      var cps = await out.copyPages(src, idx);
+      cps.forEach(function(p){ out.addPage(p); });
+    } else {
+      var im = /\.png$/i.test(ATT[i].name) ? await out.embedPng(bytes) : await out.embedJpg(bytes);
+      var p2 = out.addPage([im.width, im.height]);
+      p2.drawImage(im, { x:0, y:0, width:im.width, height:im.height });
+    }
+  }
+
+  var name = ($('fname').value || '보험금청구').replace(/[\\/:*?"<>|]/g, '').trim() || '보험금청구';
+  var blob = new Blob([await out.save()], { type:'application/pdf' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  msg('완료 — ' + name + '.pdf 로 저장했습니다. 열어서 확인해보세요.');
+}
+
+function dataUrlToBytes(url) {
+  var bin = atob(url.split(',')[1]);
+  var out = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+</script>
+</body>
+</html>
