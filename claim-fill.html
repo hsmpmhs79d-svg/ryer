@@ -80,6 +80,12 @@
   <div class="safe">🔒 입력하신 내용과 서류는 <b>서버로 전송되지 않습니다.</b> 이 브라우저 안에서만 처리됩니다.</div>
   <div id="whobar" style="display:none;background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:11px;
     padding:11px 15px;margin-bottom:16px;font-size:14px;color:#065f46;"></div>
+  <!-- ★ 살구로 돌아가기 (2026-09-02) — 같은 창에서 열리므로 돌아갈 길을 준다 -->
+  <div id="backbar" style="display:none;margin-bottom:14px;">
+    <button type="button" onclick="history.length>1?history.back():location.href='index.html'"
+      style="background:#fff;border:1.5px solid #e7d3bd;color:#7c2d12;border-radius:9px;
+      padding:9px 15px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">← 살구로 돌아가기</button>
+  </div>
 
   <div class="card">
     <h2>1. 보험사</h2>
@@ -181,6 +187,14 @@ var FAX = {
   'axa':'', 'hana-insurance':'0505-170-0765'
 };
 var madeBlob = null, madeName = '';     /* 방금 만든 PDF (팩스로 넘길 것) */
+/* ★ 이 기기가 '다른 앱으로 넘기기'를 할 수 있는지 (2026-09-02)
+   휴대폰이면 대개 되고, PC 브라우저는 대개 안 된다. 안 되면 다운로드로 간다. */
+var CAN_SHARE = (function(){
+  try {
+    if (!navigator.share || !navigator.canShare) return false;
+    return navigator.canShare({ files: [ new File([new Blob(['x'])], 'a.pdf', { type:'application/pdf' }) ] });
+  } catch (e) { return false; }
+})();
 
 /* ★ 살구에서 넘어온 고객 정보 (2026-09-02)
    읽자마자 지운다. 주소창·서버 어디에도 남지 않는다. */
@@ -210,6 +224,7 @@ if (FROM && FROM.pName) {
   wb.innerHTML = '👤 <b>' + String(FROM.pName).replace(/</g,'&lt;') + '</b> 님의 정보를 살구에서 가져왔습니다. '
     + '비어 있는 칸만 채우시면 됩니다.';
   wb.style.display = 'block';
+  var bb = document.getElementById('backbar'); if (bb) bb.style.display = 'block';
   var fn = document.getElementById('fname');
   if (fn) fn.value = String(FROM.pName).replace(/[\\/:*?"<>|]/g, '') + '_보험금청구';
 }
@@ -481,24 +496,31 @@ async function run() {
       }
     });
 
-    var img = await out.embedJpg(dataUrlToBytes(cv.toDataURL('image/jpeg', 0.88)));
+    var img = await out.embedJpg(dataUrlToBytes(cv.toDataURL('image/jpeg', 0.8)));
     var pg = out.addPage([vp1.width, vp1.height]);
     pg.drawImage(img, { x:0, y:0, width: vp1.width, height: vp1.height });
   }
 
-  /* 병원 서류 붙이기 */
+  /* 병원 서류 붙이기 — 팩스로 보낼 수 있게 사진을 줄여서 넣는다 (2026-09-02).
+     원본 그대로 넣으면 PDF가 수십 MB가 되어 팩스앱이 못 받는다.
+     A4 150dpi 정도면 팩스(흑백 200dpi)로는 충분하다. */
   for (var i = 0; i < ATT.length; i++) {
     msg('서류 붙이는 중... ' + (i + 1) + ' / ' + ATT.length);
-    var bytes = new Uint8Array(await ATT[i].arrayBuffer());
     if (/\.pdf$/i.test(ATT[i].name)) {
+      var bytes = new Uint8Array(await ATT[i].arrayBuffer());
       var src = await L.PDFDocument.load(bytes, { ignoreEncryption:true });
       var idx = src.getPageIndices();
       var cps = await out.copyPages(src, idx);
       cps.forEach(function(p){ out.addPage(p); });
     } else {
-      var im = /\.png$/i.test(ATT[i].name) ? await out.embedPng(bytes) : await out.embedJpg(bytes);
-      var p2 = out.addPage([im.width, im.height]);
-      p2.drawImage(im, { x:0, y:0, width:im.width, height:im.height });
+      var sh = await shrinkImage(ATT[i], 1654, 0.72);
+      var im = await out.embedJpg(sh.bytes);
+      /* A4 한 장에 맞춰 가운데 놓는다 — 팩스로 보낼 때 쪽 크기가 들쭉날쭉하지 않게 */
+      var PW = 595, PH = 842;
+      var p2 = out.addPage([PW, PH]);
+      var r = Math.min(PW / sh.w, PH / sh.h);
+      var dw = sh.w * r, dh = sh.h * r;
+      p2.drawImage(im, { x:(PW - dw) / 2, y:(PH - dh) / 2, width:dw, height:dh });
     }
   }
 
@@ -511,7 +533,9 @@ async function run() {
   /* ★ 팩스로 넘길 수 있게 보관 (2026-09-02) */
   madeBlob = blob; madeName = name + '.pdf';
   showFaxCard();
-  msg('완료 — ' + name + '.pdf 로 저장했습니다. 열어서 확인해보세요.');
+  var mb = (blob.size / 1048576);
+  msg('완료 — ' + name + '.pdf · ' + (mb < 1 ? Math.round(blob.size / 1024) + 'KB' : mb.toFixed(1) + 'MB')
+      + (mb > 15 ? '  ⚠ 용량이 커서 팩스앱이 거절할 수 있습니다. 서류 장수를 줄여보세요.' : ''));
 }
 
 /* ── 팩스로 보내기 (2026-09-02) ────────────────────────── */
@@ -523,16 +547,26 @@ function showFaxCard() {
     $('faxno').innerHTML = '받는 곳 <b>' + nm + '</b> · 청구 팩스 '
       + '<b style="font-size:17px;color:#0f766e">' + no + '</b>';
     $('sharebtn').style.display = 'block';
-    $('faxhelp').innerHTML = '<b>팩스앱으로 보내기</b> — 팩스번호가 자동으로 복사되고 공유창이 열립니다. '
-      + '모바일팩스 앱을 고른 뒤 받는 번호 칸에 붙여넣기만 하시면 됩니다.<br>'
-      + '<b>파일로 저장</b> — 휴대폰에 PDF로 남겨둘 때 쓰세요.';
+    $('sharebtn').textContent = CAN_SHARE ? '📠 휴대폰 팩스앱으로 보내기' : '📋 팩스번호 복사';
+    $('faxhelp').innerHTML = CAN_SHARE
+      ? ('<b>팩스앱으로 보내기</b> — 팩스번호가 자동으로 복사되고 공유창이 열립니다. '
+         + '모바일팩스 앱을 고른 뒤 받는 번호 칸에 붙여넣기만 하시면 됩니다.<br>'
+         + '<b>파일로 저장</b> — 휴대폰에 PDF로 남겨둘 때 쓰세요.')
+      : ('청구서 PDF는 이미 <b>다운로드 폴더</b>에 받아졌습니다. '
+         + '팩스번호를 복사해서 웹팩스나 팩스 프로그램에 붙여넣고, 그 PDF를 첨부하시면 됩니다.');
   } else {
     $('faxno').innerHTML = '<b style="color:#b45309">' + nm + '</b> 은 고정 청구 팩스번호가 없습니다. '
-      + '아래 버튼으로 파일을 받아 <b>' + nm + ' 앱</b>에 직접 올리시거나, '
-      + '고객센터에서 <b>가상 팩스번호</b>를 받아 팩스앱으로 보내시면 됩니다.';
+      + (CAN_SHARE
+         ? ('아래 버튼으로 파일을 받아 <b>' + nm + ' 앱</b>에 직접 올리시거나, '
+            + '고객센터에서 <b>가상 팩스번호</b>를 받아 팩스앱으로 보내시면 됩니다.')
+         : ('받아진 PDF를 <b>' + nm + '</b> 홈페이지에 올리시거나, '
+            + '고객센터에서 <b>가상 팩스번호</b>를 받아 보내시면 됩니다.'));
     $('sharebtn').style.display = 'none';
-    $('faxhelp').innerHTML = '공유창이 열리면 <b>파일에 저장</b>을 고르시거나, 목록에 뜨는 <b>보험사 앱</b>을 바로 고르셔도 됩니다.';
+    $('faxhelp').innerHTML = CAN_SHARE
+      ? '공유창이 열리면 <b>파일에 저장</b>을 고르시거나, 목록에 뜨는 <b>보험사 앱</b>을 바로 고르셔도 됩니다.'
+      : '청구서 PDF는 이미 <b>다운로드 폴더</b>에 받아져 있습니다.';
   }
+  $('savebtn').textContent = CAN_SHARE ? '📁 파일로 저장 · 보험사 앱으로 보내기' : '📥 PDF 다시 받기';
   $('card-fax').style.display = 'block';
   $('card-fax').scrollIntoView({ behavior:'smooth', block:'center' });
 }
@@ -563,6 +597,7 @@ async function shareFax() {
   if (!madeBlob) { msg('먼저 [청구서 만들기]를 눌러주세요.'); return; }
   var no = FAX[curIns] || '';
   if (no) { try { await navigator.clipboard.writeText(no); } catch (e) {} }
+  if (!CAN_SHARE) { msg('팩스번호 ' + no + ' 를 복사했습니다. 팩스 보내는 곳에 붙여넣으세요.'); return; }
   var f = new File([madeBlob], madeName, { type:'application/pdf' });
   if (navigator.canShare && navigator.canShare({ files:[f] })) {
     try {
@@ -574,6 +609,32 @@ async function shareFax() {
   downloadMade();
   msg('이 기기에서는 바로 넘기기가 안 돼 파일로 저장했습니다. 팩스앱에서 직접 첨부해주세요.'
       + (no ? ' 팩스번호 ' + no + ' (복사됨)' : ''));
+}
+
+/* ★ 사진을 긴 변 기준 maxSide 픽셀로 줄이고 JPEG 으로 바꾼다 (2026-09-02) */
+async function shrinkImage(file, maxSide, q) {
+  var bmp = null;
+  try { bmp = await createImageBitmap(file, { imageOrientation:'from-image' }); }
+  catch (e) {
+    try { bmp = await createImageBitmap(file); }
+    catch (e2) {
+      bmp = await new Promise(function(res, rej){
+        var im = new Image(); var u = URL.createObjectURL(file);
+        im.onload = function(){ URL.revokeObjectURL(u); res(im); };
+        im.onerror = function(){ URL.revokeObjectURL(u); rej(new Error('사진을 읽지 못했습니다')); };
+        im.src = u;
+      });
+    }
+  }
+  var w = bmp.width || bmp.naturalWidth, h = bmp.height || bmp.naturalHeight;
+  var sc = Math.min(1, maxSide / Math.max(w, h));
+  var cw = Math.max(1, Math.round(w * sc)), ch = Math.max(1, Math.round(h * sc));
+  var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+  var cx = cv.getContext('2d');
+  cx.fillStyle = '#fff'; cx.fillRect(0, 0, cw, ch);
+  cx.drawImage(bmp, 0, 0, cw, ch);
+  if (bmp.close) { try { bmp.close(); } catch (e3) {} }
+  return { bytes: dataUrlToBytes(cv.toDataURL('image/jpeg', q)), w: cw, h: ch };
 }
 
 function dataUrlToBytes(url) {
