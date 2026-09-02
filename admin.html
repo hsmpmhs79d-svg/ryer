@@ -157,8 +157,14 @@ function statusOf(u) {
   if (u.status === 'pending' && /자동 수집/.test(u.memo || '')) return 'existing';
   return u.status;
 }
-var LBL = { paid:'💰 입금확인 대기', pending:'⏳ 대기', existing:'👥 기존 사용자', approved:'✅ 승인', rejected:'🚫 거절', expired:'⌛ 만료' };
-var CLS = { paid:'b-paid', pending:'b-pending', existing:'b-existing', approved:'b-approved', rejected:'b-rejected', expired:'b-expired' };
+var LBL = { all:'📋 전체', paid:'💰 입금확인 대기', pending:'⏳ 대기', existing:'👥 기존 사용자', approved:'✅ 승인', rejected:'🚫 거절', expired:'⌛ 만료' };
+var CLS = { all:'b-existing', paid:'b-paid', pending:'b-pending', existing:'b-existing', approved:'b-approved', rejected:'b-rejected', expired:'b-expired' };
+/* ★ 전체 탭 (2026-09-02) — 기존 사용자 + 승인, 즉 지금 살구를 쓰고 있는 사람 전부 */
+function inTab(u, t) {
+  var s0 = statusOf(u);
+  if (t === 'all') return s0 === 'existing' || s0 === 'approved';
+  return s0 === t;
+}
 
 function renderSummary() {
   var n = _users.length, inv = 0, appr = 0, hot = 0, idle = 0, never = 0, soon = 0;
@@ -184,14 +190,18 @@ function render() {
   renderSummary();
   fillMonths();
   var base = _users.filter(passFilter);
-  var counts = { paid:0, pending:0, existing:0, approved:0, rejected:0, expired:0 };
-  base.forEach(function(u){ counts[statusOf(u)] = (counts[statusOf(u)]||0)+1; });
-  var tabs = ['paid','pending','existing','approved','expired','rejected'];
+  var counts = { all:0, paid:0, pending:0, existing:0, approved:0, rejected:0, expired:0 };
+  base.forEach(function(u){
+    var s0 = statusOf(u);
+    counts[s0] = (counts[s0]||0)+1;
+    if (s0 === 'existing' || s0 === 'approved') counts.all++;   /* ★ 전체 = 지금 쓰고 있는 사람 (2026-09-02) */
+  });
+  var tabs = ['all','paid','pending','existing','approved','expired','rejected'];
   document.getElementById('tabs').innerHTML = tabs.map(function(t){
     return '<div class="tab' + (_tab===t?' on':'') + '" onclick="_tab=\'' + t + '\';render()">' + LBL[t] + '<span class="n">' + (counts[t]||0) + '</span></div>';
   }).join('');
 
-  var rows = sortRows(base.filter(function(u){ return statusOf(u) === _tab; }));
+  var rows = sortRows(base.filter(function(u){ return inTab(u, _tab); }));
   if (!rows.length) { document.getElementById('list').innerHTML = '<div class="empty">해당하는 사람이 없습니다</div>'; return; }
   document.getElementById('list').innerHTML = rows.map(function(u) {
     var st = statusOf(u);
@@ -352,10 +362,10 @@ function usageHtml(u) {
 
 /* 현재 보고 있는 탭의 명단을 엑셀(CSV)로 저장 (2026-08-10) */
 function dlExcel() {
-  var rows = sortRows(_users.filter(passFilter).filter(function(u){ return statusOf(u) === _tab; }));
+  var rows = sortRows(_users.filter(passFilter).filter(function(u){ return inTab(u, _tab); }));
   if (!rows.length) { toast('이 탭에는 저장할 명단이 없습니다'); return; }
   var head = ['이름','이메일','전화번호','구분','상태','만료일','신청일','승인일','승인월','최근접속','사용일수','첫접속','고객수','기기','메모'];
-  var LBL2 = { paid:'입금확인 대기', pending:'대기', existing:'기존 사용자', approved:'승인', rejected:'거절', expired:'만료' };
+  var LBL2 = { all:'전체', paid:'입금확인 대기', pending:'대기', existing:'기존 사용자', approved:'승인', rejected:'거절', expired:'만료' };
   function cell(v){ v = String(v==null?'':v); return '"' + v.replace(/"/g,'""') + '"'; }
   var lines = [head.map(cell).join(',')];
   rows.forEach(function(u){
