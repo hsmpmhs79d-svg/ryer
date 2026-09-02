@@ -16400,4 +16400,17 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .status-sort-btn::before { width:12px; height:12px; }
 .add-btn-mini { min-width:0; }
 </style>
+
+<style id="salgu-cardbtn-fit">
+/* ★ 고객카드 버튼줄 잘림 문제 (2026-09-02)
+   salgu-cardbtns 가 nowrap 이라 버튼이 늘면 오른쪽이 잘린다.
+   글자는 그대로 두고 여백·아이콘·간격만 줄여 한 줄에 들어가게 한다. */
+.card-header .btn-group { gap:3px !important; flex-wrap:wrap !important; }
+.card-header .btn-group button {
+  padding:6px 7px !important; font-size:12px !important; gap:3px !important; letter-spacing:-.4px;
+}
+.card-header .btn-group button::before { width:12px !important; height:12px !important; }
+/* 카드납 해제 버튼은 카드 아이콘으로 */
+.card-header .btn-group button[onclick^="cancelCardPay"] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%2222%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3Cline%20x1%3D%221%22%20y1%3D%2210%22%20x2%3D%2223%22%20y2%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
+</style>
 </body></html>

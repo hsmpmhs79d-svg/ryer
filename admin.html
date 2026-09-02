@@ -176,6 +176,7 @@ function render() {
       +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span></div>'
       +   '<div class="sub">' + esc(u.email) + (u.phone ? ' · ' + esc(u.phone) : '') + '</div>'
       +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : '') + '</div>'
+      +   '<div class="sub">' + seenHtml(u) + '</div>'
       +   (u.memo ? '<div class="memo">📝 ' + esc(u.memo) + '</div>' : '')
       + '</div>'
       + '<div class="acts">' + acts + '</div>'
@@ -184,17 +185,39 @@ function render() {
 }
 function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
+/* ★ 최근 접속 (2026-09-02) — 서버가 /check 때 남긴 last_seen (한국 시간) */
+function seenText(u) {
+  var s = String(u.last_seen || '').trim();
+  if (!s) return '';
+  return s.slice(0, 16).replace('T', ' ');
+}
+function seenDays(u) {
+  var s = String(u.last_seen || '').trim();
+  if (!s) return null;
+  var t = Date.parse(s.replace(' ', 'T').slice(0, 19) + 'Z');
+  if (isNaN(t)) return null;
+  return Math.floor((Date.now() + 9 * 3600 * 1000 - t) / 86400000);
+}
+function seenHtml(u) {
+  var txt = seenText(u);
+  if (!txt) return '<span style="color:#9ca3af">최근 접속 기록 없음</span>';
+  var d = seenDays(u);
+  var ago = (d === null) ? '' : (d <= 0 ? ' (오늘)' : (d === 1 ? ' (어제)' : ' (' + d + '일 전)'));
+  var col = (d !== null && d >= 30) ? '#b45309' : '#0f766e';
+  return '최근 접속 <b style="color:' + col + '">' + esc(txt) + ago + '</b>';
+}
+
 /* 현재 보고 있는 탭의 명단을 엑셀(CSV)로 저장 (2026-08-10) */
 function dlExcel() {
   var rows = _users.filter(function(u){ return statusOf(u) === _tab; });
   if (!rows.length) { toast('이 탭에는 저장할 명단이 없습니다'); return; }
-  var head = ['이름','이메일','전화번호','상태','만료일','신청일','승인일','메모'];
+  var head = ['이름','이메일','전화번호','상태','만료일','신청일','승인일','최근접속','메모'];
   var LBL2 = { paid:'입금확인 대기', pending:'대기', existing:'기존 사용자', approved:'승인', rejected:'거절', expired:'만료' };
   function cell(v){ v = String(v==null?'':v); return '"' + v.replace(/"/g,'""') + '"'; }
   var lines = [head.map(cell).join(',')];
   rows.forEach(function(u){
     lines.push([u.name||'', u.email||'', u.phone||'', LBL2[statusOf(u)]||u.status||'',
-      u.expires_at||'', (u.created_at||'').slice(0,16), (u.approved_at||'').slice(0,16), u.memo||''].map(cell).join(','));
+      u.expires_at||'', (u.created_at||'').slice(0,16), (u.approved_at||'').slice(0,16), seenText(u), u.memo||''].map(cell).join(','));
   });
   var today = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
   var blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' });
