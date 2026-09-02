@@ -11334,6 +11334,9 @@ function copyContact(el) {
       headers: { 'Authorization': 'Bearer ' + _accessToken }
     }).then(function(r){ return r.json(); }).then(function(d){
       _userEmail = d.email || '';
+      /* ★ 로그인 이메일 알리기 (2026-09-02) — 이 스크립트는 IIFE 안이라
+         바깥 코드(보험금 청구 버튼 등)에서 _userEmail 을 볼 수 없어 따로 내보낸다. */
+      try { window.__salguMe = String(_userEmail || '').trim().toLowerCase(); } catch (eMe) {}
       /* ★ 로그인 계정 기억 (2026-07-26) — 토큰 갱신 시 계정 선택창 방지용 login_hint */
       /* ★ 2026-08-09: 기억하기 체크한 경우에만 이메일 저장 (공용 PC 흔적 방지) */
       try {
@@ -13683,7 +13686,7 @@ function copyContact(el) {
   window._canClaim = function() {
     if (window.SHOW_CLAIM_BTN) return true;
     try {
-      var me = String(window._userEmail || '').trim().toLowerCase();
+      var me = String(window.__salguMe || window._userEmail || '').trim().toLowerCase();
       return me === 'wmmryer@gmail.com' || me === 'ryersang@gmail.com';
     } catch (e) { return false; }
   };
