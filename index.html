@@ -1587,6 +1587,7 @@ try {
     <div class="mv-sub" id="mv-sub" style="margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">로그인 중...</div>
     <div class="mv-stats" id="mv-stats" style="font-size:13px;color:rgba(255,255,255,0.92);margin-top:4px;font-weight:600;letter-spacing:0.2px;"></div>
   </div>
+  <div id="sg-find-mb"></div>
   <div class="mv-tabs">
     <div class="mv-tab active" data-tab="customers" onclick="mvSwitchTab('customers')">고객</div>
     <div class="mv-tab" data-tab="schedules" onclick="mvSwitchTab('schedules')">캘린더</div>
@@ -1609,6 +1610,7 @@ try {
   </div>
 </div>
 
+<div id="sg-find-pc"></div>
 <div class="notif-banner" id="notif-banner" onclick="toggleNotifList()"><span class="nb-count" id="notif-count">0</span><span id="notif-text">알림 없음</span><span class="nb-arrow">▼</span></div><div class="notif-list" id="notif-list"></div>
 <div class="container">
   <div class="left-panel">
@@ -16627,4 +16629,411 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 /* 카드납 해제 버튼은 카드 아이콘으로 */
 .card-header .btn-group button[onclick^="cancelCardPay"] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%2222%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3Cline%20x1%3D%221%22%20y1%3D%2210%22%20x2%3D%2223%22%20y2%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
 </style>
+<!-- ═══ 기능 찾기 (2026-09-03) ═══════════════════════════════════════
+     메뉴 이름을 정확히 몰라도 '실비', '견적', 'ㅊㄱㅅ' 처럼 쳐서 찾습니다.
+     접기 상태는 이 브라우저에 저장되어 다음 접속에도 그대로 유지됩니다. -->
+<style>
+body.mobile-mode #sg-find-pc { display:none; }
+#sg-find-pc { max-width:1100px; margin:10px auto 0; padding:0 14px; }
+#sg-find-mb { padding:10px 12px 0; }
+#sg-find-pc .sgf, #sg-find-mb .sgf {
+  background:#fffdfa; border:1.5px solid #f0dcc2; border-radius:12px;
+  padding:11px 13px; box-shadow:0 2px 8px rgba(124,45,18,.05); font-family:inherit;
+}
+#sg-find-pc .sgf.fold, #sg-find-mb .sgf.fold { padding:7px 12px; }
+#sg-find-pc .sgf-head, #sg-find-mb .sgf-head { display:flex; align-items:center; gap:8px; }
+#sg-find-pc .sgf-title, #sg-find-mb .sgf-title {
+  flex:1; font-size:14px; font-weight:800; color:#9a3412; letter-spacing:-.2px;
+  cursor:pointer; user-select:none;
+}
+#sg-find-pc .sgf-fold, #sg-find-mb .sgf-fold {
+  background:none; border:none; color:#a08a76; font-size:12px; font-weight:700;
+  cursor:pointer; font-family:inherit; padding:3px 5px; white-space:nowrap;
+}
+#sg-find-pc .sgf-fold:hover, #sg-find-mb .sgf-fold:hover { color:#c2410c; }
+#sg-find-pc .sgf-body, #sg-find-mb .sgf-body { margin-top:9px; }
+#sg-find-pc .sgf.fold .sgf-body, #sg-find-mb .sgf.fold .sgf-body { display:none; }
+#sg-find-pc .sgf-inp, #sg-find-mb .sgf-inp { position:relative; }
+#sg-find-pc .sgf-inp input, #sg-find-mb .sgf-inp input {
+  width:100%; box-sizing:border-box; padding:10px 12px 10px 34px; font-size:14.5px;
+  font-family:inherit; border:1.5px solid #e3d3ba; border-radius:9px; background:#fff; color:#3a2a20;
+}
+#sg-find-pc .sgf-inp input:focus, #sg-find-mb .sgf-inp input:focus {
+  outline:none; border-color:#e46a25; box-shadow:0 0 0 3px rgba(228,106,37,.14);
+}
+#sg-find-pc .sgf-mag, #sg-find-mb .sgf-mag {
+  position:absolute; left:11px; top:50%; transform:translateY(-50%);
+  font-size:14px; opacity:.55; pointer-events:none;
+}
+#sg-find-pc .sgf-res, #sg-find-mb .sgf-res { margin-top:8px; display:grid; gap:5px; }
+#sg-find-pc .sgf-hit, #sg-find-mb .sgf-hit {
+  display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:9px;
+  background:#fdf6ee; border:1.5px solid #f4e7d6; cursor:pointer; text-align:left;
+  width:100%; font-family:inherit; color:#3a2a20;
+}
+#sg-find-pc .sgf-hit:hover, #sg-find-mb .sgf-hit:hover { border-color:#e46a25; background:#fdeddf; }
+#sg-find-pc .sgf-em, #sg-find-mb .sgf-em { font-size:16px; width:20px; text-align:center; flex:none; }
+#sg-find-pc .sgf-t, #sg-find-mb .sgf-t { font-size:14px; font-weight:700; line-height:1.4; display:block; }
+#sg-find-pc .sgf-w, #sg-find-mb .sgf-w { font-size:11.5px; color:#a08a76; line-height:1.4; display:block; }
+#sg-find-pc .sgf-go, #sg-find-mb .sgf-go { margin-left:auto; font-size:11.5px; font-weight:800; color:#c2410c; flex:none; }
+#sg-find-pc .sgf-none, #sg-find-mb .sgf-none { color:#a08a76; font-size:13px; padding:12px 4px; text-align:center; line-height:1.7; }
+#sg-find-pc .sgf-quick, #sg-find-mb .sgf-quick { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:9px; }
+#sg-find-mb .sgf-quick { grid-template-columns:repeat(3,1fr); }
+#sg-find-pc .sgf-q, #sg-find-mb .sgf-q {
+  background:#fff; border:1.5px solid #ecdcc6; border-radius:9px; padding:9px 3px;
+  text-align:center; cursor:pointer; font-family:inherit; color:#3a2a20;
+}
+#sg-find-pc .sgf-q:hover, #sg-find-mb .sgf-q:hover { border-color:#e46a25; background:#fffaf3; }
+#sg-find-pc .sgf-q b, #sg-find-mb .sgf-q b { display:block; font-size:17px; line-height:1.35; }
+#sg-find-pc .sgf-q span, #sg-find-mb .sgf-q span { font-size:11.5px; font-weight:700; color:#7d6353; }
+</style>
+<script>
+(function () {
+  'use strict';
+  var KEY = 'sgFindFold';
+  var CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+
+  /* 그 화면에 없는 기능은 목록에서 아예 빠진다 */
+  function go(fn, arg) {
+    return function () {
+      try {
+        if (typeof window[fn] === 'function') { window[fn](arg); }
+        else { alert('이 기능은 지금 화면에서는 열 수 없습니다.'); }
+      } catch (e) { alert('여는 중 문제가 생겼습니다. 새로고침 후 다시 해보세요.'); }
+    };
+  }
+
+  /* 고객 카드 안에 있는 기능 — 열려 있으면 그 자리로, 아니면 먼저 고르라고 알린다 */
+  function card(sel, name) {
+    return function () {
+      var el = document.querySelector('.customer-card ' + sel) || document.querySelector(sel);
+      if (!el) { alert('고객을 먼저 고르시면 ' + name + ' 자리로 바로 데려다드립니다.'); return; }
+      try {
+        if (!MB && typeof window.scrollToCardTab === 'function') window.scrollToCardTab(sel);
+        else el.scrollIntoView({ behavior:'smooth', block:'center' });
+      } catch (e) { try { el.scrollIntoView(); } catch (e2) {} }
+    };
+  }
+
+  /* w = 다르게 부를 법한 말. 여기에 더할수록 검색이 너그러워집니다. */
+  var MENU = [
+    { e:'👤', t:'새 고객 등록', g:'고객', w:['고객등록','신규고객','고객추가','새고객','등록','입력','추가','신규'],
+      pc:go('openAddModal'), mb:go('mvAddCustomer') },
+    { e:'📥', t:'엑셀로 고객 불러오기', g:'고객', w:['엑셀','엑셀등록','일괄등록','가져오기','임포트','명단'],
+      pc:go('xlsxImport') },
+    { e:'🏷', t:'여러 명 골라 태그 달기', g:'고객', w:['태그','분류','라벨','묶기','여러명','일괄'],
+      pc:go('toggleBulkMode') },
+    { e:'📐', t:'설계요청', g:'고객 카드', w:['설계','견적','의뢰','설계의뢰','dr','요청','제안','설계요청'],
+      pc:card('.dr-section','설계요청'), mb:card('.dr-section','설계요청') },
+    { e:'🏥', t:'실손 정보 적기', g:'고객 카드', w:['실손','실비','실손입력','실손정보','가입실손'],
+      pc:card('.silson-section','실손 정보'), mb:card('.silson-section','실손 정보') },
+    { e:'🚙', t:'자동차보험', g:'고객 카드', w:['자동차','자보','차보험','갱신','만기','자차'],
+      pc:card('.auto-section','자동차보험'), mb:card('.auto-section','자동차보험') },
+    { e:'🚗', t:'T맵·카카오맵 길찾기', g:'고객 카드', w:['티맵','tmap','길찾기','내비','네비','가는길','지도','주소'],
+      pc:card('.nav-btns','길찾기'), mb:card('.nav-btns','길찾기') },
+    { e:'🅿️', t:'모두의주차장', g:'고객 카드', w:['주차','주차장','모두의주차장','댈곳','파킹'],
+      pc:card('.nav-btns','주차장'), mb:card('.nav-btns','주차장') },
+    { e:'📝', t:'상담 기록 적기', g:'고객 카드', w:['상담','상담기록','메모','통화','기록','일지'],
+      pc:card('.consult-form','상담 기록'), mb:card('.consult-form','상담 기록') },
+    { e:'⏰', t:'스케줄 잡기', g:'고객 카드', w:['스케줄등록','약속','재연락','미팅','일정등록','예약'],
+      pc:card('.sched-add-form','스케줄'), mb:card('.sched-add-form','스케줄') },
+    { e:'📒', t:'매니저 요청', g:'고객 카드', w:['매니저','관리자','mr','담당자','요청서'],
+      pc:card('.mr-section','매니저'), mb:card('.mr-section','매니저') },
+    { e:'📎', t:'제안서·자료', g:'고객 카드', w:['제안서','자료','pdf','첨부','파일','설계서'],
+      pc:card('.proposal-section','제안서'), mb:card('.proposal-section','제안서') },
+    { e:'🏥', t:'실손 세대별 비교표', g:'보험', w:['실손','실비','실손보험','세대','4세대','비교표','자기부담금'],
+      pc:go('toggleSilsonRefPanel'), mb:go('mvOpenSilsonCompare') },
+    { e:'💼', t:'보험금 청구서 양식', g:'보험', w:['청구','청구서','보험금','팩스','청구양식','서식','청구서작성'],
+      pc:go('openClaimFormsModal') },
+    { e:'📋', t:'청구 필요서류 안내', g:'보험', w:['서류','필요서류','구비서류','청구서류','뗄것','진단서','영수증'],
+      pc:go('openClaimDocsModal'), mb:go('openClaimDocsModal') },
+    { e:'📜', t:'보험약관 공시실', g:'보험', w:['약관','공시실','상품설명서','보장내용','규정','상품요약서'],
+      pc:go('openPolicyLinksModal'), mb:go('openPolicyLinksModal') },
+    { e:'📞', t:'보험사 연락처', g:'보험', w:['연락처','고객센터','전화번호','콜센터','팩스번호','대표번호','인콜'],
+      pc:go('toggleContactPanel') },
+    { e:'🔑', t:'대표코드', g:'내 정보', w:['코드','대표코드','상품코드','설계코드'],
+      pc:go('toggleCodePanel') },
+    { e:'🔐', t:'내 아이디·비밀번호', g:'내 정보', w:['아이디','비번','비밀번호','로그인정보','계정','사이트'],
+      pc:go('toggleIdpwPanel') },
+    { e:'📚', t:'상담자료', g:'상담', w:['자료','인포그래픽','상담자료','이미지','그림','설명자료'],
+      pc:go('openConsultLib'), mb:go('openConsultLib') },
+    { e:'💬', t:'퀵메시지', g:'상담', w:['문자','메시지','카톡','템플릿','문자보내기','dm','안부','인사말'],
+      pc:go('openDmTemplates',''), mb:go('openDmTemplates','') },
+    { e:'📞', t:'상담 스크립트', g:'상담', w:['스크립트','대본','ta','db상담','멘트','화법'],
+      pc:go('toggleScriptPanel') },
+    { e:'📅', t:'스케줄 대시보드', g:'일정', w:['스케줄','일정','캘린더','달력','대시보드','약속','월별'],
+      pc:go('openSchedDashboard'), mb:function () { try { window.mvSwitchTab('schedules'); } catch (e) {} } },
+    { e:'⭐', t:'중요 할 일·선물', g:'일정', w:['할일','선물','중요','챙길것','투두','기념일'],
+      pc:go('toggleGiftPanel'), mb:go('mvOpenGiftModal') },
+    { e:'🎂', t:'오늘·내일 생일자', g:'일정', w:['생일','생일자','축하','상령일'],
+      pc:go('openBirthdayPanel'), mb:go('openBirthdayPanel') },
+    { e:'🔄', t:'연락처 동기화', g:'동기화', w:['동기화','연락처동기화','주소록','전화부','싱크'],
+      pc:go('syncContacts') },
+    { e:'🚫', t:'동기화 제외 목록', g:'동기화', w:['제외','동기화제외','차단','안가져오기'],
+      pc:go('openExcludedContactsModal') },
+    { e:'📆', t:'캘린더 동기화', g:'동기화', w:['캘린더동기화','구글캘린더','일정동기화'],
+      pc:go('syncCalendar') },
+    { e:'📂', t:'백업 폴더 열기', g:'내 정보', w:['백업','드라이브','내파일함','저장','복구','폴더'],
+      pc:go('openBackupFolder'), mb:go('sgMobileMyFiles') },
+    { e:'📖', t:'사용설명서', g:'도움말', w:['설명서','매뉴얼','도움말','사용법','가이드','어떻게'],
+      pc:go('sgOpenManual'), mb:go('sgOpenManual') }
+  ];
+
+  var MB = !!window.__IS_MOBILE__;
+  var LIST = [];
+  for (var mi = 0; mi < MENU.length; mi++) {
+    var run = MB ? MENU[mi].mb : MENU[mi].pc;
+    if (run) LIST.push({ e:MENU[mi].e, t:MENU[mi].t, g:MENU[mi].g, w:MENU[mi].w, run:run });
+  }
+
+  /* ── 찾기 ─────────────────────────────────────────────── */
+  function norm(s) { return String(s || '').toLowerCase().replace(/[\s·.,()\-]/g, ''); }
+  function toCho(s) {
+    var o = '';
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      o += (c >= 0xAC00 && c <= 0xD7A3) ? CHO[Math.floor((c - 0xAC00) / 588)] : s[i];
+    }
+    return o;
+  }
+  function choOnly(q) {
+    if (!q.length) return false;
+    for (var i = 0; i < q.length; i++) if (CHO.indexOf(q[i]) < 0) return false;
+    return true;
+  }
+  /* 글자를 빼먹어도 순서만 맞으면 통과 */
+  function subseq(hay, q) {
+    var i = 0;
+    for (var j = 0; j < hay.length && i < q.length; j++) if (hay[j] === q[i]) i++;
+    return i === q.length;
+  }
+  function find(raw) {
+    var q = norm(raw);
+    if (!q) return [];
+    var out = [], i, k;
+    for (i = 0; i < LIST.length; i++) {
+      var m = LIST[i], n = norm(m.t), sc = 0, why = '';
+      if (n.indexOf(q) === 0) sc = 100;
+      else if (n.indexOf(q) >= 0) sc = 84;
+      if (sc < 90) {
+        for (k = 0; k < m.w.length; k++) {
+          var w = norm(m.w[k]);
+          if (w === q && sc < 95) { sc = 95; why = m.w[k]; }
+          else if (w.indexOf(q) === 0 && sc < 78) { sc = 78; why = m.w[k]; }
+          else if (w.indexOf(q) >= 0 && sc < 70) { sc = 70; why = m.w[k]; }
+        }
+      }
+      if (!sc && choOnly(q)) {
+        if (toCho(n).indexOf(q) >= 0) { sc = 62; why = '초성'; }
+        else for (k = 0; k < m.w.length; k++) if (toCho(norm(m.w[k])).indexOf(q) >= 0) { sc = 58; why = '초성'; break; }
+      }
+      if (!sc && q.length >= 2) {
+        if (subseq(n, q)) sc = 40;
+        else for (k = 0; k < m.w.length; k++) if (subseq(norm(m.w[k]), q)) { sc = 36; why = m.w[k]; break; }
+      }
+      if (sc) out.push({ i:i, sc:sc, why:why });
+    }
+    out.sort(function (a, b) { return b.sc - a.sc; });
+    return out.slice(0, 7);
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c];
+    });
+  }
+
+  /* ── 자주 쓰는 기능 6개 ────────────────────────────────── */
+  var QUICK = MB
+    ? [['👤','새 고객'],['📋','청구서류'],['📜','약관'],['📚','상담자료'],['⭐','할 일'],['🎂','생일자']]
+    : [['👤','새 고객'],['💼','청구서'],['🏥','실손'],['📜','약관'],['📞','연락처'],['📚','상담자료']];
+  var QUICK_T = MB
+    ? ['새 고객 등록','청구 필요서류 안내','보험약관 공시실','상담자료','중요 할 일·선물','오늘·내일 생일자']
+    : ['새 고객 등록','보험금 청구서 양식','실손 세대별 비교표','보험약관 공시실','보험사 연락처','상담자료'];
+
+  function runByTitle(t) {
+    for (var i = 0; i < LIST.length; i++) if (LIST[i].t === t) { LIST[i].run(); return; }
+  }
+
+  /* ── 카드 만들기 ──────────────────────────────────────── */
+  function build(host) {
+    var folded = false;
+    try { folded = localStorage.getItem(KEY) === '1'; } catch (e) {}
+
+    var card = document.createElement('div');
+    card.className = 'sgf' + (folded ? ' fold' : '');
+
+    var qh = '<div class="sgf-quick">';
+    for (var i = 0; i < QUICK.length; i++) {
+      qh += '<button type="button" class="sgf-q" data-t="' + esc(QUICK_T[i]) + '">' +
+            '<b>' + QUICK[i][0] + '</b><span>' + esc(QUICK[i][1]) + '</span></button>';
+    }
+    qh += '</div>';
+
+    card.innerHTML =
+      '<div class="sgf-head"><span class="sgf-title"></span>' +
+        '<button type="button" class="sgf-fold"></button></div>' +
+      '<div class="sgf-body">' +
+        '<div class="sgf-inp"><span class="sgf-mag">🔍</span>' +
+        '<input type="text" placeholder="예) 실비, 견적, 문자, 주차" autocomplete="off"></div>' +
+        '<div class="sgf-res"></div>' + qh +
+      '</div>';
+    host.appendChild(card);
+
+    var title = card.querySelector('.sgf-title');
+    var foldBtn = card.querySelector('.sgf-fold');
+    var input = card.querySelector('input');
+    var res = card.querySelector('.sgf-res');
+    var quick = card.querySelector('.sgf-quick');
+
+    function paintHead() {
+      var f = card.classList.contains('fold');
+      title.textContent = f ? '🔍 기능 찾기' : '👋 무엇을 도와드릴까요?';
+      foldBtn.textContent = f ? '펴기 ▼' : '접기 ▲';
+    }
+    /* 접기/펴기 상태를 이 브라우저에 적어둔다 → 다음 접속에도 그대로 */
+    function setFold(f) {
+      card.classList.toggle('fold', f);
+      try { localStorage.setItem(KEY, f ? '1' : '0'); } catch (e) {}
+      paintHead();
+      if (!f) { try { input.focus(); } catch (e) {} }
+    }
+    foldBtn.addEventListener('click', function () { setFold(!card.classList.contains('fold')); });
+    title.addEventListener('click', function () { if (card.classList.contains('fold')) setFold(false); });
+    paintHead();
+
+    function draw() {
+      var q = input.value.trim();
+      if (!q) { res.innerHTML = ''; quick.style.display = ''; return; }
+      quick.style.display = 'none';
+      var hits = find(q);
+      if (!hits.length) {
+        res.innerHTML = '<div class="sgf-none">찾는 기능이 없습니다.<br>다르게 불러보시거나 더 짧게 쳐보세요.</div>';
+        return;
+      }
+      var h = '';
+      for (var i = 0; i < hits.length; i++) {
+        var m = LIST[hits[i].i], why = hits[i].why;
+        var sub = (why && why !== '초성') ? '‘' + esc(why) + '’ 로 찾음 · ' + esc(m.g)
+                : (why === '초성' ? '초성으로 찾음 · ' + esc(m.g) : esc(m.g));
+        h += '<button type="button" class="sgf-hit" data-i="' + hits[i].i + '">' +
+             '<span class="sgf-em">' + m.e + '</span><span>' +
+             '<span class="sgf-t">' + esc(m.t) + '</span>' +
+             '<span class="sgf-w">' + sub + '</span></span>' +
+             '<span class="sgf-go">열기 →</span></button>';
+      }
+      res.innerHTML = h;
+    }
+    input.addEventListener('input', draw);
+
+    res.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('.sgf-hit') : null;
+      if (!b) return;
+      var idx = parseInt(b.getAttribute('data-i'), 10);
+      input.value = ''; draw();
+      if (LIST[idx]) LIST[idx].run();
+    });
+    quick.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('.sgf-q') : null;
+      if (b) runByTitle(b.getAttribute('data-t'));
+    });
+  }
+
+  function start() {
+    var host = document.getElementById(MB ? 'sg-find-mb' : 'sg-find-pc');
+    if (host && !host.firstChild) build(host);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
+<!-- ═══ 툴팁 (2026-09-03) ═══════════════════════════════════════════
+     PC(마우스가 있는 화면)에서만 뜹니다. 휴대폰에는 만들지 않습니다.
+     0.1초면 뜨고, 무엇을 할 수 있는지 한 줄로 알려줍니다. -->
+<style>
+@media (hover:hover) and (pointer:fine) {
+  [data-tip] { position:relative; }
+  [data-tip]::after {
+    content:attr(data-tip); position:absolute; left:50%; top:calc(100% + 7px);
+    transform:translateX(-50%) translateY(-3px);
+    background:#2d1f18; color:#fff6ee; font-family:inherit;
+    font-size:12px; font-weight:600; line-height:1.5; letter-spacing:0;
+    padding:6px 10px; border-radius:7px;
+    white-space:normal; width:max-content; max-width:250px; text-align:left;
+    opacity:0; pointer-events:none; z-index:99999;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);
+    transition:opacity .1s ease .1s, transform .1s ease .1s;
+  }
+  [data-tip]::before {
+    content:''; position:absolute; left:50%; top:calc(100% + 1px);
+    transform:translateX(-50%) translateY(-3px);
+    border:5px solid transparent; border-bottom-color:#2d1f18;
+    opacity:0; pointer-events:none; z-index:99999;
+    transition:opacity .1s ease .1s, transform .1s ease .1s;
+  }
+  [data-tip]:hover::after, [data-tip]:hover::before,
+  [data-tip]:focus-visible::after, [data-tip]:focus-visible::before {
+    opacity:1; transform:translateX(-50%) translateY(0);
+  }
+}
+@media (prefers-reduced-motion:reduce) {
+  [data-tip]::after, [data-tip]::before { transition-duration:.01ms; }
+}
+</style>
+<script>
+(function () {
+  'use strict';
+  if (window.__IS_MOBILE__) return;   /* 휴대폰에는 툴팁을 두지 않는다 */
+
+  /* onclick 앞부분 → 툴팁 문구. 문구만 고치면 됩니다. */
+  var TIP = {
+    'toggleHeader':            '상단 메뉴를 접어 화면을 넓게 씁니다',
+    'toggleScriptPanel':       'DB·이관 상담 스크립트와 메모를 엽니다',
+    'openSchedDashboard':      '월별 달력으로 스케줄을 보고 옮깁니다',
+    'openDmTemplates':         '자주 쓰는 문자·카톡 문구를 골라 복사합니다',
+    'toggleGiftPanel':         '챙길 일과 선물 약속을 모아서 봅니다',
+    'openBirthdayPanel':       '오늘·내일 생일인 고객을 모아 보여줍니다',
+    'setLayoutMode':           '노트북은 기본, 큰 모니터는 넓게가 편합니다',
+    'toggleCodePanel':         '보험사별 대표코드를 찾아 바로 복사합니다',
+    'toggleSilsonRefPanel':    '실손 1~4세대 보장과 자기부담금을 비교합니다',
+    'toggleContactPanel':      '보험사 고객센터·청구 팩스번호를 확인합니다',
+    'toggleIdpwPanel':         '보험사 사이트 아이디·비밀번호를 모아둡니다',
+    'openBackupFolder':        '구글 드라이브의 백업 폴더를 새 창으로 엽니다',
+    'syncContacts':            '휴대폰 주소록과 고객 명단을 맞춥니다',
+    'openExcludedContactsModal':'주소록에서 다시 가져오지 않을 사람을 관리합니다',
+    'syncCalendar':            'CRM 스케줄을 구글 캘린더로 보냅니다',
+    'openClaimFormsModal':     '28개 보험사 청구서를 고객 정보로 채워줍니다',
+    'openPolicyLinksModal':    '보험사 약관 공시실을 검색 없이 바로 엽니다',
+    'openClaimDocsModal':      '입원·통원·수술을 고르면 뗄 서류를 정리해 줍니다',
+    'openConsultLib':          '상담에 쓰는 인포그래픽 자료를 카테고리별로 봅니다',
+    'openAddModal':            '고객을 새로 등록합니다',
+    'xlsxImport':              '엑셀 파일로 고객을 한 번에 등록합니다',
+    'toggleBulkMode':          '여러 명을 골라 태그를 달거나 한 번에 지웁니다',
+    'sgFilterToggle':          '성별·등록월·상령일·생일로 목록을 걸러봅니다',
+    'openConsultLib()':        '상담에 쓰는 인포그래픽 자료를 카테고리별로 봅니다'
+  };
+
+  function apply(root) {
+    var els = root.querySelectorAll('button[onclick], select[onchange], .filter-toggle');
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.getAttribute('data-tip')) continue;
+      var h = el.getAttribute('onclick') || el.getAttribute('onchange') || '';
+      var name = (h.match(/([A-Za-z_$][\w$]*)\s*\(/) || [])[1];
+      if (!name || !TIP[name]) continue;
+      el.setAttribute('data-tip', TIP[name]);
+      el.removeAttribute('title');          /* 브라우저 기본 툴팁과 겹치지 않게 */
+    }
+  }
+  function start() {
+    var hd = document.getElementById('main-header');
+    var lp = document.querySelector('.left-panel');
+    if (hd) apply(hd);
+    if (lp) apply(lp);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
 </body></html>
