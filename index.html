@@ -1587,7 +1587,6 @@ try {
     <div class="mv-sub" id="mv-sub" style="margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">로그인 중...</div>
     <div class="mv-stats" id="mv-stats" style="font-size:13px;color:rgba(255,255,255,0.92);margin-top:4px;font-weight:600;letter-spacing:0.2px;"></div>
   </div>
-  <div id="sg-find-mb"></div>
   <div class="mv-tabs">
     <div class="mv-tab active" data-tab="customers" onclick="mvSwitchTab('customers')">고객</div>
     <div class="mv-tab" data-tab="schedules" onclick="mvSwitchTab('schedules')">캘린더</div>
@@ -1610,7 +1609,6 @@ try {
   </div>
 </div>
 
-<div id="sg-find-pc"></div>
 <div class="notif-banner" id="notif-banner" onclick="toggleNotifList()"><span class="nb-count" id="notif-count">0</span><span id="notif-text">알림 없음</span><span class="nb-arrow">▼</span></div><div class="notif-list" id="notif-list"></div>
 <div class="container">
   <div class="left-panel">
@@ -16630,67 +16628,90 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .card-header .btn-group button[onclick^="cancelCardPay"] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%2222%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3Cline%20x1%3D%221%22%20y1%3D%2210%22%20x2%3D%2223%22%20y2%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
 </style>
 <!-- ═══ 기능 찾기 (2026-09-03) ═══════════════════════════════════════
-     메뉴 이름을 정확히 몰라도 '실비', '견적', 'ㅊㄱㅅ' 처럼 쳐서 찾습니다.
-     접기 상태는 이 브라우저에 저장되어 다음 접속에도 그대로 유지됩니다. -->
+     PC   — 상단 헤더 빈 칸에 검색창. Ctrl(⌘)+K 로도 열림
+     모바일 — 로고 오른쪽 🔍 버튼 → 전체화면 검색. 처음 3번만 말풍선 안내
+     메뉴 이름을 몰라도 '실비', '견적', 'ㅊㄱㅅ' 처럼 쳐서 찾습니다. -->
 <style>
-body.mobile-mode #sg-find-pc { display:none; }
-#sg-find-pc { max-width:1100px; margin:10px auto 0; padding:0 14px; }
-#sg-find-mb { padding:10px 12px 0; }
-#sg-find-pc .sgf, #sg-find-mb .sgf {
-  background:#fffdfa; border:1.5px solid #f0dcc2; border-radius:12px;
-  padding:11px 13px; box-shadow:0 2px 8px rgba(124,45,18,.05); font-family:inherit;
+/* ── PC: 헤더 안 검색창 ── */
+#sgf-pc { position:relative; display:inline-flex; align-items:center; width:330px; flex:0 1 330px; margin:0 4px; vertical-align:middle; }
+#sgf-pc .sgf-mag { position:absolute; left:10px; font-size:12.5px; opacity:.55; pointer-events:none; }
+#sgf-pc input {
+  width:100%; padding:6px 12px 6px 30px; font-size:13px; font-family:inherit; font-weight:500;
+  border:1.5px solid rgba(255,255,255,.55); border-radius:20px;
+  background:rgba(255,255,255,.92); color:#3a2a20;
 }
-#sg-find-pc .sgf.fold, #sg-find-mb .sgf.fold { padding:7px 12px; }
-#sg-find-pc .sgf-head, #sg-find-mb .sgf-head { display:flex; align-items:center; gap:8px; }
-#sg-find-pc .sgf-title, #sg-find-mb .sgf-title {
-  flex:1; font-size:14px; font-weight:800; color:#9a3412; letter-spacing:-.2px;
-  cursor:pointer; user-select:none;
+#sgf-pc input::placeholder { color:#b9a08a; font-weight:500; }
+#sgf-pc input:focus { outline:none; border-color:#e46a25; box-shadow:0 0 0 3px rgba(228,106,37,.2); background:#fff; }
+@media (max-width:1180px) { #sgf-pc { width:170px; flex-basis:170px; } }
+@media (max-width:960px)  { #sgf-pc { width:44px;  flex-basis:44px; } #sgf-pc input { padding-right:4px; } }
+
+.sgf-drop {
+  position:absolute; top:calc(100% + 7px); left:0; width:400px; max-width:78vw; z-index:9995;
+  background:#fff; border:1.5px solid #eddcc9; border-radius:12px;
+  box-shadow:0 18px 40px -14px rgba(124,45,18,.34); padding:8px; display:none;
+  text-align:left; white-space:normal;
 }
-#sg-find-pc .sgf-fold, #sg-find-mb .sgf-fold {
-  background:none; border:none; color:#a08a76; font-size:12px; font-weight:700;
-  cursor:pointer; font-family:inherit; padding:3px 5px; white-space:nowrap;
+.sgf-drop.on { display:block; }
+
+/* ── 모바일: 로고 옆 버튼 + 말풍선 ── */
+#sgf-mbtn {
+  background:rgba(255,255,255,.22); border:1px solid rgba(255,255,255,.45); color:#fff;
+  border-radius:8px; padding:4px 9px; font-size:13px; font-weight:800;
+  margin-left:8px; cursor:pointer; font-family:inherit; flex:none;
 }
-#sg-find-pc .sgf-fold:hover, #sg-find-mb .sgf-fold:hover { color:#c2410c; }
-#sg-find-pc .sgf-body, #sg-find-mb .sgf-body { margin-top:9px; }
-#sg-find-pc .sgf.fold .sgf-body, #sg-find-mb .sgf.fold .sgf-body { display:none; }
-#sg-find-pc .sgf-inp, #sg-find-mb .sgf-inp { position:relative; }
-#sg-find-pc .sgf-inp input, #sg-find-mb .sgf-inp input {
-  width:100%; box-sizing:border-box; padding:10px 12px 10px 34px; font-size:14.5px;
-  font-family:inherit; border:1.5px solid #e3d3ba; border-radius:9px; background:#fff; color:#3a2a20;
+#sgf-hint {
+  position:relative; display:inline-block; margin:9px 0 0;
+  background:#fffdf7; color:#8f3d10; font-size:12px; font-weight:700;
+  padding:6px 11px; border-radius:9px; box-shadow:0 4px 12px rgba(0,0,0,.18);
 }
-#sg-find-pc .sgf-inp input:focus, #sg-find-mb .sgf-inp input:focus {
-  outline:none; border-color:#e46a25; box-shadow:0 0 0 3px rgba(228,106,37,.14);
+#sgf-hint::before { content:''; position:absolute; left:15px; top:-11px; border:6px solid transparent; border-bottom-color:#fffdf7; }
+#sgf-hint b { color:#c2410c; }
+#sgf-hint .x { margin-left:7px; color:#b49a86; font-weight:800; cursor:pointer; }
+
+/* ── 모바일: 전체화면 검색 ── */
+#sgf-ov {
+  position:fixed; inset:0; z-index:99990; background:#fffdfa; display:none;
+  flex-direction:column; padding:14px 13px 13px;
 }
-#sg-find-pc .sgf-mag, #sg-find-mb .sgf-mag {
-  position:absolute; left:11px; top:50%; transform:translateY(-50%);
-  font-size:14px; opacity:.55; pointer-events:none;
+#sgf-ov.on { display:flex; }
+#sgf-ov .top { display:flex; gap:8px; align-items:center; }
+#sgf-ov .box { position:relative; flex:1; display:flex; align-items:center; }
+#sgf-ov .sgf-mag { position:absolute; left:11px; font-size:14px; opacity:.55; pointer-events:none; }
+#sgf-ov input {
+  width:100%; padding:11px 12px 11px 34px; font-size:15px; font-family:inherit;
+  border:1.5px solid #e3d3ba; border-radius:10px; background:#fff; color:#3a2a20;
 }
-#sg-find-pc .sgf-res, #sg-find-mb .sgf-res { margin-top:8px; display:grid; gap:5px; }
-#sg-find-pc .sgf-hit, #sg-find-mb .sgf-hit {
+#sgf-ov input:focus { outline:none; border-color:#e46a25; box-shadow:0 0 0 3px rgba(228,106,37,.14); }
+#sgf-ov .close { background:none; border:0; font-size:20px; color:#a08a76; cursor:pointer; padding:0 4px; font-family:inherit; }
+#sgf-ov .body { flex:1; overflow-y:auto; margin-top:11px; }
+
+/* ── 결과·자주 쓰는 기능 (PC·모바일 공통) ── */
+.sgf-res { display:grid; gap:4px; }
+.sgf-hit {
   display:flex; align-items:center; gap:9px; padding:9px 11px; border-radius:9px;
-  background:#fdf6ee; border:1.5px solid #f4e7d6; cursor:pointer; text-align:left;
-  width:100%; font-family:inherit; color:#3a2a20;
+  background:transparent; border:0; cursor:pointer; text-align:left; width:100%;
+  font-family:inherit; color:#3a2a20;
 }
-#sg-find-pc .sgf-hit:hover, #sg-find-mb .sgf-hit:hover { border-color:#e46a25; background:#fdeddf; }
-#sg-find-pc .sgf-em, #sg-find-mb .sgf-em { font-size:16px; width:20px; text-align:center; flex:none; }
-#sg-find-pc .sgf-t, #sg-find-mb .sgf-t { font-size:14px; font-weight:700; line-height:1.4; display:block; }
-#sg-find-pc .sgf-w, #sg-find-mb .sgf-w { font-size:11.5px; color:#a08a76; line-height:1.4; display:block; }
-#sg-find-pc .sgf-go, #sg-find-mb .sgf-go { margin-left:auto; font-size:11.5px; font-weight:800; color:#c2410c; flex:none; }
-#sg-find-pc .sgf-none, #sg-find-mb .sgf-none { color:#a08a76; font-size:13px; padding:12px 4px; text-align:center; line-height:1.7; }
-#sg-find-pc .sgf-quick, #sg-find-mb .sgf-quick { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin-top:9px; }
-#sg-find-mb .sgf-quick { grid-template-columns:repeat(3,1fr); }
-#sg-find-pc .sgf-q, #sg-find-mb .sgf-q {
+.sgf-hit:hover, .sgf-hit:focus-visible { background:#fbe6d3; outline:none; }
+.sgf-em { font-size:16px; width:20px; text-align:center; flex:none; }
+.sgf-t  { font-size:14px; font-weight:700; line-height:1.4; display:block; }
+.sgf-w  { font-size:11.5px; color:#a08a76; line-height:1.4; display:block; font-weight:400; }
+.sgf-go { margin-left:auto; font-size:11.5px; font-weight:800; color:#c2410c; flex:none; }
+.sgf-none { color:#a08a76; font-size:13px; padding:12px 6px; text-align:center; line-height:1.7; }
+.sgf-lab { font-size:11.5px; font-weight:800; color:#a08a76; padding:5px 10px 6px; letter-spacing:.03em; }
+.sgf-quick { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:2px 4px 4px; }
+.sgf-q {
   background:#fff; border:1.5px solid #ecdcc6; border-radius:9px; padding:9px 3px;
   text-align:center; cursor:pointer; font-family:inherit; color:#3a2a20;
 }
-#sg-find-pc .sgf-q:hover, #sg-find-mb .sgf-q:hover { border-color:#e46a25; background:#fffaf3; }
-#sg-find-pc .sgf-q b, #sg-find-mb .sgf-q b { display:block; font-size:17px; line-height:1.35; }
-#sg-find-pc .sgf-q span, #sg-find-mb .sgf-q span { font-size:11.5px; font-weight:700; color:#7d6353; }
+.sgf-q:hover { border-color:#e46a25; background:#fffaf3; }
+.sgf-q b { display:block; font-size:17px; line-height:1.35; }
+.sgf-q span { font-size:11.5px; font-weight:700; color:#7d6353; }
 </style>
 <script>
 (function () {
   'use strict';
-  var KEY = 'sgFindFold';
+  var HINT = 'sgFindHint';   /* 처음 3번만 안내 말풍선 */
   var CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
 
   /* 그 화면에 없는 기능은 목록에서 아예 빠진다 */
@@ -16854,98 +16875,164 @@ body.mobile-mode #sg-find-pc { display:none; }
     for (var i = 0; i < LIST.length; i++) if (LIST[i].t === t) { LIST[i].run(); return; }
   }
 
-  /* ── 카드 만들기 ──────────────────────────────────────── */
-  function build(host) {
-    var folded = false;
-    try { folded = localStorage.getItem(KEY) === '1'; } catch (e) {}
-
-    var card = document.createElement('div');
-    card.className = 'sgf' + (folded ? ' fold' : '');
-
-    var qh = '<div class="sgf-quick">';
+  /* ── 결과 그리기 (PC 드롭다운·모바일 전체화면 공통) ────── */
+  function hitHtml(hits) {
+    var h = '';
+    for (var i = 0; i < hits.length; i++) {
+      var m = LIST[hits[i].i], why = hits[i].why;
+      var sub = (why && why !== '초성') ? '‘' + esc(why) + '’ 로 찾음 · ' + esc(m.g)
+              : (why === '초성' ? '초성으로 찾음 · ' + esc(m.g) : esc(m.g));
+      h += '<button type="button" class="sgf-hit" data-i="' + hits[i].i + '">' +
+           '<span class="sgf-em">' + m.e + '</span><span>' +
+           '<span class="sgf-t">' + esc(m.t) + '</span>' +
+           '<span class="sgf-w">' + sub + '</span></span>' +
+           '<span class="sgf-go">열기 →</span></button>';
+    }
+    return h;
+  }
+  function quickHtml() {
+    var h = '<div class="sgf-lab">자주 쓰는 기능</div><div class="sgf-quick">';
     for (var i = 0; i < QUICK.length; i++) {
-      qh += '<button type="button" class="sgf-q" data-t="' + esc(QUICK_T[i]) + '">' +
-            '<b>' + QUICK[i][0] + '</b><span>' + esc(QUICK[i][1]) + '</span></button>';
+      h += '<button type="button" class="sgf-q" data-t="' + esc(QUICK_T[i]) + '">' +
+           '<b>' + QUICK[i][0] + '</b><span>' + esc(QUICK[i][1]) + '</span></button>';
     }
-    qh += '</div>';
-
-    card.innerHTML =
-      '<div class="sgf-head"><span class="sgf-title"></span>' +
-        '<button type="button" class="sgf-fold"></button></div>' +
-      '<div class="sgf-body">' +
-        '<div class="sgf-inp"><span class="sgf-mag">🔍</span>' +
-        '<input type="text" placeholder="예) 실비, 견적, 문자, 주차" autocomplete="off"></div>' +
-        '<div class="sgf-res"></div>' + qh +
-      '</div>';
-    host.appendChild(card);
-
-    var title = card.querySelector('.sgf-title');
-    var foldBtn = card.querySelector('.sgf-fold');
-    var input = card.querySelector('input');
-    var res = card.querySelector('.sgf-res');
-    var quick = card.querySelector('.sgf-quick');
-
-    function paintHead() {
-      var f = card.classList.contains('fold');
-      title.textContent = f ? '🔍 기능 찾기' : '👋 무엇을 도와드릴까요?';
-      foldBtn.textContent = f ? '펴기 ▼' : '접기 ▲';
-    }
-    /* 접기/펴기 상태를 이 브라우저에 적어둔다 → 다음 접속에도 그대로 */
-    function setFold(f) {
-      card.classList.toggle('fold', f);
-      try { localStorage.setItem(KEY, f ? '1' : '0'); } catch (e) {}
-      paintHead();
-      if (!f) { try { input.focus(); } catch (e) {} }
-    }
-    foldBtn.addEventListener('click', function () { setFold(!card.classList.contains('fold')); });
-    title.addEventListener('click', function () { if (card.classList.contains('fold')) setFold(false); });
-    paintHead();
-
-    function draw() {
-      var q = input.value.trim();
-      if (!q) { res.innerHTML = ''; quick.style.display = ''; return; }
-      quick.style.display = 'none';
-      var hits = find(q);
-      if (!hits.length) {
-        res.innerHTML = '<div class="sgf-none">찾는 기능이 없습니다.<br>다르게 불러보시거나 더 짧게 쳐보세요.</div>';
+    return h + '</div>';
+  }
+  function paint(box, v) {
+    var q = String(v || '').trim();
+    if (!q) { box.innerHTML = quickHtml(); return; }
+    var hits = find(q);
+    box.innerHTML = hits.length
+      ? '<div class="sgf-res">' + hitHtml(hits) + '</div>'
+      : '<div class="sgf-none">찾는 기능이 없습니다.<br>다르게 불러보시거나 더 짧게 쳐보세요.</div>';
+  }
+  /* 결과·자주쓰는기능 어느 쪽을 눌러도 여기서 처리 */
+  function wireClick(box, after) {
+    box.addEventListener('click', function (ev) {
+      var t = ev.target;
+      var hit = t && t.closest ? t.closest('.sgf-hit') : null;
+      if (hit) {
+        var idx = parseInt(hit.getAttribute('data-i'), 10);
+        if (after) after();
+        if (LIST[idx]) LIST[idx].run();
         return;
       }
-      var h = '';
-      for (var i = 0; i < hits.length; i++) {
-        var m = LIST[hits[i].i], why = hits[i].why;
-        var sub = (why && why !== '초성') ? '‘' + esc(why) + '’ 로 찾음 · ' + esc(m.g)
-                : (why === '초성' ? '초성으로 찾음 · ' + esc(m.g) : esc(m.g));
-        h += '<button type="button" class="sgf-hit" data-i="' + hits[i].i + '">' +
-             '<span class="sgf-em">' + m.e + '</span><span>' +
-             '<span class="sgf-t">' + esc(m.t) + '</span>' +
-             '<span class="sgf-w">' + sub + '</span></span>' +
-             '<span class="sgf-go">열기 →</span></button>';
-      }
-      res.innerHTML = h;
-    }
-    input.addEventListener('input', draw);
-
-    res.addEventListener('click', function (ev) {
-      var b = ev.target && ev.target.closest ? ev.target.closest('.sgf-hit') : null;
-      if (!b) return;
-      var idx = parseInt(b.getAttribute('data-i'), 10);
-      input.value = ''; draw();
-      if (LIST[idx]) LIST[idx].run();
-    });
-    quick.addEventListener('click', function (ev) {
-      var b = ev.target && ev.target.closest ? ev.target.closest('.sgf-q') : null;
-      if (b) runByTitle(b.getAttribute('data-t'));
+      var q = t && t.closest ? t.closest('.sgf-q') : null;
+      if (q) { if (after) after(); runByTitle(q.getAttribute('data-t')); }
     });
   }
 
+  /* ── PC — 헤더 빈 칸에 검색창 ─────────────────────────── */
+  function mountPC() {
+    var tools = document.querySelector('.header-tools');
+    if (!tools || document.getElementById('sgf-pc')) return true;
+    var wrap = document.createElement('span');
+    wrap.id = 'sgf-pc';
+    wrap.innerHTML =
+      '<span class="sgf-mag">🔍</span>' +
+      '<input type="text" placeholder="기능 찾기 — 실비, 견적, 문자…" autocomplete="off" ' +
+        'title="메뉴 이름을 몰라도 됩니다. Ctrl(⌘)+K 로도 열립니다">' +
+      '<div class="sgf-drop"></div>';
+    tools.parentNode.insertBefore(wrap, tools);
+
+    var input = wrap.querySelector('input');
+    var drop = wrap.querySelector('.sgf-drop');
+    function open() { paint(drop, input.value); drop.classList.add('on'); }
+    function close() { drop.classList.remove('on'); }
+
+    input.addEventListener('focus', open);
+    input.addEventListener('input', open);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { input.value = ''; close(); input.blur(); }
+    });
+    wireClick(drop, function () { input.value = ''; close(); input.blur(); });
+    document.addEventListener('click', function (ev) {
+      if (!ev.target.closest || !ev.target.closest('#sgf-pc')) close();
+    });
+    /* Ctrl(⌘)+K — 어디서든 커서를 검색창으로 */
+    document.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault(); input.focus(); input.select(); open();
+      }
+    });
+    return true;
+  }
+
+  /* ── 모바일 — 로고 옆 🔍 + 전체화면 검색 ──────────────── */
+  function mountMB() {
+    var title = document.getElementById('sg-mv-title');
+    if (!title) return false;                    /* 아직 안 만들어졌으면 잠시 뒤 다시 */
+    if (document.getElementById('sgf-mbtn')) return true;
+
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.id = 'sgf-mbtn'; btn.textContent = '🔍';
+    btn.setAttribute('aria-label', '기능 찾기');
+    var right = document.getElementById('sg-mvt-right');
+    if (right) title.insertBefore(btn, right); else title.appendChild(btn);
+
+    /* 전체화면 검색 */
+    var ov = document.createElement('div');
+    ov.id = 'sgf-ov';
+    ov.innerHTML =
+      '<div class="top"><div class="box"><span class="sgf-mag">🔍</span>' +
+        '<input type="text" placeholder="무엇을 하고 싶으세요?" autocomplete="off"></div>' +
+        '<button type="button" class="close" aria-label="닫기">✕</button></div>' +
+      '<div class="body"></div>';
+    document.body.appendChild(ov);
+
+    var input = ov.querySelector('input');
+    var body = ov.querySelector('.body');
+    function open() {
+      paint(body, '');
+      input.value = '';
+      ov.classList.add('on');
+      setTimeout(function () { try { input.focus(); } catch (e) {} }, 60);
+      hideHint();
+    }
+    function close() { ov.classList.remove('on'); }
+
+    btn.addEventListener('click', function (e) { e.stopPropagation(); open(); });
+    ov.querySelector('.close').addEventListener('click', close);
+    input.addEventListener('input', function () { paint(body, input.value); });
+    input.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    wireClick(body, close);
+
+    /* 처음 세 번 접속까지만 말풍선 안내 */
+    var n = 0;
+    try { n = parseInt(localStorage.getItem(HINT) || '0', 10) || 0; } catch (e) {}
+    if (n < 3) {
+      var hint = document.createElement('div');
+      hint.id = 'sgf-hint';
+      hint.innerHTML = '메뉴 못 찾으시면 <b>🔍</b> 눌러보세요<span class="x">✕</span>';
+      title.parentNode.insertBefore(hint, title.nextSibling);
+      hint.addEventListener('click', function (e) {
+        if (e.target && e.target.className === 'x') { hideHint(); return; }
+        open();
+      });
+      try { localStorage.setItem(HINT, String(n + 1)); } catch (e) {}
+    }
+    function hideHint() {
+      var h = document.getElementById('sgf-hint');
+      if (h && h.parentNode) h.parentNode.removeChild(h);
+    }
+    return true;
+  }
+
+  /* 살구 스킨이 헤더를 다시 짜는 걸 기다렸다가 심는다 */
   function start() {
-    var host = document.getElementById(MB ? 'sg-find-mb' : 'sg-find-pc');
-    if (host && !host.firstChild) build(host);
+    var done = MB ? mountMB() : mountPC();
+    if (done) return;
+    var tries = 0;
+    var t = setInterval(function () {
+      tries++;
+      if ((MB ? mountMB() : mountPC()) || tries > 30) clearInterval(t);
+    }, 200);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
 })();
 </script>
+
 
 <!-- ═══ 툴팁 (2026-09-03) ═══════════════════════════════════════════
      PC(마우스가 있는 화면)에서만 뜹니다. 휴대폰에는 만들지 않습니다.
