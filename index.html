@@ -16633,7 +16633,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
      메뉴 이름을 몰라도 '실비', '견적', 'ㅊㄱㅅ' 처럼 쳐서 찾습니다. -->
 <style>
 /* ── PC: 헤더 안 검색창 ── */
-#sgf-pc { position:relative; display:inline-flex; align-items:center; width:330px; flex:0 1 330px; margin:0 4px; vertical-align:middle; }
+#sgf-pc { position:relative; display:inline-flex; align-items:center; width:300px; min-width:0; flex:0 0 auto; margin:0 4px; vertical-align:middle; }
 #sgf-pc .sgf-mag { position:absolute; left:10px; font-size:12.5px; opacity:.55; pointer-events:none; }
 #sgf-pc input {
   width:100%; padding:6px 12px 6px 30px; font-size:13px; font-family:inherit; font-weight:500;
@@ -16642,8 +16642,9 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 }
 #sgf-pc input::placeholder { color:#b9a08a; font-weight:500; }
 #sgf-pc input:focus { outline:none; border-color:#e46a25; box-shadow:0 0 0 3px rgba(228,106,37,.2); background:#fff; }
-@media (max-width:1180px) { #sgf-pc { width:170px; flex-basis:170px; } }
-@media (max-width:960px)  { #sgf-pc { width:44px;  flex-basis:44px; } #sgf-pc input { padding-right:4px; } }
+/* 자리가 모자라면 돋보기만 남는다 — 눌러서 넓히면 그대로 쓸 수 있다 */
+#sgf-pc.tiny input { padding-right:4px; }
+#sgf-pc.tiny input::placeholder { color:transparent; }
 
 .sgf-drop {
   position:absolute; top:calc(100% + 7px); left:0; width:400px; max-width:78vw; z-index:9995;
@@ -16937,6 +16938,30 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 
     var input = wrap.querySelector('input');
     var drop = wrap.querySelector('.sgf-drop');
+
+    /* ★ 헤더는 flex-wrap 이라 조금만 넘쳐도 오른쪽 메뉴가 통째로 다음 줄로 내려간다.
+       오른쪽 메뉴가 첫 줄에 남아 있을 때까지만 검색창을 넓힌다. */
+    var MAXW = 300, MINW = 40;
+    function fit() {
+      var h1 = wrap.parentNode;
+      var ref = document.getElementById('user-name-input') || h1.firstElementChild;
+      if (!ref || !tools.offsetParent) return;
+      var w = MAXW, guard = 0;
+      wrap.style.width = w + 'px';
+      while (w > MINW && guard++ < 40 && tools.offsetTop > ref.offsetTop + 4) {
+        w -= 14;
+        wrap.style.width = w + 'px';
+      }
+      wrap.classList.toggle('tiny', w < 120);
+    }
+    fit();
+    var _ft;
+    window.addEventListener('resize', function () { clearTimeout(_ft); _ft = setTimeout(fit, 120); });
+    /* 메뉴 접기·펴기 뒤에도 다시 잰다 */
+    document.addEventListener('click', function (e) {
+      if (e.target && e.target.closest && e.target.closest('#header-toggle-btn')) setTimeout(fit, 60);
+    });
+
     function open() { paint(drop, input.value); drop.classList.add('on'); }
     function close() { drop.classList.remove('on'); }
 
