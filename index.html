@@ -11558,8 +11558,14 @@ function copyContact(el) {
       ov.style.display = 'flex';
       var card = ov.querySelector('.login-card');
       if (!card) { afterLogin(); return; }
-      var contact = '<div style="background:#fdf8f3;border-radius:10px;padding:13px 15px;font-size:14px;color:#334155;line-height:1.8;margin-top:14px;">' +
-          '<b style="color:#0f172a;">📞 문의</b> — 담당 팀장 <b>여상현</b> <b style="color:#7c2d12;">010-6226-5359</b></div>';
+      /* ★ 2026-09-03: 번호를 눈으로 읽고 옮겨 적는 대신 눌러서 바로 연결되도록 */
+      var contact = '<div style="background:#fdf8f3;border-radius:10px;padding:13px 15px;margin-top:14px;">' +
+          '<div style="font-size:14px;color:#334155;line-height:1.7;text-align:center;">' +
+            '<b style="color:#0f172a;">📞 문의</b> — 담당 팀장 <b>여상현</b></div>' +
+          '<div style="display:flex;gap:8px;margin-top:10px;">' +
+            '<a href="tel:' + SG_TEL.replace(/-/g, '') + '" style="flex:1;text-align:center;background:#fff;border:1.5px solid #e0c9a6;color:#7c2d12;border-radius:9px;padding:10px 4px;font-size:13.5px;font-weight:800;text-decoration:none;">📞 ' + SG_TEL + '</a>' +
+            '<a href="' + SG_KAKAO + '" target="_blank" rel="noopener" style="flex:1;text-align:center;background:#FEE500;border:1.5px solid #e5cf00;color:#3c1e1e;border-radius:9px;padding:10px 4px;font-size:13.5px;font-weight:800;text-decoration:none;">💬 카톡 문의</a>' +
+          '</div></div>';
       var other = '<div style="margin-top:14px;"><a href="#" onclick="if(window.doLoginOther)doLoginOther();return false;" style="color:#94a3b8;font-size:13.5px;text-decoration:underline;">다른 계정으로 로그인</a></div>';
       var emailBox = '<div style="background:#fff6ed;border:1.5px solid #f5d9bd;border-radius:10px;padding:10px 13px;margin-bottom:14px;">' +
           '<div style="font-size:12px;color:#a06a42;">내 계정</div>' +
@@ -11571,8 +11577,8 @@ function copyContact(el) {
           '<h1 style="font-size:24px;color:#7c2d12;margin-bottom:4px;">살구 이용 신청</h1>' +
           '<p style="color:#64748b;font-size:14px;margin-bottom:14px;">살구는 승인된 분만 이용하실 수 있습니다.<br>아래 정보를 입력해 신청해 주세요.</p>' +
           emailBox +
-          '<input id="sg-name" placeholder="이름 (필수)" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:8px;box-sizing:border-box;">' +
-          '<input id="sg-phone" placeholder="전화번호 (필수)" inputmode="tel" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:13px;box-sizing:border-box;">' +
+          '<input id="sg-name" placeholder="이름 (필수)" oninput="window.salguKeepName(this)" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:8px;box-sizing:border-box;">' +
+          '<input id="sg-phone" placeholder="전화번호 (필수)" inputmode="numeric" maxlength="13" oninput="window.salguPhoneFmt(this)" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:13px;box-sizing:border-box;">' +
           '<div style="text-align:left;font-size:13px;font-weight:800;color:#92400e;margin-bottom:7px;">이용 기간 선택</div>' +
           _sgPlanCards() +
           '<div style="height:13px;"></div>' +
@@ -11600,6 +11606,13 @@ function copyContact(el) {
           emailBox +
           '<button onclick="if(window.salguReapplyForm)window.salguReapplyForm()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;">다시 이용 신청하기</button>' +
           contact + other;
+      }
+      /* ★ 2026-09-03: 요금제를 고르면 이 화면을 통째로 다시 그리기 때문에
+         이름·전화번호가 지워졌다. 적어둔 값을 다시 넣어준다. */
+      if (status === 'none') {
+        var _sf = window.__sgForm__ || {};
+        var _en = document.getElementById('sg-name');  if (_en) _en.value = _sf.name  || '';
+        var _ep = document.getElementById('sg-phone'); if (_ep) _ep.value = _sf.phone || '';
       }
       window.__pendingEmail__ = email || '';
       window.__sgScreen__ = status || 'none';   /* 요금제 고를 때 같은 화면을 다시 그리려고 */
@@ -11650,6 +11663,28 @@ function copyContact(el) {
     }
     return h + '</div>';
   }
+  /* ★ 신청 폼 입력값 임시 보관 (2026-09-03) — 요금제를 고르면 화면을 다시 그린다 */
+  window.__sgForm__ = window.__sgForm__ || { name: '', phone: '' };
+  window.salguKeepName = function(el) { window.__sgForm__.name = el.value; };
+  /* 숫자만 남기고 010-1234-5678 모양으로 자동 정리한다 */
+  window.salguPhoneFmt = function(el) {
+    var d = String(el.value || '').replace(/[^0-9]/g, '');
+    var v;
+    if (d.indexOf('02') === 0 && d.length <= 10) {          /* 서울 지역번호 */
+      d = d.slice(0, 10);
+      if (d.length > 6)      v = d.slice(0,2) + '-' + d.slice(2, d.length-4) + '-' + d.slice(d.length-4);
+      else if (d.length > 2) v = d.slice(0,2) + '-' + d.slice(2);
+      else                   v = d;
+    } else {                                                 /* 휴대폰·그 밖의 지역번호 */
+      d = d.slice(0, 11);
+      if (d.length > 7)      v = d.slice(0,3) + '-' + d.slice(3, d.length-4) + '-' + d.slice(d.length-4);
+      else if (d.length > 3) v = d.slice(0,3) + '-' + d.slice(3);
+      else                   v = d;
+    }
+    el.value = v;
+    window.__sgForm__.phone = v;
+  };
+
   /* 요금제 고르기 — 화면을 다시 그리고, 승인 대기 중이면 서버에도 알려둔다 */
   window.salguSetPlan = function(k) {
     window.__sgPlan__ = k;
@@ -11670,6 +11705,9 @@ function copyContact(el) {
 
   /* ─── 이용료 입금 안내 + 입금 완료 신고 (2026-08-24) ─── */
   var SG_ACCT = '1000-7691-2971';
+  /* 로그인 화면 문의 연락처 (2026-09-03) — 바꾸실 땐 여기만 고치면 됩니다 */
+  var SG_TEL   = '010-6226-5359';
+  var SG_KAKAO = 'https://open.kakao.com/o/gkZ4ESLi';
   function _sgPayBox() {
     var done = localStorage.getItem('sgPaidSent') === (window.__pendingEmail__ || '');
     var p = _sgPlanOf(_sgPlanKey());
@@ -11740,6 +11778,8 @@ function copyContact(el) {
     var phone = (document.getElementById('sg-phone') || {}).value || '';
     name = name.trim(); phone = phone.trim();
     if (!name || !phone) { alert('이름과 전화번호를 모두 입력해주세요.'); return; }
+    var _pd = phone.replace(/[^0-9]/g, '');
+    if (_pd.length < 9 || _pd.length > 11) { alert('전화번호를 정확히 입력해주세요.\n예) 010-1234-5678'); return; }
     fetch('https://salgu-api.wmmryer.workers.dev/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
