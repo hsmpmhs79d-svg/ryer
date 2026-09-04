@@ -13119,6 +13119,9 @@ function copyContact(el) {
       html += '</div>';
     }
 
+    /* ★ 설계요청 (2026-09-04) — 플랜을 고르면 그 담보만 드롭다운으로 */
+    try { if (typeof mvBuildDr === 'function') html += mvBuildDr(c); } catch(e) { console.error('모바 설계요청 실패:', e); }
+
     content.innerHTML = html;
   }
 
@@ -13253,6 +13256,7 @@ function copyContact(el) {
     if (typeof scheduleAutoSave === 'function') scheduleAutoSave();
     banner('💾 저장 중...', '');
   }
+  window.mvCommit = mvCommit;   /* ★ 모바 설계요청 저장에서 사용 (2026-09-04) */
 
   function mvShowModal(html) {
     var m = document.getElementById('mv-modal');
@@ -17527,6 +17531,167 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     t.removeAttribute('data-byplan');
     _drPaintFilled();
   }, true);
+})();
+</script>
+
+<style>
+/* ★ 모바일 설계요청 (2026-09-04) — 살구톤 */
+.mv-dr-plans{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.mv-dr-plan{background:#fff;border:1.5px solid #ecd5bd;color:#7c2d12;border-radius:18px;padding:8px 13px;
+  font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.mv-dr-plan.on{background:#e46a25;border-color:#c2410c;color:#fff;}
+.mv-dr-plan.saved{border-style:dashed;}
+.mv-dr-rec{background:#fff8f0;border-left:3px solid #e46a25;border-radius:6px;padding:8px 11px;margin-bottom:10px;
+  font-size:12.5px;color:#7c2d12;line-height:1.7;}
+.mv-dr-rec b{color:#c2410c;}
+.mv-dr-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f8efe4;}
+.mv-dr-row:last-child{border-bottom:none;}
+.mv-dr-row .n{flex:1;font-size:14px;font-weight:700;color:#7c2d12;min-width:0;word-break:keep-all;}
+.mv-dr-row select{width:112px;flex-shrink:0;padding:8px 6px;font-size:14px;font-family:inherit;
+  border:1.5px solid #e0c9ac;border-radius:8px;background:#fff;color:#513c2c;}
+.mv-dr-row.on{background:#fff4d6;border-radius:8px;padding:9px 8px;margin:2px -8px;border-bottom:none;}
+.mv-dr-row.on select{border-color:#e8a33d;font-weight:700;}
+.mv-dr-empty{padding:16px 4px;font-size:13.5px;color:#9c7a5c;text-align:center;line-height:1.7;}
+.mv-dr-note{font-size:11.5px;color:#9c7a5c;margin-top:8px;line-height:1.6;}
+</style>
+
+<script>
+/* ★ 모바일 설계요청 (2026-09-04) — 플랜을 고르면 그 플랜 담보만 드롭다운으로 뜹니다 */
+(function(){
+  var vals = {};      /* 지금 편집 중인 값 */
+  var orig = {};      /* 열었을 때 저장돼 있던 값 (끄기로 지워지지 않게 보호) */
+  var onPlan = {};    /* 켜진 플랜 */
+  var cust = null;    /* 지금 보고 있는 고객 객체 (모바일 배열의 원본 참조) */
+
+  function itemOf(k){
+    for (var i = 0; i < _drItems.length; i++) if (_drItems[i].key === k) return _drItems[i];
+    var p = k.lastIndexOf('_');
+    if (p > 0) { var b = k.slice(0, p);
+      for (var j = 0; j < _drItems.length; j++) if (_drItems[j].key === b) return _drItems[j]; }
+    return null;
+  }
+  function labelOf(k){
+    var it = itemOf(k); if (!it) return k;
+    if (it.key === k) return it.label;
+    var s = k.slice(it.key.length + 1);
+    for (var i = 0; i < (it.subs||[]).length; i++) if (it.subs[i].k === s) return it.label + ' · ' + it.subs[i].l;
+    return it.label;
+  }
+  function planById(id){ for (var i=0;i<_drPlans.length;i++) if (_drPlans[i].id===id) return _drPlans[i]; return null; }
+
+  /* 지금 보여줄 담보 키 목록 — 켜진 플랜들의 담보 순서대로, 중복 없이 */
+  function visibleKeys(){
+    var out = [], seen = {};
+    if (onPlan.saved) {
+      for (var k in orig) if (Object.prototype.hasOwnProperty.call(orig,k) && !seen[k]) { seen[k]=1; out.push(k); }
+    }
+    for (var i = 0; i < _drPlans.length; i++) {
+      var p = _drPlans[i]; if (!onPlan[p.id]) continue;
+      for (var k2 in p.vals) if (Object.prototype.hasOwnProperty.call(p.vals,k2) && !seen[k2]) { seen[k2]=1; out.push(k2); }
+    }
+    return out;
+  }
+
+  window.mvDrRenderList = function(){
+    var box = document.getElementById('mv-dr-list'); if (!box) return;
+    var keys = visibleKeys();
+    if (!keys.length) {
+      box.innerHTML = '<div class="mv-dr-empty">위에서 플랜을 고르시면<br>해당 담보가 여기에 나옵니다.</div>';
+    } else {
+      var h = '';
+      for (var i = 0; i < keys.length; i++) {
+        var k = keys[i], it = itemOf(k), v = vals[k] || '';
+        h += '<div class="mv-dr-row' + (v ? ' on' : '') + '" data-k="' + k + '">'
+           +   '<div class="n">' + labelOf(k) + '</div>'
+           +   '<select onchange="mvDrSet(\'' + k + '\', this.value)">'
+           +     _drAmountOptions(v, it ? it.range : '') + '</select></div>';
+      }
+      box.innerHTML = h;
+    }
+    var rec = document.getElementById('mv-dr-rec'); if (!rec) return;
+    var lines = [];
+    for (var j = 0; j < _drPlans.length; j++) {
+      var p = _drPlans[j]; if (!onPlan[p.id]) continue;
+      var r = [];
+      for (var m = 0; m < p.rec.length; m++) r.push((m+1) + '. ' + p.rec[m]);
+      lines.push('<b>' + p.name + '</b> &nbsp;' + r.join('&nbsp; '));
+    }
+    if (lines.length) { rec.style.display = ''; rec.innerHTML = lines.join('<br>'); }
+    else { rec.style.display = 'none'; rec.innerHTML = ''; }
+  };
+
+  window.mvDrSet = function(k, v){
+    if (v) vals[k] = v; else delete vals[k];
+    var row = document.querySelector('.mv-dr-row[data-k="' + k + '"]');
+    if (row) row.classList.toggle('on', !!v);
+  };
+
+  window.mvDrPlan = function(id, btn){
+    var turningOn = !onPlan[id];
+    onPlan[id] = turningOn;
+    if (id !== 'saved') {
+      var p = planById(id); if (!p) return;
+      if (turningOn) {
+        /* 이미 값이 있는 칸은 덮어쓰지 않습니다 */
+        for (var k in p.vals) if (Object.prototype.hasOwnProperty.call(p.vals,k) && !vals[k]) vals[k] = String(p.vals[k]);
+      } else {
+        /* 끌 때 — 원래 저장돼 있던 값과 다른 플랜이 쓰는 값은 남깁니다 */
+        var keep = {};
+        for (var i = 0; i < _drPlans.length; i++) {
+          var q = _drPlans[i]; if (!onPlan[q.id]) continue;
+          for (var k3 in q.vals) if (Object.prototype.hasOwnProperty.call(q.vals,k3)) keep[k3] = 1;
+        }
+        for (var k2 in p.vals) {
+          if (!Object.prototype.hasOwnProperty.call(p.vals,k2)) continue;
+          if (keep[k2]) continue;
+          if (Object.prototype.hasOwnProperty.call(orig,k2)) continue;
+          delete vals[k2];
+        }
+      }
+    }
+    if (btn) btn.classList.toggle('on', turningOn);
+    mvDrRenderList();
+  };
+
+  window.mvDrSave = function(){
+    var c = cust;
+    if (!c) return;
+    var out = {};
+    for (var k in vals) if (Object.prototype.hasOwnProperty.call(vals,k) && vals[k]) out[k] = vals[k];
+    c.designRequest = out;
+    c._updated = Date.now();
+    orig = JSON.parse(JSON.stringify(out));
+    if (typeof window.mvCommit === 'function') window.mvCommit();
+    else if (typeof scheduleAutoSave === 'function') {
+      var tag = document.getElementById('customer-data');
+      if (tag && window.customers) tag.textContent = JSON.stringify(window.customers);
+      scheduleAutoSave();
+    }
+    if (typeof showToast === 'function') showToast('설계요청이 저장되었습니다!', 'green');
+  };
+
+  /* 고객 상세를 그릴 때 호출됩니다 */
+  window.mvBuildDr = function(c){
+    cust = c;
+    orig = JSON.parse(JSON.stringify(c.designRequest || {}));
+    vals = JSON.parse(JSON.stringify(orig));
+    onPlan = {};
+    var savedN = Object.keys(orig).length;
+    var h = '<div class="mv-section"><div class="mv-section-title">📋 설계요청'
+          + (savedN ? ' (' + savedN + ')' : '')
+          + '<div class="mv-btns"><button class="mv-add-btn" onclick="mvDrSave()">💾 저장</button></div></div>';
+    h += '<div class="mv-dr-plans">';
+    if (savedN) h += '<button class="mv-dr-plan saved" onclick="mvDrPlan(\'saved\',this)">✓ 저장된 항목 ' + savedN + '</button>';
+    for (var i = 0; i < _drPlans.length; i++) {
+      h += '<button class="mv-dr-plan" onclick="mvDrPlan(\'' + _drPlans[i].id + '\',this)">' + _drPlans[i].name + '</button>';
+    }
+    h += '</div>';
+    h += '<div class="mv-dr-rec" id="mv-dr-rec" style="display:none"></div>';
+    h += '<div id="mv-dr-list"><div class="mv-dr-empty">위에서 플랜을 고르시면<br>해당 담보가 여기에 나옵니다.</div></div>';
+    h += '<div class="mv-dr-note">플랜을 여러 개 골라도 됩니다. 고친 뒤 💾 저장을 눌러주세요.<br>추천 보험사는 참고용이며, 가입한도는 설계 프로그램에서 확인하세요.</div>';
+    h += '</div>';
+    return h;
+  };
 })();
 </script>
 
