@@ -8952,7 +8952,7 @@ function _drPlanTip(p) {
   var t = '담보 ' + keys.length + '개가 한 번에 채워집니다\n' + names.join(' · ');
   if (names.length < keys.length) t += ' 외';
   t += '\n추천: ' + p.rec.join(' · ');
-  t += '\n(다른 플랜을 누르면 이 플랜은 꺼집니다)';
+  t += '\n(여러 플랜을 겹쳐 고를 수 있습니다)';
   return t;
 }
 
@@ -17654,22 +17654,6 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     return hdr;
   }
 
-  /* 플랜 하나가 채운 칸을 열었을 때 상태로 되돌립니다 */
-  function resetPlan(p){
-    for (var k in p.vals) {
-      if (!Object.prototype.hasOwnProperty.call(p.vals, k)) continue;
-      var el = document.getElementById('dr-' + k);
-      if (!el) continue;
-      el.value = _drOrig[k] || '';
-      el.removeAttribute('data-byplan');
-      var it = el.closest('.dr-item');
-      var ck = it ? it.querySelector('.dr-ck') : null;
-      if (ck) {
-        var base = it.querySelector('.dr-ck').id.replace(/^drc-/, '');
-        ck.checked = _drOrigOff.indexOf(base) < 0;
-      }
-    }
-  }
 
 
   /* ★ 화면의 설계요청을 전부 비웁니다 (2026-09-04) — 저장은 💾 저장을 눌러야 반영됩니다 */
@@ -17685,41 +17669,52 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     if (typeof showToast === 'function') showToast('\uC124\uACC4\uC694\uCCAD\uC774 \uCD08\uAE30\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4.', 'amber');
   };
 
-  /* 플랜 버튼 — 한 번에 하나만 켜집니다 (2026-09-04) */
+  /* 플랜 버튼 — 여러 개를 겹쳐 고를 수 있습니다 (2026-09-04) */
   window.applyDrPlan = function(planId, custId){
     var plan = null;
     for (var i = 0; i < _drPlans.length; i++) if (_drPlans[i].id === planId) plan = _drPlans[i];
     if (!plan) return;
-    var wasOn = !!_drOnPlans[planId];
 
-    /* 켜져 있던 플랜은 손댄 값까지 모두 되돌립니다 */
-    for (var j = 0; j < _drPlans.length; j++) if (_drOnPlans[_drPlans[j].id]) resetPlan(_drPlans[j]);
-    _drOnPlans = {};
-    var lit = document.querySelectorAll('.dr-plan.on');
-    for (var b = 0; b < lit.length; b++) lit[b].classList.remove('on');
+    var turningOn = !_drOnPlans[planId];
+    _drOnPlans[planId] = turningOn;
 
-    if (!wasOn) {
-      _drOnPlans[planId] = true;
+    if (turningOn) {
       var firstHdr = null;
-      for (var k2 in plan.vals) {
-        if (!Object.prototype.hasOwnProperty.call(plan.vals, k2)) continue;
-        var hdr = openGroup(groupOfKey(k2));
+      for (var k in plan.vals) {
+        if (!Object.prototype.hasOwnProperty.call(plan.vals, k)) continue;
+        var hdr = openGroup(groupOfKey(k));
         if (!firstHdr && hdr) firstHdr = hdr;
-        var el2 = document.getElementById('dr-' + k2);
-        if (el2) {
-          el2.value = String(plan.vals[k2]);
-          el2.setAttribute('data-byplan', '1');
-          var it2 = el2.closest('.dr-item');
-          var ck2 = it2 ? it2.querySelector('.dr-ck') : null;
-          if (ck2) ck2.checked = true;
+        var el = document.getElementById('dr-' + k);
+        if (el) {
+          el.value = String(plan.vals[k]);
+          var it = el.closest('.dr-item');
+          var ck = it ? it.querySelector('.dr-ck') : null;
+          if (ck) ck.checked = true;
         }
       }
-      var btn = document.querySelector('.dr-plan[data-p="' + planId + '"]');
-      if (btn) btn.classList.add('on');
-      /* 해당 보장 부분으로 화면 이동 */
       if (firstHdr) { try { firstHdr.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) { firstHdr.scrollIntoView(); } }
+    } else {
+      /* 끌 때 — 손으로 고쳤더라도 이 플랜이 건드린 담보는 모두 되돌립니다.
+         아직 켜져 있는 다른 플랜이 쓰는 담보는 그 플랜 값으로 남깁니다. */
+      var keep = mergedVals();
+      for (var k2 in plan.vals) {
+        if (!Object.prototype.hasOwnProperty.call(plan.vals, k2)) continue;
+        var el2 = document.getElementById('dr-' + k2);
+        if (!el2) continue;
+        var it2 = el2.closest('.dr-item');
+        var ck2 = it2 ? it2.querySelector('.dr-ck') : null;
+        if (Object.prototype.hasOwnProperty.call(keep, k2)) {
+          el2.value = String(keep[k2]);
+          if (ck2) ck2.checked = true;
+        } else {
+          el2.value = _drOrig[k2] || '';
+          if (ck2) ck2.checked = _drOrigOff.indexOf(ck2.id.replace(/^drc-/, '')) < 0;
+        }
+      }
     }
 
+    var btn = document.querySelector('.dr-plan[data-p="' + planId + '"]');
+    if (btn) btn.classList.toggle('on', turningOn);
     _drPaintFilled();
     _drPaintRec();
   };
@@ -17855,38 +17850,41 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       mvDrRenderList();
       return;
     }
-    var wasOn = !!onPlan[id];
-    /* 켜져 있던 플랜은 손댄 값까지 모두 되돌립니다 (2026-09-04) */
-    for (var i = 0; i < _drPlans.length; i++) {
-      var q = _drPlans[i]; if (!onPlan[q.id]) continue;
-      for (var k in q.vals) {
-        if (!Object.prototype.hasOwnProperty.call(q.vals, k)) continue;
-        if (Object.prototype.hasOwnProperty.call(orig, k)) vals[k] = orig[k];
-        else delete vals[k];
-        var it0 = itemOf(k);
-        if (it0) { if (origOff[it0.key]) off[it0.key] = 1; else delete off[it0.key]; }
-      }
-      onPlan[q.id] = false;
-    }
-    var lit = document.querySelectorAll('.mv-dr-plan.on');
-    for (var b = 0; b < lit.length; b++) if (lit[b] !== btn) lit[b].classList.remove('on');
-    if (onPlan.saved) { var sb = document.querySelector('.mv-dr-plan.saved'); if (sb) sb.classList.add('on'); }
+    var p = planById(id); if (!p) return;
+    var turningOn = !onPlan[id];
+    onPlan[id] = turningOn;
 
-    if (!wasOn) {
-      onPlan[id] = true;
-      var p = planById(id);
-      if (p) for (var k2 in p.vals) {
+    if (turningOn) {
+      for (var k in p.vals) {
+        if (!Object.prototype.hasOwnProperty.call(p.vals, k)) continue;
+        vals[k] = String(p.vals[k]);
+        var it = itemOf(k); if (it) delete off[it.key];
+      }
+    } else {
+      /* 끌 때 — 손으로 고쳤더라도 이 플랜이 건드린 담보는 모두 되돌립니다 */
+      var keep = {};
+      for (var i = 0; i < _drPlans.length; i++) {
+        var q = _drPlans[i]; if (!onPlan[q.id]) continue;
+        for (var kk in q.vals) if (Object.prototype.hasOwnProperty.call(q.vals, kk)) keep[kk] = q.vals[kk];
+      }
+      for (var k2 in p.vals) {
         if (!Object.prototype.hasOwnProperty.call(p.vals, k2)) continue;
-        vals[k2] = String(p.vals[k2]);
-        var it = itemOf(k2); if (it) delete off[it.key];
+        var it2 = itemOf(k2);
+        if (Object.prototype.hasOwnProperty.call(keep, k2)) {
+          vals[k2] = String(keep[k2]);
+          if (it2) delete off[it2.key];
+        } else {
+          if (Object.prototype.hasOwnProperty.call(orig, k2)) vals[k2] = orig[k2];
+          else delete vals[k2];
+          if (it2) { if (origOff[it2.key]) off[it2.key] = 1; else delete off[it2.key]; }
+        }
       }
-      if (btn) btn.classList.add('on');
-    } else if (btn) btn.classList.remove('on');
+    }
 
+    if (btn) btn.classList.toggle('on', turningOn);
     mvDrRenderList();
-    /* 해당 보장 목록으로 화면 이동 */
     var list = document.getElementById('mv-dr-list');
-    if (list && !wasOn) { try { list.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) { list.scrollIntoView(); } }
+    if (list && turningOn) { try { list.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) { list.scrollIntoView(); } }
   };
 
 
