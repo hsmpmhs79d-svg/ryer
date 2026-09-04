@@ -8809,10 +8809,12 @@ var _drPlanNewItems = [
   {key:'caregiverUse',label:'간병인사용일당',short:'간병인',type:'single',range:'tiny',group:'간병'},
   {key:'caregiverRehab',label:'간병인사용일당(요양병원)',short:'간병요양',type:'single',range:'tiny',group:'간병'},
   {key:'caregiverTop',label:'상급종합간병인일당',short:'상급간병',type:'single',range:'tiny',group:'간병'},
-  {key:'antiDrug',label:'항암약물치료',short:'항암약물',type:'single',group:'항암'},
-  {key:'antiRad',label:'항암방사선치료',short:'항암방사',type:'single',group:'항암'},
-  {key:'antiHormone',label:'항암호르몬치료',short:'항암호르몬',type:'single',group:'항암'},
-  {key:'protonBeam',label:'양성자치료',short:'양성자',type:'single',group:'항암'},
+  {key:'caregiverUse181',label:'간병인사용일당(181일이상)',short:'간병181',type:'single',range:'tiny',group:'간병'},
+  {key:'nurseCare181',label:'간호간병통합(181일이상)',short:'간호간병181',type:'single',range:'tiny',group:'간병'},
+  {key:'antiDrug',label:'항암약물치료',short:'항암약물',type:'single',group:'항암치료'},
+  {key:'antiRad',label:'항암방사선치료',short:'항암방사',type:'single',group:'항암치료'},
+  {key:'antiHormone',label:'항암호르몬치료',short:'항암호르몬',type:'single',group:'항암치료'},
+  {key:'protonBeam',label:'양성자치료',short:'양성자',type:'single',group:'항암치료'},
   {key:'longterm12',label:'장기요양1~2등급',short:'장기1-2',type:'single',group:'장기요양'},
   {key:'longterm13',label:'장기요양1~3등급',short:'장기1-3',type:'single',group:'장기요양'},
   {key:'longterm14',label:'장기요양1~4등급',short:'장기1-4',type:'single',group:'장기요양'},
@@ -8839,14 +8841,16 @@ var _drPlanNewItems = [
   {key:'hearingLoss',label:'난청진단',short:'난청',type:'single',range:'mid',group:'어린이'},
   {key:'liability',label:'일상생활배상책임',short:'배상책임',type:'single',group:'어린이'},
   {key:'carSettle',label:'교통사고처리지원금',short:'사고처리',type:'single',range:'big',group:'운전자'},
-  {key:'carLawyer',label:'변호사선임비(심급별)',short:'변호사',type:'single',range:'mid',group:'운전자'},
+  {key:'carLawyer',label:'변호사선임비용',short:'변호사비용',type:'single',range:'mid',group:'운전자'},
+  {key:'carLawyerKind',label:'변호사선임 현물급부',short:'변호사현물',type:'single',range:'mid',group:'운전자'},
   {key:'carFineP',label:'자동차사고벌금(대인)',short:'대인벌금',type:'single',group:'운전자'},
   {key:'carFineO',label:'자동차사고벌금(대물)',short:'대물벌금',type:'single',range:'mid',group:'운전자'},
   {key:'carInjury',label:'자동차사고부상치료비',short:'자부치',type:'single',group:'운전자'},
   {key:'licSuspend',label:'면허정지위로금',short:'면허정지',type:'single',range:'small',group:'운전자'},
   {key:'licRevoke',label:'면허취소위로금',short:'면허취소',type:'single',range:'mid',group:'운전자'},
   {key:'roadRage',label:'보복운전피해보장',short:'보복운전',type:'single',range:'small',group:'운전자'},
-  {key:'trafficDeath',label:'교통상해사망',short:'교통사망',type:'single',group:'운전자'}
+  {key:'trafficDeath',label:'교통상해사망',short:'교통사망',type:'single',group:'운전자'},
+  {key:'injuryAdd',label:'상해담보추가',short:'상해담보추가',type:'single',range:'small',group:'운전자'}
 ];
 
 var _drItems = (function() {
@@ -8875,38 +8879,65 @@ function _drMergeNewItems() {
 }
 _drMergeNewItems();
 
+// ★ 담보 분류 재편 (2026-09-04) — 암 치료 담보를 '항암치료'로 모읍니다.
+// group은 화면 분류일 뿐이라 사용자가 항목관리에서 편집할 수 없는 값입니다.
+// 따라서 이름·금액·순서를 건드리지 않고 분류만 갱신해도 안전합니다.
+var _drGroupFix = {
+  target:'항암치료', cart:'항암치료', nonCovAntican:'항암치료', hiclass:'항암치료',
+  davinci:'항암치료', proton:'항암치료',
+  antiDrug:'항암치료', antiRad:'항암치료', antiHormone:'항암치료', protonBeam:'항암치료'
+};
+// 일당류 담보는 6만·7만처럼 1만원 단위가 필요해 선택 범위를 넓힙니다.
+// 기존 선택지(10,20,...)를 모두 포함하므로 저장된 값은 그대로 남습니다.
+var _drRangeFix = { nurseCare:'tiny', diseaseHosp:'tiny', injuryHosp:'tiny' };
+function _drApplyGroups() {
+  try {
+    for (var i = 0; i < _drItems.length; i++) {
+      var g = _drGroupFix[_drItems[i].key];
+      if (g) _drItems[i].group = g;
+      var r = _drRangeFix[_drItems[i].key];
+      if (r) _drItems[i].range = r;
+    }
+  } catch (e) { console.error('담보 분류 갱신 실패:', e); }
+}
+_drApplyGroups();
+
+
 // ★ 목적별 플랜 (2026-09-04) — 버튼을 누르면 vals의 담보에 금액이 채워지고 색이 바뀝니다.
 // 금액 단위는 만원이며, 해당 항목의 선택 범위에 실제로 있는 값만 넣습니다.
 // rec = 추천 보험사(참고용). 한도는 수시로 바뀌므로 최종 판단은 설계 프로그램에서 하십시오.
 var _drPlans = [
-  {id:'p1', name:'종수술비+입원비', rec:['KB손보','흥국화재','흥국생명'], open:[],
+  {id:'p1', name:'종수술비+입원비', rec:['KB손보','흥국화재','흥국생명'],
    vals:{surgery_s1:20, surgery_s2:30, surgery_s3:200, surgery_s4:500, surgery_s5:1000,
-         diseaseSurg:20, injurySurg:30, diseaseHosp:10, injuryHosp:10, icuHosp:10, room1:30, room23:10}},
-  {id:'p2', name:'간병비', rec:['한화손보','현대해상','흥국화재'], open:['간병'],
-   vals:{caregiverUse:10, caregiverRehab:5, caregiverTop:10, care:10, nurseCare:10, room1:30, room23:10}},
-  {id:'p3', name:'암진단비+암주요치료비', rec:['KB손보','삼성화재','현대해상'], open:[],
-   vals:{cancer:5000, smallCancer:1000, cancerMainTreat_y10:3000, cancerMainTreat_full:2000,
-         cancerSurg:500, cancerHosp:10, cancerSpecial:500}},
-  {id:'p4', name:'항암약물방사선', rec:['흥국화재','DB손보','KB손보'], open:['항암'],
-   vals:{antiDrug:2000, antiRad:2000, antiHormone:1000, target:3000, nonCovAntican:5000,
-         proton:5000, protonBeam:3000, cart:3000}},
-  {id:'p5', name:'2대질병+순환계치료비', rec:['KB손보','삼성화재','현대해상'], open:[],
-   vals:{brain:2000, heart:2000, circulationDiag:2000, twoDiseaseTreat:3000,
-         circulationTreat_y10:3000, circulationTreat_full:2000, brainHeartOut:10}},
-  {id:'p6', name:'장기요양', rec:['한화생명','흥국생명','교보생명'], open:['장기요양'],
+         diseaseSurg:20, injurySurg:30, diseaseHosp:5, injuryHosp:5, icuHosp:10, room1:30, room23:10}},
+  {id:'p2', name:'간병비', rec:['한화손보','현대해상','흥국화재'],
+   vals:{caregiverRehab:6, caregiverUse:15, caregiverUse181:15, nurseCare:7, nurseCare181:7}},
+  {id:'p3', name:'암진단비+암주요치료비', rec:['KB손보','삼성화재','현대해상'],
+   vals:{cancer:3000, smallCancer:600, cancerMain:1000,
+         target:10000, nonCovAntican:3000, davinci:3000}},
+  {id:'p4', name:'항암약물방사선', rec:['흥국화재','DB손보','KB손보'],
+   vals:{antiDrug:2000, antiRad:2000, antiHormone:1000, target:10000, nonCovAntican:3000,
+         proton:5000, protonBeam:3000, cart:3000, davinci:3000}},
+  {id:'p5', name:'2대질병+순환계치료비', rec:['KB손보','삼성화재','현대해상'],
+   vals:{brain:1000, heart:1000, circulation_surg:1000, circulation_icu:100,
+         circulation_dissolve:3000, circulation_remove:3000}},
+  {id:'p6', name:'장기요양', rec:['한화생명','흥국생명','교보생명'],
    vals:{longterm12:3000, longterm13:2000, longterm14:1000, dementiaSevere:2000, dementiaMid:1000,
-         dementiaMild:500, dementiaDrug:3000, homeCare:50, homeCareCombo:80, welfareTool:160,
+         dementiaMild:500, dementiaDrug:3000, homeCare:50, homeCareCombo:80, welfareTool:30,
          dayNightCare:100, careFacility:100, visitCare:50}},
-  {id:'p7', name:'어린이보험', rec:['현대해상','KB손보','메리츠화재'], open:['어린이'],
+  {id:'p7', name:'어린이보험', rec:['현대해상','KB손보','메리츠화재'],
    vals:{childCancerMulti:3000, childLeukemia:3000, growthPlate:50, faceSkullFx:50, fracture:30,
          congenitalSurg:1000, infectDiag:30, autism:300, devDisorder:200, precocious:100,
          hearingLoss:100, liability:10000}},
-  {id:'p8', name:'운전자', rec:['DB손보','하나손보','삼성화재'], open:['운전자'],
-   vals:{carSettle:20000, carLawyer:500, carFineP:3000, carFineO:500, carInjury:3000,
-         licSuspend:30, licRevoke:100, roadRage:50, trafficDeath:5000}}
+  {id:'p8', name:'운전자', rec:['DB손보','하나손보','삼성화재'],
+   vals:{carSettle:'max', carLawyer:'max', carLawyerKind:'max', carFineP:'max', carFineO:'max',
+         carInjury:'max', licSuspend:'max', licRevoke:'max', roadRage:'max', trafficDeath:'max',
+         injuryAdd:'max'}}
 ];
 var _drOnPlans = {};
 var _drGroupOpen = {};
+var _drOrig = {};      /* 화면을 그릴 때의 저장값 — 플랜을 끄면 여기로 되돌립니다 */
+var _drOrigOff = [];
 
 function _saveDrItems() {
   var el = document.getElementById('dr-items-data');
@@ -8986,12 +9017,12 @@ function saveDrItemChanges(custId) {
 
 function _drAmountOptions(selected, range) {
   var min, max, step;
-  if (range === 'tiny') { min = 5; max = 100; step = 5; }
+  if (range === 'tiny') { min = 1; max = 100; step = 1; }
   else if (range === 'small') { min = 10; max = 100; step = 10; }
   else if (range === 'mid') { min = 10; max = 1000; step = 10; }
   else if (range === 'big') { min = 1000; max = 30000; step = 1000; }
   else { min = 100; max = 10000; step = 100; }
-  var opts = '<option value="">--</option>';
+  var opts = '<option value="">--</option><option value="max"'+((selected==='max')?' selected':'')+'>\uCD5C\uB300</option>';
   for (var i = min; i <= max; i += step) {
     var display;
     if (i >= 10000) { var eok = Math.floor(i/10000); var er = i % 10000; display = eok + '억' + (er >= 1000 ? Math.floor(er/1000) + '천' : ''); }
@@ -9864,6 +9895,8 @@ function buildDesignRequestSection(id) {
   var h = '<div class="dr-section">';
   h += '<div class="dr-title">\uD83D\uDCCB \uC124\uACC4\uC694\uCCAD' + (hasSaved ? ' <span class="dr-saved-badge">\u2705 \uC800\uC7A5\uB428</span>' : '') + ' <button class="dr-btn-manage" onclick="openDrItemManager('+id+')">\u2699\uFE0F \uD56D\uBAA9\uAD00\uB9AC</button> <button class="dr-btn-copy-header" onclick="copyDesignRequest('+id+')">\uD83D\uDCCB Copy</button></div>';
   _drOnPlans = {};
+  _drOrig = JSON.parse(JSON.stringify(dr || {}));
+  _drOrigOff = (c.drOff || []).slice();
   h += '<div class="dr-plans">';
   for (var pi = 0; pi < _drPlans.length; pi++) {
     h += '<button class="dr-plan" data-p="'+_drPlans[pi].id+'" onclick="applyDrPlan(\''+_drPlans[pi].id+'\','+id+')">'+_drPlans[pi].name+'</button>';
@@ -9871,35 +9904,43 @@ function buildDesignRequestSection(id) {
   h += '</div>';
   h += '<div class="dr-rec" id="dr-rec-box" style="display:none"></div>';
   h += '<div class="dr-grid">';
-  var lastGroup = '';
-  var grpOpen = false;
+  /* 그룹별로 모아서 그립니다 — 배열 순서가 섞여도 그룹 제목이 중복되지 않습니다 (2026-09-04) */
+  var gOrder = [], gBucket = {};
   for (var i = 0; i < _drItems.length; i++) {
-    var item = _drItems[i];
-    if (item.group && item.group !== lastGroup) {
-      lastGroup = item.group;
-      if (grpOpen) h += '</div>';
-      var go = (typeof _drGroupIsOpen === 'function') ? _drGroupIsOpen(item.group) : true;
-      h += '<div class="dr-group-header'+(go?'':' closed')+'" data-g="'+item.group+'" onclick="toggleDrGroup(this)"><span class="dr-gh-arrow">\u25BC</span>'+item.group+'</div>';
-      h += '<div class="dr-group-body'+(go?'':' closed')+'">';
-      grpOpen = true;
-    }
-    if (item.type === 'single') {
-      var val = dr[item.key] || '';
-      h += '<div class="dr-item'+(val?' dr-filled':'')+'"><label>'+item.label+'</label>';
-      h += '<select id="dr-'+item.key+'">'+_drAmountOptions(val, item.range)+'</select></div>';
-    } else {
-      var anySub = false;
-      for (var jc = 0; jc < item.subs.length; jc++) if (dr[item.key + '_' + item.subs[jc].k]) anySub = true;
-      h += '<div class="dr-item dr-compound'+(anySub?' dr-filled':'')+'"><label>'+item.label+'</label>';
-      for (var j = 0; j < item.subs.length; j++) {
-        var sub = item.subs[j]; var subKey = item.key + '_' + sub.k; var subVal = dr[subKey] || '';
-        h += '<div class="dr-sub"><span class="dr-sub-label">'+sub.l+'</span>';
-        h += '<select id="dr-'+subKey+'">'+_drAmountOptions(subVal, item.range)+'</select></div>';
-      }
-      h += '</div>';
-    }
+    var gn = _drItems[i].group || '기타';
+    if (!gBucket[gn]) { gBucket[gn] = []; gOrder.push(gn); }
+    gBucket[gn].push(_drItems[i]);
   }
-  if (grpOpen) h += '</div>';
+  var _off = c.drOff || [];
+  function _isOff(k) { for (var z = 0; z < _off.length; z++) if (_off[z] === k) return true; return false; }
+  for (var gi = 0; gi < gOrder.length; gi++) {
+    var gname = gOrder[gi];
+    var go = (typeof _drGroupIsOpen === 'function') ? _drGroupIsOpen(gname) : true;
+    h += '<div class="dr-group-header'+(go?'':' closed')+'" data-g="'+gname+'" onclick="toggleDrGroup(this)"><span class="dr-gh-arrow">\u25BC</span>'+gname+'</div>';
+    h += '<div class="dr-group-body'+(go?'':' closed')+'">';
+    var glist = gBucket[gname];
+    for (var gj = 0; gj < glist.length; gj++) {
+      var item = glist[gj];
+      var ckOn = !_isOff(item.key);
+      var ck = '<input type="checkbox" class="dr-ck" id="drc-'+item.key+'"'+(ckOn?' checked':'')+' onchange="_drPaintFilled()">';
+      if (item.type === 'single') {
+        var val = dr[item.key] || '';
+        h += '<div class="dr-item'+(val?(ckOn?' dr-filled':' dr-muted'):'')+'">'+ck+'<label>'+item.label+'</label>';
+        h += '<select id="dr-'+item.key+'">'+_drAmountOptions(val, item.range)+'</select></div>';
+      } else {
+        var anySub = false;
+        for (var jc = 0; jc < item.subs.length; jc++) if (dr[item.key + '_' + item.subs[jc].k]) anySub = true;
+        h += '<div class="dr-item dr-compound'+(anySub?(ckOn?' dr-filled':' dr-muted'):'')+'">'+ck+'<label>'+item.label+'</label>';
+        for (var j = 0; j < item.subs.length; j++) {
+          var sub = item.subs[j]; var subKey = item.key + '_' + sub.k; var subVal = dr[subKey] || '';
+          h += '<div class="dr-sub"><span class="dr-sub-label">'+sub.l+'</span>';
+          h += '<select id="dr-'+subKey+'">'+_drAmountOptions(subVal, item.range)+'</select></div>';
+        }
+        h += '</div>';
+      }
+    }
+    h += '</div>';
+  }
   h += '</div>';
   h += '<div class="dr-btn-row">';
   h += '<button class="dr-btn-save" onclick="saveDesignRequest('+id+')">\uD83D\uDCBE \uC124\uACC4\uC694\uCCAD \uC800\uC7A5</button>';
@@ -9918,6 +9959,13 @@ function saveDesignRequest(id) {
     else { for (var j = 0; j < item.subs.length; j++) { var subKey = item.key + '_' + item.subs[j].k; var el2 = document.getElementById('dr-'+subKey); if (el2 && el2.value) dr[subKey] = el2.value; } }
   }
   c.designRequest = dr;
+  /* ★ 체크 해제된 담보 (2026-09-04) — 값은 남기고 복사에서만 뺍니다 */
+  var offList = [];
+  for (var k = 0; k < _drItems.length; k++) {
+    var ck = document.getElementById('drc-' + _drItems[k].key);
+    if (ck && !ck.checked) offList.push(_drItems[k].key);
+  }
+  if (offList.length) c.drOff = offList; else delete c.drOff;
   autoSave();
   selectCustomer(id);
   showToast('\uC124\uACC4\uC694\uCCAD\uC774 \uC800\uC7A5\uB418\uC5C8\uC2B5\uB2C8\uB2E4!', 'green');
@@ -9931,6 +9979,7 @@ function clearDesignRequest(id) {
   showToast('\uC124\uACC4\uC694\uCCAD\uC774 \uCD08\uAE30\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4.', 'amber');
 }
 function _drFormatAmount(val) {
+  if (val === 'max') return '\uCD5C\uB300';
   var n = parseInt(val);
   if (!n) return '';
   if (n >= 10000) return '1억';
@@ -9943,6 +9992,8 @@ function copyDesignRequest(id) {
   var lines = [];
   for (var i = 0; i < _drItems.length; i++) {
     var item = _drItems[i];
+    var _ck = document.getElementById('drc-' + item.key);
+    if (_ck && !_ck.checked) continue;   /* ★ 체크 해제 담보는 복사에서 제외 (2026-09-04) */
     if (item.type === 'single') {
       var el = document.getElementById('dr-' + item.key);
       if (el && el.value) lines.push((item.short || item.label) + ' - ' + _drFormatAmount(el.value));
@@ -9982,8 +10033,10 @@ function getDesignRequestText(id) {
   var dr = c.designRequest;
   if (Object.keys(dr).length === 0) return '';
   var lines = [];
+  var _off = c.drOff || [];
   for (var i = 0; i < _drItems.length; i++) {
     var item = _drItems[i];
+    if (_off.indexOf(item.key) >= 0) continue;   /* ★ 체크 해제 담보 제외 (2026-09-04) */
     if (item.type === 'single') {
       if (dr[item.key]) lines.push(item.short + ' - ' + _drFormatAmount(dr[item.key]));
     } else {
@@ -12138,6 +12191,7 @@ function copyContact(el) {
               }
             }
             try { if (typeof _drMergeNewItems === 'function') _drMergeNewItems(); } catch(e2) {}
+            try { if (typeof _drApplyGroups === 'function') _drApplyGroups(); } catch(e3) {}
           } catch(e) { console.error('drItems 재로드 실패:', e); }
           // 퀵메시지 템플릿 재로드
           try {
@@ -12944,7 +12998,10 @@ function copyContact(el) {
       + '<option value="거절"' + (_sst==='거절'?' selected':'') + '>🚫 거절</option>'
       + '</select>';
     html += '<div class="mv-section">'
-         +   '<div class="mv-section-title mv-head2">👤 인적사항' + statusSelect
+         +   '<div class="mv-section-title mv-head2">👤 인적사항'
+         +     '<div class="mv-head-row">' + statusSelect
+         +       '<button class="mv-edit-btn mv-dr-copy" onclick="mvCopyInfoWithDr(' + c.id + ')">정보+설계요청</button>'
+         +     '</div>'
          +     '<div class="mv-btns">'
          /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
          +     ((_sst === '가입완료') ? '<button class="mv-edit-btn" onclick="openJoinAlertModal(' + c.id + ',true)" style="background:#d1fae5;color:#065f46;border:1px solid #10b981;margin-right:6px;">추가가입</button>' : '')
@@ -12952,7 +13009,7 @@ function copyContact(el) {
          +     (c.cardPay ? '<button class="mv-edit-btn" onclick="cancelCardPay(' + c.id + ')" style="background:#ffedd5;color:#9a3412;border:1px solid #fb923c;margin-right:6px;">카드납 해제</button>' : '')
          /* ★ 보험금 청구 (2026-09-02) */
          +     ((window._canClaim && window._canClaim()) ? '<button class="mv-edit-btn" onclick="openClaim(' + c.id + ')" style="background:#dbeafe;color:#1e40af;border:1px solid #60a5fa;margin-right:6px;">보험금 청구</button>' : '')
-         +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#fdeadd;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">복사</button>'
+         +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#fdeadd;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">개인정보복사</button>'
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">수정</button>'
          +     '</div>'
          +   '</div>'
@@ -13433,6 +13490,56 @@ function copyContact(el) {
       document.body.removeChild(ta2);
       _done();
     }
+  };
+
+
+  /* ★ 모바 복사 공통 (2026-09-04) */
+  function _mvCopy(text, msg) {
+    function _d() { if (typeof showToast === 'function') showToast(msg, 'green'); }
+    function _fb() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta); _d();
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(_d).catch(_fb);
+      else _fb();
+    } catch(e) { _fb(); }
+  }
+
+  function _mvInfoLines(c) {
+    var lines = [];
+    if (c.name) lines.push('이름: ' + c.name);
+    var _rn = c.resident_number || c.jumin;
+    if (_rn) lines.push('주민번호: ' + _rn);
+    if (c.phone) lines.push('전화번호: ' + c.phone);
+    if (c.address) lines.push('주소: ' + c.address);
+    if (c.job) lines.push('직업: ' + c.job);
+    var _h = c.medical_history || c.history;
+    if (_h) lines.push('병력/고지사항: ' + _h);
+    return lines.join('\n');
+  }
+  function _mvFindCust(id) {
+    return (_mvCustomers || []).find(function(x){return x.id === id;})
+        || (window.customers || []).find(function(x){return x.id === id;});
+  }
+
+  /* 설계요청만 복사 */
+  window.mvCopyDr = function(id) {
+    var t = (typeof window.mvDrCopyText === 'function') ? window.mvDrCopyText() : '';
+    if (!t) { if (typeof showToast === 'function') showToast('복사할 설계요청 항목이 없습니다.', 'amber'); return; }
+    _mvCopy('[설계요청]\n' + t, '📋 설계요청 복사됨!');
+  };
+
+  /* 개인정보 + 설계요청 함께 복사 */
+  window.mvCopyInfoWithDr = function(id) {
+    var c = _mvFindCust(id);
+    if (!c) return;
+    var t = (typeof window.mvDrCopyText === 'function') ? window.mvDrCopyText() : '';
+    var text = _mvInfoLines(c) + (t ? '\n\n────────────────────\n\n설계요청\n' + t : '');
+    _mvCopy(text, '📋 정보 + 설계요청 복사됨!');
   };
 
   // ─ 인적사항 편집 ─ (PC 코드와 호환: resident_number/medical_history/notes 양쪽 저장)
@@ -17411,6 +17518,10 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .dr-rec .dr-rec-note{display:block;margin-top:3px;font-size:11px;color:#9c7a5c;font-weight:500;}
 .dr-item.dr-filled{background:#fff4d6;border:1.5px solid #e8a33d !important;}
 .dr-item.dr-filled label{color:#92400e !important;font-weight:800;}
+.dr-item.dr-muted{background:#f6f2ed;border:1.5px dashed #d8c8b6 !important;}
+.dr-item.dr-muted label{color:#a2907d !important;}
+.dr-item.dr-muted select{color:#a2907d !important;background:#fbf9f7 !important;}
+.dr-ck{width:17px;height:17px;flex-shrink:0;margin:0 2px 0 0;accent-color:#e46a25;cursor:pointer;}
 .dr-group-header{cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;}
 .dr-gh-arrow{font-size:10px;opacity:.65;transition:transform .12s;}
 .dr-group-header.closed .dr-gh-arrow{transform:rotate(-90deg);}
@@ -17456,9 +17567,12 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     var items = sec.querySelectorAll('.dr-item');
     for (var i = 0; i < items.length; i++) {
       var sels = items[i].querySelectorAll('select');
-      var on = false;
-      for (var j = 0; j < sels.length; j++) if (sels[j].value) { on = true; break; }
+      var has = false;
+      for (var j = 0; j < sels.length; j++) if (sels[j].value) { has = true; break; }
+      var ck = items[i].querySelector('.dr-ck');
+      var on = has && (!ck || ck.checked);
       items[i].classList.toggle('dr-filled', on);
+      items[i].classList.toggle('dr-muted', has && !on);
     }
   };
 
@@ -17481,44 +17595,78 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   };
 
   /* 플랜 버튼 누름 */
+  /* 담보 키가 속한 그룹 이름 */
+  function groupOfKey(k){
+    for (var i = 0; i < _drItems.length; i++) {
+      var it = _drItems[i];
+      if (it.key === k) return it.group || '기타';
+      if (k.indexOf(it.key + '_') === 0) return it.group || '기타';
+    }
+    return '';
+  }
+  function openGroup(g){
+    if (!g) return;
+    _drGroupOpen[g] = true;
+    var hdr = document.querySelector('.dr-group-header[data-g="' + g + '"]');
+    if (!hdr) return null;
+    hdr.classList.remove('closed');
+    var body = hdr.nextElementSibling;
+    if (body && body.classList.contains('dr-group-body')) body.classList.remove('closed');
+    return hdr;
+  }
+
+  /* 플랜 하나가 채운 칸을 열었을 때 상태로 되돌립니다 */
+  function resetPlan(p){
+    for (var k in p.vals) {
+      if (!Object.prototype.hasOwnProperty.call(p.vals, k)) continue;
+      var el = document.getElementById('dr-' + k);
+      if (!el) continue;
+      el.value = _drOrig[k] || '';
+      el.removeAttribute('data-byplan');
+      var it = el.closest('.dr-item');
+      var ck = it ? it.querySelector('.dr-ck') : null;
+      if (ck) {
+        var base = it.querySelector('.dr-ck').id.replace(/^drc-/, '');
+        ck.checked = _drOrigOff.indexOf(base) < 0;
+      }
+    }
+  }
+
+  /* 플랜 버튼 — 한 번에 하나만 켜집니다 (2026-09-04) */
   window.applyDrPlan = function(planId, custId){
     var plan = null;
     for (var i = 0; i < _drPlans.length; i++) if (_drPlans[i].id === planId) plan = _drPlans[i];
     if (!plan) return;
+    var wasOn = !!_drOnPlans[planId];
 
-    var turningOn = !_drOnPlans[planId];
-    _drOnPlans[planId] = turningOn;
+    /* 켜져 있던 플랜은 손댄 값까지 모두 되돌립니다 */
+    for (var j = 0; j < _drPlans.length; j++) if (_drOnPlans[_drPlans[j].id]) resetPlan(_drPlans[j]);
+    _drOnPlans = {};
+    var lit = document.querySelectorAll('.dr-plan.on');
+    for (var b = 0; b < lit.length; b++) lit[b].classList.remove('on');
 
-    if (turningOn) {
-      /* 이 플랜이 쓰는 그룹 펼치기 */
-      for (var g = 0; g < plan.open.length; g++) {
-        _drGroupOpen[plan.open[g]] = true;
-        var hdr = document.querySelector('.dr-group-header[data-g="' + plan.open[g] + '"]');
-        if (hdr) {
-          hdr.classList.remove('closed');
-          var body = hdr.nextElementSibling;
-          if (body && body.classList.contains('dr-group-body')) body.classList.remove('closed');
-        }
-      }
-      for (var k in plan.vals) {
-        if (!Object.prototype.hasOwnProperty.call(plan.vals, k)) continue;
-        var el = document.getElementById('dr-' + k);
-        if (el) { el.value = String(plan.vals[k]); el.setAttribute('data-byplan', '1'); }
-      }
-    } else {
-      /* 끌 때 — 이 플랜이 채운 칸만 비웁니다. 손으로 넣은 값은 건드리지 않습니다. */
-      var keep = mergedVals();
+    if (!wasOn) {
+      _drOnPlans[planId] = true;
+      var firstHdr = null;
       for (var k2 in plan.vals) {
         if (!Object.prototype.hasOwnProperty.call(plan.vals, k2)) continue;
+        var hdr = openGroup(groupOfKey(k2));
+        if (!firstHdr && hdr) firstHdr = hdr;
         var el2 = document.getElementById('dr-' + k2);
-        if (!el2 || el2.getAttribute('data-byplan') !== '1') continue;
-        if (Object.prototype.hasOwnProperty.call(keep, k2)) { el2.value = String(keep[k2]); }
-        else { el2.value = ''; el2.removeAttribute('data-byplan'); }
+        if (el2) {
+          el2.value = String(plan.vals[k2]);
+          el2.setAttribute('data-byplan', '1');
+          var it2 = el2.closest('.dr-item');
+          var ck2 = it2 ? it2.querySelector('.dr-ck') : null;
+          if (ck2) ck2.checked = true;
+        }
       }
+      var btn = document.querySelector('.dr-plan[data-p="' + planId + '"]');
+      if (btn) btn.classList.add('on');
+      /* 해당 보장 부분으로 화면 이동 */
+      if (firstHdr) { try { firstHdr.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) { firstHdr.scrollIntoView(); } }
     }
 
-    var btn = document.querySelector('.dr-plan[data-p="' + planId + '"]');
-    if (btn) btn.classList.toggle('on', turningOn);
     _drPaintFilled();
     _drPaintRec();
   };
@@ -17527,8 +17675,10 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   document.addEventListener('change', function(e){
     var t = e.target;
     if (!t || !t.id || t.id.indexOf('dr-') !== 0) return;
-    if (!t.closest || !t.closest('.dr-item')) return;
+    var it = t.closest ? t.closest('.dr-item') : null;
+    if (!it) return;
     t.removeAttribute('data-byplan');
+    if (t.tagName === 'SELECT' && t.value) { var ck = it.querySelector('.dr-ck'); if (ck) ck.checked = true; }
     _drPaintFilled();
   }, true);
 })();
@@ -17551,6 +17701,14 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   border:1.5px solid #e0c9ac;border-radius:8px;background:#fff;color:#513c2c;}
 .mv-dr-row.on{background:#fff4d6;border-radius:8px;padding:9px 8px;margin:2px -8px;border-bottom:none;}
 .mv-dr-row.on select{border-color:#e8a33d;font-weight:700;}
+.mv-dr-row.muted{background:#f6f2ed;border-radius:8px;padding:9px 8px;margin:2px -8px;border-bottom:none;}
+.mv-dr-row.muted .n{color:#a2907d;}
+.mv-dr-row.muted select{color:#a2907d;background:#fbf9f7;}
+.mv-dr-ck{width:20px;height:20px;flex-shrink:0;margin:0;accent-color:#e46a25;}
+/* ★ 상태 선택 + 정보복사 버튼 한 줄 (2026-09-04) */
+.mv-head-row{display:flex;gap:7px;align-items:stretch;margin-top:9px;}
+.mv-head-row > select{flex:1;min-width:0;width:auto !important;margin-top:0 !important;}
+.mv-head-row > .mv-dr-copy{flex-shrink:0;white-space:nowrap;padding:0 12px;font-size:13px;}
 .mv-dr-empty{padding:16px 4px;font-size:13.5px;color:#9c7a5c;text-align:center;line-height:1.7;}
 .mv-dr-note{font-size:11.5px;color:#9c7a5c;margin-top:8px;line-height:1.6;}
 </style>
@@ -17561,6 +17719,8 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   var vals = {};      /* 지금 편집 중인 값 */
   var orig = {};      /* 열었을 때 저장돼 있던 값 (끄기로 지워지지 않게 보호) */
   var onPlan = {};    /* 켜진 플랜 */
+  var off = {};       /* 체크 해제된 담보 — 값은 두고 복사에서만 뺍니다 */
+  var origOff = {};   /* 열었을 때의 해제 상태 */
   var cust = null;    /* 지금 보고 있는 고객 객체 (모바일 배열의 원본 참조) */
 
   function itemOf(k){
@@ -17601,7 +17761,10 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       var h = '';
       for (var i = 0; i < keys.length; i++) {
         var k = keys[i], it = itemOf(k), v = vals[k] || '';
-        h += '<div class="mv-dr-row' + (v ? ' on' : '') + '" data-k="' + k + '">'
+        var bk = it ? it.key : k, ckOn = !off[bk];
+        h += '<div class="mv-dr-row' + (v ? (ckOn ? ' on' : ' muted') : '') + '" data-k="' + k + '">'
+           +   '<input type="checkbox" class="mv-dr-ck"' + (ckOn ? ' checked' : '')
+           +     ' onchange="mvDrCk(\'' + bk + '\', this.checked)">'
            +   '<div class="n">' + labelOf(k) + '</div>'
            +   '<select onchange="mvDrSet(\'' + k + '\', this.value)">'
            +     _drAmountOptions(v, it ? it.range : '') + '</select></div>';
@@ -17622,35 +17785,75 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 
   window.mvDrSet = function(k, v){
     if (v) vals[k] = v; else delete vals[k];
-    var row = document.querySelector('.mv-dr-row[data-k="' + k + '"]');
-    if (row) row.classList.toggle('on', !!v);
+    var it = itemOf(k); if (it && v) delete off[it.key];   /* 값을 고르면 자동으로 체크 */
+    mvDrRenderList();
+  };
+
+  window.mvDrCk = function(baseKey, on){
+    if (on) delete off[baseKey]; else off[baseKey] = 1;
+    mvDrRenderList();
   };
 
   window.mvDrPlan = function(id, btn){
-    var turningOn = !onPlan[id];
-    onPlan[id] = turningOn;
-    if (id !== 'saved') {
-      var p = planById(id); if (!p) return;
-      if (turningOn) {
-        /* 이미 값이 있는 칸은 덮어쓰지 않습니다 */
-        for (var k in p.vals) if (Object.prototype.hasOwnProperty.call(p.vals,k) && !vals[k]) vals[k] = String(p.vals[k]);
+    if (id === 'saved') {
+      onPlan.saved = !onPlan.saved;
+      if (btn) btn.classList.toggle('on', !!onPlan.saved);
+      mvDrRenderList();
+      return;
+    }
+    var wasOn = !!onPlan[id];
+    /* 켜져 있던 플랜은 손댄 값까지 모두 되돌립니다 (2026-09-04) */
+    for (var i = 0; i < _drPlans.length; i++) {
+      var q = _drPlans[i]; if (!onPlan[q.id]) continue;
+      for (var k in q.vals) {
+        if (!Object.prototype.hasOwnProperty.call(q.vals, k)) continue;
+        if (Object.prototype.hasOwnProperty.call(orig, k)) vals[k] = orig[k];
+        else delete vals[k];
+        var it0 = itemOf(k);
+        if (it0) { if (origOff[it0.key]) off[it0.key] = 1; else delete off[it0.key]; }
+      }
+      onPlan[q.id] = false;
+    }
+    var lit = document.querySelectorAll('.mv-dr-plan.on');
+    for (var b = 0; b < lit.length; b++) if (lit[b] !== btn) lit[b].classList.remove('on');
+    if (onPlan.saved) { var sb = document.querySelector('.mv-dr-plan.saved'); if (sb) sb.classList.add('on'); }
+
+    if (!wasOn) {
+      onPlan[id] = true;
+      var p = planById(id);
+      if (p) for (var k2 in p.vals) {
+        if (!Object.prototype.hasOwnProperty.call(p.vals, k2)) continue;
+        vals[k2] = String(p.vals[k2]);
+        var it = itemOf(k2); if (it) delete off[it.key];
+      }
+      if (btn) btn.classList.add('on');
+    } else if (btn) btn.classList.remove('on');
+
+    mvDrRenderList();
+    /* 해당 보장 목록으로 화면 이동 */
+    var list = document.getElementById('mv-dr-list');
+    if (list && !wasOn) { try { list.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) { list.scrollIntoView(); } }
+  };
+
+
+  /* 화면에 있는 설계요청을 텍스트로 (체크 해제된 담보는 뺍니다) */
+  window.mvDrCopyText = function(){
+    var lines = [];
+    for (var i = 0; i < _drItems.length; i++) {
+      var it = _drItems[i];
+      if (off[it.key]) continue;
+      if (it.type === 'single') {
+        if (vals[it.key]) lines.push((it.short || it.label) + ' - ' + _drFormatAmount(vals[it.key]));
       } else {
-        /* 끌 때 — 원래 저장돼 있던 값과 다른 플랜이 쓰는 값은 남깁니다 */
-        var keep = {};
-        for (var i = 0; i < _drPlans.length; i++) {
-          var q = _drPlans[i]; if (!onPlan[q.id]) continue;
-          for (var k3 in q.vals) if (Object.prototype.hasOwnProperty.call(q.vals,k3)) keep[k3] = 1;
+        var parts = [];
+        for (var j = 0; j < it.subs.length; j++) {
+          var sk = it.key + '_' + it.subs[j].k;
+          if (vals[sk]) parts.push(it.subs[j].l + ' ' + _drFormatAmount(vals[sk]));
         }
-        for (var k2 in p.vals) {
-          if (!Object.prototype.hasOwnProperty.call(p.vals,k2)) continue;
-          if (keep[k2]) continue;
-          if (Object.prototype.hasOwnProperty.call(orig,k2)) continue;
-          delete vals[k2];
-        }
+        if (parts.length) lines.push((it.short || it.label) + ' - ' + parts.join(' / '));
       }
     }
-    if (btn) btn.classList.toggle('on', turningOn);
-    mvDrRenderList();
+    return lines.join('\n');
   };
 
   window.mvDrSave = function(){
@@ -17659,6 +17862,9 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     var out = {};
     for (var k in vals) if (Object.prototype.hasOwnProperty.call(vals,k) && vals[k]) out[k] = vals[k];
     c.designRequest = out;
+    var offList = [];
+    for (var ok in off) if (Object.prototype.hasOwnProperty.call(off, ok)) offList.push(ok);
+    if (offList.length) c.drOff = offList; else delete c.drOff;
     c._updated = Date.now();
     orig = JSON.parse(JSON.stringify(out));
     if (typeof window.mvCommit === 'function') window.mvCommit();
@@ -17675,11 +17881,15 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     cust = c;
     orig = JSON.parse(JSON.stringify(c.designRequest || {}));
     vals = JSON.parse(JSON.stringify(orig));
-    onPlan = {};
+    onPlan = {}; off = {}; origOff = {};
+    var _o = c.drOff || [];
+    for (var oi = 0; oi < _o.length; oi++) { off[_o[oi]] = 1; origOff[_o[oi]] = 1; }
     var savedN = Object.keys(orig).length;
     var h = '<div class="mv-section"><div class="mv-section-title">📋 설계요청'
           + (savedN ? ' (' + savedN + ')' : '')
-          + '<div class="mv-btns"><button class="mv-add-btn" onclick="mvDrSave()">💾 저장</button></div></div>';
+          + '<div class="mv-btns">'
+          + '<button class="mv-edit-btn" onclick="mvCopyDr(' + c.id + ')" style="margin-right:6px;">📋 복사</button>'
+          + '<button class="mv-add-btn" onclick="mvDrSave()">💾 저장</button></div></div>';
     h += '<div class="mv-dr-plans">';
     if (savedN) h += '<button class="mv-dr-plan saved" onclick="mvDrPlan(\'saved\',this)">✓ 저장된 항목 ' + savedN + '</button>';
     for (var i = 0; i < _drPlans.length; i++) {
