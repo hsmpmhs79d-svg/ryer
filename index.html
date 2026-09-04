@@ -8804,6 +8804,51 @@ var _drDefaultItems = [
   {key:'shingles',label:'대상포진',short:'대상포진',type:'single',range:'small',group:'기타'}
 ];
 
+// ★ 플랜 담보 (2026-09-04) — 기존 목록에 없는 것만 뒤에 덧붙입니다. 사용자가 추가·수정한 항목은 건드리지 않습니다.
+var _drPlanNewItems = [
+  {key:'caregiverUse',label:'간병인사용일당',short:'간병인',type:'single',range:'tiny',group:'간병'},
+  {key:'caregiverRehab',label:'간병인사용일당(요양병원)',short:'간병요양',type:'single',range:'tiny',group:'간병'},
+  {key:'caregiverTop',label:'상급종합간병인일당',short:'상급간병',type:'single',range:'tiny',group:'간병'},
+  {key:'antiDrug',label:'항암약물치료',short:'항암약물',type:'single',group:'항암'},
+  {key:'antiRad',label:'항암방사선치료',short:'항암방사',type:'single',group:'항암'},
+  {key:'antiHormone',label:'항암호르몬치료',short:'항암호르몬',type:'single',group:'항암'},
+  {key:'protonBeam',label:'양성자치료',short:'양성자',type:'single',group:'항암'},
+  {key:'longterm12',label:'장기요양1~2등급',short:'장기1-2',type:'single',group:'장기요양'},
+  {key:'longterm13',label:'장기요양1~3등급',short:'장기1-3',type:'single',group:'장기요양'},
+  {key:'longterm14',label:'장기요양1~4등급',short:'장기1-4',type:'single',group:'장기요양'},
+  {key:'longterm15',label:'장기요양1~5등급',short:'장기1-5',type:'single',group:'장기요양'},
+  {key:'homeCare',label:'재가급여',short:'재가',type:'single',range:'mid',group:'장기요양'},
+  {key:'homeCareCombo',label:'복합재가급여',short:'복합재가',type:'single',range:'mid',group:'장기요양'},
+  {key:'welfareTool',label:'복지용구',short:'복지용구',type:'single',range:'mid',group:'장기요양'},
+  {key:'dayNightCare',label:'주야간보호',short:'주야간',type:'single',range:'mid',group:'장기요양'},
+  {key:'careFacility',label:'요양시설입소',short:'시설입소',type:'single',range:'mid',group:'장기요양'},
+  {key:'visitCare',label:'방문요양',short:'방문요양',type:'single',range:'mid',group:'장기요양'},
+  {key:'dementiaSevere',label:'중증치매',short:'중증치매',type:'single',group:'장기요양'},
+  {key:'dementiaMid',label:'중등도치매',short:'중등치매',type:'single',group:'장기요양'},
+  {key:'dementiaMild',label:'경도치매',short:'경도치매',type:'single',group:'장기요양'},
+  {key:'dementiaDrug',label:'표적치매약물치료',short:'표적치매',type:'single',group:'장기요양'},
+  {key:'childCancerMulti',label:'다발성소아암',short:'소아암',type:'single',group:'어린이'},
+  {key:'childLeukemia',label:'소아백혈병',short:'소아백혈',type:'single',group:'어린이'},
+  {key:'growthPlate',label:'성장판손상골절',short:'성장판',type:'single',range:'small',group:'어린이'},
+  {key:'faceSkullFx',label:'안면두개골골절',short:'안면골절',type:'single',range:'small',group:'어린이'},
+  {key:'congenitalSurg',label:'특정선천이상수술',short:'선천수술',type:'single',range:'mid',group:'어린이'},
+  {key:'infectDiag',label:'특정감염병진단',short:'감염병',type:'single',range:'small',group:'어린이'},
+  {key:'autism',label:'자폐증진단',short:'자폐',type:'single',range:'mid',group:'어린이'},
+  {key:'devDisorder',label:'특정행동발달장애',short:'행동발달',type:'single',range:'mid',group:'어린이'},
+  {key:'precocious',label:'성조숙증진단',short:'성조숙',type:'single',range:'mid',group:'어린이'},
+  {key:'hearingLoss',label:'난청진단',short:'난청',type:'single',range:'mid',group:'어린이'},
+  {key:'liability',label:'일상생활배상책임',short:'배상책임',type:'single',group:'어린이'},
+  {key:'carSettle',label:'교통사고처리지원금',short:'사고처리',type:'single',range:'big',group:'운전자'},
+  {key:'carLawyer',label:'변호사선임비(심급별)',short:'변호사',type:'single',range:'mid',group:'운전자'},
+  {key:'carFineP',label:'자동차사고벌금(대인)',short:'대인벌금',type:'single',group:'운전자'},
+  {key:'carFineO',label:'자동차사고벌금(대물)',short:'대물벌금',type:'single',range:'mid',group:'운전자'},
+  {key:'carInjury',label:'자동차사고부상치료비',short:'자부치',type:'single',group:'운전자'},
+  {key:'licSuspend',label:'면허정지위로금',short:'면허정지',type:'single',range:'small',group:'운전자'},
+  {key:'licRevoke',label:'면허취소위로금',short:'면허취소',type:'single',range:'mid',group:'운전자'},
+  {key:'roadRage',label:'보복운전피해보장',short:'보복운전',type:'single',range:'small',group:'운전자'},
+  {key:'trafficDeath',label:'교통상해사망',short:'교통사망',type:'single',group:'운전자'}
+];
+
 var _drItems = (function() {
   try {
     var el = document.getElementById('dr-items-data');
@@ -8812,8 +8857,56 @@ var _drItems = (function() {
       if (raw && Array.isArray(raw) && raw.length > 0) return raw;
     }
   } catch(e) {}
-  return _drDefaultItems.slice();
+  return _drDefaultItems.concat(_drPlanNewItems);
 })();
+
+// ★ 신규 담보 병합 (2026-09-04)
+// 기존 항목의 이름·순서·범위를 일절 바꾸지 않고, 없는 것만 뒤에 덧붙입니다.
+// 신규 키가 하나라도 이미 있으면 = 이미 반영된 것이므로 아무것도 하지 않습니다.
+// (사용자가 일부러 지운 항목이 접속할 때마다 되살아나는 것을 막기 위함)
+// 여기서는 저장하지 않습니다. 사용자가 다음에 무언가 저장할 때 자연스럽게 반영됩니다.
+function _drMergeNewItems() {
+  try {
+    var have = {};
+    for (var i = 0; i < _drItems.length; i++) have[_drItems[i].key] = 1;
+    for (var j = 0; j < _drPlanNewItems.length; j++) if (have[_drPlanNewItems[j].key]) return;
+    for (var k = 0; k < _drPlanNewItems.length; k++) _drItems.push(_drPlanNewItems[k]);
+  } catch (e) { console.error('신규 담보 병합 실패:', e); }
+}
+_drMergeNewItems();
+
+// ★ 목적별 플랜 (2026-09-04) — 버튼을 누르면 vals의 담보에 금액이 채워지고 색이 바뀝니다.
+// 금액 단위는 만원이며, 해당 항목의 선택 범위에 실제로 있는 값만 넣습니다.
+// rec = 추천 보험사(참고용). 한도는 수시로 바뀌므로 최종 판단은 설계 프로그램에서 하십시오.
+var _drPlans = [
+  {id:'p1', name:'종수술비+입원비', rec:['KB손보','흥국화재','흥국생명'], open:[],
+   vals:{surgery_s1:20, surgery_s2:30, surgery_s3:200, surgery_s4:500, surgery_s5:1000,
+         diseaseSurg:20, injurySurg:30, diseaseHosp:10, injuryHosp:10, icuHosp:10, room1:30, room23:10}},
+  {id:'p2', name:'간병비', rec:['한화손보','현대해상','흥국화재'], open:['간병'],
+   vals:{caregiverUse:10, caregiverRehab:5, caregiverTop:10, care:10, nurseCare:10, room1:30, room23:10}},
+  {id:'p3', name:'암진단비+암주요치료비', rec:['KB손보','삼성화재','현대해상'], open:[],
+   vals:{cancer:5000, smallCancer:1000, cancerMainTreat_y10:3000, cancerMainTreat_full:2000,
+         cancerSurg:500, cancerHosp:10, cancerSpecial:500}},
+  {id:'p4', name:'항암약물방사선', rec:['흥국화재','DB손보','KB손보'], open:['항암'],
+   vals:{antiDrug:2000, antiRad:2000, antiHormone:1000, target:3000, nonCovAntican:5000,
+         proton:5000, protonBeam:3000, cart:3000}},
+  {id:'p5', name:'2대질병+순환계치료비', rec:['KB손보','삼성화재','현대해상'], open:[],
+   vals:{brain:2000, heart:2000, circulationDiag:2000, twoDiseaseTreat:3000,
+         circulationTreat_y10:3000, circulationTreat_full:2000, brainHeartOut:10}},
+  {id:'p6', name:'장기요양', rec:['한화생명','흥국생명','교보생명'], open:['장기요양'],
+   vals:{longterm12:3000, longterm13:2000, longterm14:1000, dementiaSevere:2000, dementiaMid:1000,
+         dementiaMild:500, dementiaDrug:3000, homeCare:50, homeCareCombo:80, welfareTool:160,
+         dayNightCare:100, careFacility:100, visitCare:50}},
+  {id:'p7', name:'어린이보험', rec:['현대해상','KB손보','메리츠화재'], open:['어린이'],
+   vals:{childCancerMulti:3000, childLeukemia:3000, growthPlate:50, faceSkullFx:50, fracture:30,
+         congenitalSurg:1000, infectDiag:30, autism:300, devDisorder:200, precocious:100,
+         hearingLoss:100, liability:10000}},
+  {id:'p8', name:'운전자', rec:['DB손보','하나손보','삼성화재'], open:['운전자'],
+   vals:{carSettle:20000, carLawyer:500, carFineP:3000, carFineO:500, carInjury:3000,
+         licSuspend:30, licRevoke:100, roadRage:50, trafficDeath:5000}}
+];
+var _drOnPlans = {};
+var _drGroupOpen = {};
 
 function _saveDrItems() {
   var el = document.getElementById('dr-items-data');
@@ -8836,7 +8929,7 @@ function openDrItemManager(custId) {
     var item = _drItems[i];
     h += '<div class="dr-mgr-row" data-idx="'+i+'">';
     h += '<input class="dr-mgr-input" value="'+item.label+'" data-field="label" />';
-    h += '<select class="dr-mgr-range" data-field="range"><option value=""'+((!item.range)?' selected':'')+'>100~1\uC5B5</option><option value="mid"'+((item.range==='mid')?' selected':'')+'>10~1\uCC9C</option><option value="small"'+((item.range==='small')?' selected':'')+'>10~100</option></select>';
+    h += '<select class="dr-mgr-range" data-field="range"><option value=""'+((!item.range)?' selected':'')+'>100~1\uC5B5</option><option value="big"'+((item.range==='big')?' selected':'')+'>1\uCC9C~3\uC5B5</option><option value="mid"'+((item.range==='mid')?' selected':'')+'>10~1\uCC9C</option><option value="small"'+((item.range==='small')?' selected':'')+'>10~100</option><option value="tiny"'+((item.range==='tiny')?' selected':'')+'>5~100</option></select>';
     if (item.type === 'compound') { h += '<span class="dr-mgr-tag">\uBCF5\uD569</span>'; }
     h += '<button class="dr-mgr-del" onclick="deleteDrItem('+i+','+custId+')">\uD83D\uDDD1</button>';
     h += '</div>';
@@ -8844,7 +8937,7 @@ function openDrItemManager(custId) {
   h += '</div>';
   h += '<div class="dr-manager-footer">';
   h += '<div class="dr-mgr-add-row"><input id="dr-new-label" placeholder="\uC0C8 \uD56D\uBAA9\uBA85" />';
-  h += '<select id="dr-new-range"><option value="">100~1\uC5B5</option><option value="mid">10~1\uCC9C</option><option value="small">10~100</option></select>';
+  h += '<select id="dr-new-range"><option value="">100~1\uC5B5</option><option value="big">1\uCC9C~3\uC5B5</option><option value="mid">10~1\uCC9C</option><option value="small">10~100</option><option value="tiny">5~100</option></select>';
   h += '<button class="dr-mgr-add-btn" onclick="addDrItem('+custId+')">\u2795 \uCD94\uAC00</button></div>';
   h += '<button class="dr-mgr-save-btn" onclick="saveDrItemChanges('+custId+')">\uD83D\uDCBE \uC800\uC7A5</button>';
   h += '</div></div>';
@@ -8893,13 +8986,15 @@ function saveDrItemChanges(custId) {
 
 function _drAmountOptions(selected, range) {
   var min, max, step;
-  if (range === 'small') { min = 10; max = 100; step = 10; }
+  if (range === 'tiny') { min = 5; max = 100; step = 5; }
+  else if (range === 'small') { min = 10; max = 100; step = 10; }
   else if (range === 'mid') { min = 10; max = 1000; step = 10; }
+  else if (range === 'big') { min = 1000; max = 30000; step = 1000; }
   else { min = 100; max = 10000; step = 100; }
   var opts = '<option value="">--</option>';
   for (var i = min; i <= max; i += step) {
     var display;
-    if (i >= 10000) display = '1억';
+    if (i >= 10000) { var eok = Math.floor(i/10000); var er = i % 10000; display = eok + '억' + (er >= 1000 ? Math.floor(er/1000) + '천' : ''); }
     else if (i >= 1000) { var thou = Math.floor(i/1000); var rem = i % 1000; display = thou + '천' + (rem > 0 ? rem : ''); }
     else { display = String(i); }
     var sel = (selected && String(selected) === String(i)) ? ' selected' : '';
@@ -9768,17 +9863,34 @@ function buildDesignRequestSection(id) {
   var hasSaved = Object.keys(dr).length > 0;
   var h = '<div class="dr-section">';
   h += '<div class="dr-title">\uD83D\uDCCB \uC124\uACC4\uC694\uCCAD' + (hasSaved ? ' <span class="dr-saved-badge">\u2705 \uC800\uC7A5\uB428</span>' : '') + ' <button class="dr-btn-manage" onclick="openDrItemManager('+id+')">\u2699\uFE0F \uD56D\uBAA9\uAD00\uB9AC</button> <button class="dr-btn-copy-header" onclick="copyDesignRequest('+id+')">\uD83D\uDCCB Copy</button></div>';
+  _drOnPlans = {};
+  h += '<div class="dr-plans">';
+  for (var pi = 0; pi < _drPlans.length; pi++) {
+    h += '<button class="dr-plan" data-p="'+_drPlans[pi].id+'" onclick="applyDrPlan(\''+_drPlans[pi].id+'\','+id+')">'+_drPlans[pi].name+'</button>';
+  }
+  h += '</div>';
+  h += '<div class="dr-rec" id="dr-rec-box" style="display:none"></div>';
   h += '<div class="dr-grid">';
   var lastGroup = '';
+  var grpOpen = false;
   for (var i = 0; i < _drItems.length; i++) {
     var item = _drItems[i];
-    if (item.group && item.group !== lastGroup) { lastGroup = item.group; h += '<div class="dr-group-header">'+item.group+'</div>'; }
+    if (item.group && item.group !== lastGroup) {
+      lastGroup = item.group;
+      if (grpOpen) h += '</div>';
+      var go = (typeof _drGroupIsOpen === 'function') ? _drGroupIsOpen(item.group) : true;
+      h += '<div class="dr-group-header'+(go?'':' closed')+'" data-g="'+item.group+'" onclick="toggleDrGroup(this)"><span class="dr-gh-arrow">\u25BC</span>'+item.group+'</div>';
+      h += '<div class="dr-group-body'+(go?'':' closed')+'">';
+      grpOpen = true;
+    }
     if (item.type === 'single') {
       var val = dr[item.key] || '';
-      h += '<div class="dr-item"><label>'+item.label+'</label>';
+      h += '<div class="dr-item'+(val?' dr-filled':'')+'"><label>'+item.label+'</label>';
       h += '<select id="dr-'+item.key+'">'+_drAmountOptions(val, item.range)+'</select></div>';
     } else {
-      h += '<div class="dr-item dr-compound"><label>'+item.label+'</label>';
+      var anySub = false;
+      for (var jc = 0; jc < item.subs.length; jc++) if (dr[item.key + '_' + item.subs[jc].k]) anySub = true;
+      h += '<div class="dr-item dr-compound'+(anySub?' dr-filled':'')+'"><label>'+item.label+'</label>';
       for (var j = 0; j < item.subs.length; j++) {
         var sub = item.subs[j]; var subKey = item.key + '_' + sub.k; var subVal = dr[subKey] || '';
         h += '<div class="dr-sub"><span class="dr-sub-label">'+sub.l+'</span>';
@@ -9787,6 +9899,7 @@ function buildDesignRequestSection(id) {
       h += '</div>';
     }
   }
+  if (grpOpen) h += '</div>';
   h += '</div>';
   h += '<div class="dr-btn-row">';
   h += '<button class="dr-btn-save" onclick="saveDesignRequest('+id+')">\uD83D\uDCBE \uC124\uACC4\uC694\uCCAD \uC800\uC7A5</button>';
@@ -12024,6 +12137,7 @@ function copyContact(el) {
                 for (var _di = 0; _di < _drRaw.length; _di++) _drItems.push(_drRaw[_di]);
               }
             }
+            try { if (typeof _drMergeNewItems === 'function') _drMergeNewItems(); } catch(e2) {}
           } catch(e) { console.error('drItems 재로드 실패:', e); }
           // 퀵메시지 템플릿 재로드
           try {
@@ -17277,6 +17391,142 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   document.addEventListener('scroll', hide, true);
   window.addEventListener('blur', hide);
   window.addEventListener('resize', hide);
+})();
+</script>
+
+<style>
+/* ★ 설계요청 플랜 버튼 (2026-09-04) — 살구톤 */
+.dr-plans{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.dr-plan{background:#fff;border:1.5px solid #ecd5bd;color:#7c2d12;border-radius:20px;padding:6px 13px;
+  font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s;}
+.dr-plan:hover{border-color:#e46a25;background:#fff4e9;}
+.dr-plan.on{background:#e46a25;border-color:#c2410c;color:#fff;}
+.dr-rec{background:#fff;border-left:3px solid #e46a25;border-radius:6px;padding:7px 11px;margin-bottom:10px;
+  font-size:12.5px;color:#7c2d12;line-height:1.65;}
+.dr-rec b{color:#c2410c;}
+.dr-rec .dr-rec-note{display:block;margin-top:3px;font-size:11px;color:#9c7a5c;font-weight:500;}
+.dr-item.dr-filled{background:#fff4d6;border:1.5px solid #e8a33d !important;}
+.dr-item.dr-filled label{color:#92400e !important;font-weight:800;}
+.dr-group-header{cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;}
+.dr-gh-arrow{font-size:10px;opacity:.65;transition:transform .12s;}
+.dr-group-header.closed .dr-gh-arrow{transform:rotate(-90deg);}
+.dr-gh-count{margin-left:auto;font-size:11px;font-weight:600;opacity:.6;}
+.dr-group-body{display:contents;}
+.dr-group-body.closed{display:none;}
+</style>
+<script>
+/* ★ 설계요청 플랜 (2026-09-04) */
+(function(){
+  var CLOSED_BY_DEFAULT = {'장기요양':1,'어린이':1,'운전자':1};
+  window._drGroupClosedDefault = CLOSED_BY_DEFAULT;
+
+  window._drGroupIsOpen = function(g){
+    if (Object.prototype.hasOwnProperty.call(_drGroupOpen, g)) return _drGroupOpen[g];
+    return !CLOSED_BY_DEFAULT[g];
+  };
+
+  window.toggleDrGroup = function(el){
+    var g = el.getAttribute('data-g');
+    var open = !_drGroupIsOpen(g);
+    _drGroupOpen[g] = open;
+    el.classList.toggle('closed', !open);
+    var body = el.nextElementSibling;
+    if (body && body.classList.contains('dr-group-body')) body.classList.toggle('closed', !open);
+  };
+
+  /* 어떤 담보가 지금 켜진 플랜들로 채워져야 하는지 계산 */
+  function mergedVals(){
+    var out = {};
+    for (var i = 0; i < _drPlans.length; i++) {
+      var p = _drPlans[i];
+      if (!_drOnPlans[p.id]) continue;
+      for (var k in p.vals) if (Object.prototype.hasOwnProperty.call(p.vals, k)) out[k] = p.vals[k];
+    }
+    return out;
+  }
+
+  /* 값이 있는 칸에 색 입히기 */
+  window._drPaintFilled = function(){
+    var sec = document.querySelector('.dr-section');
+    if (!sec) return;
+    var items = sec.querySelectorAll('.dr-item');
+    for (var i = 0; i < items.length; i++) {
+      var sels = items[i].querySelectorAll('select');
+      var on = false;
+      for (var j = 0; j < sels.length; j++) if (sels[j].value) { on = true; break; }
+      items[i].classList.toggle('dr-filled', on);
+    }
+  };
+
+  /* 추천 보험사 줄 */
+  window._drPaintRec = function(){
+    var box = document.getElementById('dr-rec-box');
+    if (!box) return;
+    var lines = [];
+    for (var i = 0; i < _drPlans.length; i++) {
+      var p = _drPlans[i];
+      if (!_drOnPlans[p.id]) continue;
+      var r = [];
+      for (var j = 0; j < p.rec.length; j++) r.push((j+1) + '. ' + p.rec[j]);
+      lines.push('<b>' + p.name + '</b> &nbsp;' + r.join('&nbsp; '));
+    }
+    if (!lines.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = '';
+    box.innerHTML = lines.join('<br>') +
+      '<span class="dr-rec-note">※ 참고용입니다. 가입한도는 수시로 바뀌므로 설계 프로그램에서 확인하세요.</span>';
+  };
+
+  /* 플랜 버튼 누름 */
+  window.applyDrPlan = function(planId, custId){
+    var plan = null;
+    for (var i = 0; i < _drPlans.length; i++) if (_drPlans[i].id === planId) plan = _drPlans[i];
+    if (!plan) return;
+
+    var turningOn = !_drOnPlans[planId];
+    _drOnPlans[planId] = turningOn;
+
+    if (turningOn) {
+      /* 이 플랜이 쓰는 그룹 펼치기 */
+      for (var g = 0; g < plan.open.length; g++) {
+        _drGroupOpen[plan.open[g]] = true;
+        var hdr = document.querySelector('.dr-group-header[data-g="' + plan.open[g] + '"]');
+        if (hdr) {
+          hdr.classList.remove('closed');
+          var body = hdr.nextElementSibling;
+          if (body && body.classList.contains('dr-group-body')) body.classList.remove('closed');
+        }
+      }
+      for (var k in plan.vals) {
+        if (!Object.prototype.hasOwnProperty.call(plan.vals, k)) continue;
+        var el = document.getElementById('dr-' + k);
+        if (el) { el.value = String(plan.vals[k]); el.setAttribute('data-byplan', '1'); }
+      }
+    } else {
+      /* 끌 때 — 이 플랜이 채운 칸만 비웁니다. 손으로 넣은 값은 건드리지 않습니다. */
+      var keep = mergedVals();
+      for (var k2 in plan.vals) {
+        if (!Object.prototype.hasOwnProperty.call(plan.vals, k2)) continue;
+        var el2 = document.getElementById('dr-' + k2);
+        if (!el2 || el2.getAttribute('data-byplan') !== '1') continue;
+        if (Object.prototype.hasOwnProperty.call(keep, k2)) { el2.value = String(keep[k2]); }
+        else { el2.value = ''; el2.removeAttribute('data-byplan'); }
+      }
+    }
+
+    var btn = document.querySelector('.dr-plan[data-p="' + planId + '"]');
+    if (btn) btn.classList.toggle('on', turningOn);
+    _drPaintFilled();
+    _drPaintRec();
+  };
+
+  /* 손으로 고르면 색 갱신 + 플랜 표식 해제 */
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if (!t || !t.id || t.id.indexOf('dr-') !== 0) return;
+    if (!t.closest || !t.closest('.dr-item')) return;
+    t.removeAttribute('data-byplan');
+    _drPaintFilled();
+  }, true);
 })();
 </script>
 
