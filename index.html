@@ -17110,45 +17110,38 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 </script>
 
 
-<!-- ═══ 툴팁 (2026-09-03) ═══════════════════════════════════════════
-     PC(마우스가 있는 화면)에서만 뜹니다. 휴대폰에는 만들지 않습니다.
-     0.1초면 뜨고, 무엇을 할 수 있는지 한 줄로 알려줍니다. -->
+<!-- ═══ 툴팁 (2026-09-04 고쳐 씀) ═══════════════════════════════════
+     화면에 툴팁 상자 하나만 두고 옮겨 다닌다.
+     · 버튼에 붙여 그리던 예전 방식은 옆의 그림자·반투명 요소에 가려
+       글자가 비쳐 보였다. 이제 화면 맨 위에 따로 떠서 무엇에도 안 가린다.
+     · 마우스가 올라간 순간 문구를 찾으므로, 고객 카드처럼 새로 그려지는
+       버튼에도 자동으로 붙는다.
+     · 휴대폰에는 만들지 않는다. -->
 <style>
-@media (hover:hover) and (pointer:fine) {
-  [data-tip] { position:relative; }
-  [data-tip]::after {
-    content:attr(data-tip); position:absolute; left:50%; top:calc(100% + 7px);
-    transform:translateX(-50%) translateY(-3px);
-    background:#2d1f18; color:#fff6ee; font-family:inherit;
-    font-size:12px; font-weight:600; line-height:1.5; letter-spacing:0;
-    padding:6px 10px; border-radius:7px;
-    white-space:normal; width:max-content; max-width:250px; text-align:left;
-    opacity:0; pointer-events:none; z-index:99999;
-    box-shadow:0 6px 18px rgba(0,0,0,.28);
-    transition:opacity .1s ease .1s, transform .1s ease .1s;
-  }
-  [data-tip]::before {
-    content:''; position:absolute; left:50%; top:calc(100% + 1px);
-    transform:translateX(-50%) translateY(-3px);
-    border:5px solid transparent; border-bottom-color:#2d1f18;
-    opacity:0; pointer-events:none; z-index:99999;
-    transition:opacity .1s ease .1s, transform .1s ease .1s;
-  }
-  [data-tip]:hover::after, [data-tip]:hover::before,
-  [data-tip]:focus-visible::after, [data-tip]:focus-visible::before {
-    opacity:1; transform:translateX(-50%) translateY(0);
-  }
+#sg-tip {
+  position:fixed; z-index:2147483647; pointer-events:none;
+  background:#2d1f18; color:#fff6ee; font-family:inherit;
+  font-size:12.5px; font-weight:600; line-height:1.55; letter-spacing:-.2px;
+  padding:7px 11px; border-radius:8px; max-width:280px; text-align:left;
+  box-shadow:0 8px 22px rgba(0,0,0,.34); opacity:0;
+  transition:opacity .1s ease; white-space:normal; word-break:keep-all;
 }
-@media (prefers-reduced-motion:reduce) {
-  [data-tip]::after, [data-tip]::before { transition-duration:.01ms; }
+#sg-tip.on { opacity:1; }
+#sg-tip::after {
+  content:''; position:absolute; left:var(--ax,18px); width:0; height:0;
+  border:6px solid transparent;
 }
+#sg-tip.below::after { top:-12px; border-bottom-color:#2d1f18; }
+#sg-tip.above::after { bottom:-12px; border-top-color:#2d1f18; }
+@media (prefers-reduced-motion:reduce) { #sg-tip { transition-duration:.01ms; } }
 </style>
 <script>
 (function () {
   'use strict';
-  if (window.__IS_MOBILE__) return;   /* 휴대폰에는 툴팁을 두지 않는다 */
+  if (window.__IS_MOBILE__) return;                 /* 휴대폰에는 툴팁을 두지 않는다 */
+  if (!window.matchMedia || !window.matchMedia('(hover:hover) and (pointer:fine)').matches) return;
 
-  /* onclick 앞부분 → 툴팁 문구. 문구만 고치면 됩니다. */
+  /* onclick 함수 이름 → 문구 */
   var TIP = {
     'toggleHeader':            '상단 메뉴를 접어 화면을 넓게 씁니다',
     'toggleScriptPanel':       'DB·이관 상담 스크립트와 메모를 엽니다',
@@ -17173,29 +17166,117 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     'xlsxImport':              '엑셀 파일로 고객을 한 번에 등록합니다',
     'toggleBulkMode':          '여러 명을 골라 태그를 달거나 한 번에 지웁니다',
     'sgFilterToggle':          '성별·등록월·상령일·생일로 목록을 걸러봅니다',
-    'openConsultLib()':        '상담에 쓰는 인포그래픽 자료를 카테고리별로 봅니다'
+    /* 고객 카드 위쪽 버튼 (2026-09-04 추가) */
+    'openClaim':               '이 고객 정보로 보험금 청구서를 만듭니다',
+    'editCustomerTags':        '이 고객에게 태그를 답니다',
+    'copyCustomerInfo':        '고객 정보를 통째로 복사합니다',
+    'copyCustomerInfoWithDr':  '고객 정보에 설계요청 내용까지 붙여 복사합니다',
+    'openEditModal':           '고객 정보를 고칩니다',
+    'delCustomer':             '이 고객을 지웁니다',
+    'openJoinAlertModal':      '추가로 가입한 건을 등록합니다',
+    'cancelCardPay':           '카드납 표시를 해제합니다',
+    'openMrList':              '매니저에게 보낸 요청 목록을 봅니다',
+    'toggleStatusSort':        '이 상태인 고객을 목록 맨 위로 올립니다'
+  };
+  /* 고객 카드 안 이동 버튼 — scrollToCardTab('.xxx') */
+  var CARD = {
+    '.info-grid':        '고객 정보 — 전화·주소·직업·계좌',
+    '.sched-add-form':   '스케줄 — 재연락·미팅 잡기',
+    '.proposal-section': '자료 — 제안서·PDF 붙여두기',
+    '.consult-form':     '상담 — 통화·미팅 내용 적기',
+    '.gift-section':     '중요 할 일 — 챙길 것·선물 약속',
+    '.auto-section':     '자동차보험 — 만기·갱신 관리',
+    '.silson-section':   '실손 — 세대·자기부담금 적기',
+    '.mr-section':       '매니저 — 요청 보내기',
+    '.dr-section':       '설계요청 — 보험사에 견적 의뢰'
   };
 
-  function apply(root) {
-    var els = root.querySelectorAll('button[onclick], select[onchange], .filter-toggle');
-    for (var i = 0; i < els.length; i++) {
-      var el = els[i];
-      if (el.getAttribute('data-tip')) continue;
-      var h = el.getAttribute('onclick') || el.getAttribute('onchange') || '';
-      var name = (h.match(/([A-Za-z_$][\w$]*)\s*\(/) || [])[1];
-      if (!name || !TIP[name]) continue;
-      el.setAttribute('data-tip', TIP[name]);
-      el.removeAttribute('title');          /* 브라우저 기본 툴팁과 겹치지 않게 */
+  var tip = null, timer = null, cur = null;
+
+  function box() {
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.id = 'sg-tip';
+      document.body.appendChild(tip);
     }
+    return tip;
   }
-  function start() {
-    var hd = document.getElementById('main-header');
-    var lp = document.querySelector('.left-panel');
-    if (hd) apply(hd);
-    if (lp) apply(lp);
+
+  /* 이 요소에 붙일 문구 찾기 — 없으면 빈 문자열 */
+  function textFor(el) {
+    var d = el.getAttribute('data-tip');
+    if (d) return d;
+    var h = el.getAttribute('onclick') || el.getAttribute('onchange') || '';
+    var m = h.match(/scrollToCardTab\(\s*['"]([^'"]+)/);
+    if (m && CARD[m[1]]) return CARD[m[1]];
+    var n = (h.match(/([A-Za-z_$][\w$]*)\s*\(/) || [])[1];
+    if (n && TIP[n]) return TIP[n];
+    /* 원래 달려 있던 title 은 브라우저 기본 툴팁(1초)이라 느리다 —
+       문구만 가져오고 속성은 떼어 두 개가 겹치지 않게 한다 */
+    var t = el.getAttribute('title');
+    if (t) { el.setAttribute('data-tip', t); el.removeAttribute('title'); return t; }
+    return '';
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
-  else start();
+
+  function show(el, txt) {
+    var b = box();
+    b.textContent = txt;
+    b.className = '';
+    b.style.left = '-9999px';
+    b.style.top = '0px';
+    b.classList.add('on');
+
+    var r = el.getBoundingClientRect();
+    var bw = b.offsetWidth, bh = b.offsetHeight;
+    var pad = 8, m = 6;
+
+    /* 아래에 자리가 없으면 위로 */
+    var below = (r.bottom + m + bh + pad) <= window.innerHeight;
+    var top = below ? (r.bottom + m) : (r.top - m - bh);
+    if (top < pad) top = pad;
+
+    var left = r.left + (r.width / 2) - (bw / 2);
+    if (left < pad) left = pad;
+    if (left + bw > window.innerWidth - pad) left = window.innerWidth - pad - bw;
+
+    /* 화살표는 버튼 가운데를 가리키게 */
+    var ax = r.left + (r.width / 2) - left - 6;
+    if (ax < 8) ax = 8;
+    if (ax > bw - 20) ax = bw - 20;
+
+    b.style.left = Math.round(left) + 'px';
+    b.style.top = Math.round(top) + 'px';
+    b.style.setProperty('--ax', Math.round(ax) + 'px');
+    b.classList.add(below ? 'below' : 'above');
+  }
+
+  function hide() {
+    if (timer) { clearTimeout(timer); timer = null; }
+    cur = null;
+    if (tip) { tip.classList.remove('on'); tip.style.left = '-9999px'; }
+  }
+
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target && e.target.closest
+      ? e.target.closest('button,[data-tip],select,.filter-toggle,.status-sort-btn') : null;
+    if (!el || el === cur) return;
+    hide();
+    var txt = textFor(el);
+    if (!txt) return;
+    cur = el;
+    timer = setTimeout(function () { if (cur === el) show(el, txt); }, 100);
+  }, true);
+
+  document.addEventListener('mouseout', function (e) {
+    var el = e.target && e.target.closest ? e.target.closest('button,[data-tip],select') : null;
+    if (el && el === cur) hide();
+  }, true);
+
+  /* 누르거나 화면이 움직이면 바로 감춘다 */
+  document.addEventListener('mousedown', hide, true);
+  document.addEventListener('scroll', hide, true);
+  window.addEventListener('blur', hide);
+  window.addEventListener('resize', hide);
 })();
 </script>
 
