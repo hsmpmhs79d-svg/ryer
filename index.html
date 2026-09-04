@@ -8934,6 +8934,29 @@ var _drPlans = [
          carInjury:'max', licSuspend:'max', licRevoke:'max', roadRage:'max', trafficDeath:'max',
          injuryAdd:'max'}}
 ];
+
+/* ★ 플랜 버튼 툴팁 문구 (2026-09-04) */
+function _drItemByKey(k) {
+  for (var i = 0; i < _drItems.length; i++) {
+    if (_drItems[i].key === k) return _drItems[i];
+    if (k.indexOf(_drItems[i].key + '_') === 0) return _drItems[i];
+  }
+  return null;
+}
+function _drPlanTip(p) {
+  var keys = [], names = [];
+  for (var k in p.vals) if (Object.prototype.hasOwnProperty.call(p.vals, k)) keys.push(k);
+  for (var i = 0; i < keys.length && names.length < 6; i++) {
+    var it = _drItemByKey(keys[i]);
+    if (it && names.indexOf(it.label) < 0) names.push(it.label);
+  }
+  var t = '담보 ' + keys.length + '개가 한 번에 채워집니다\n' + names.join(' · ');
+  if (names.length < keys.length) t += ' 외';
+  t += '\n추천: ' + p.rec.join(' · ');
+  t += '\n(다른 플랜을 누르면 이 플랜은 꺼집니다)';
+  return t;
+}
+
 var _drOnPlans = {};
 var _drGroupOpen = {};
 var _drOrig = {};      /* 화면을 그릴 때의 저장값 — 플랜을 끄면 여기로 되돌립니다 */
@@ -9892,15 +9915,16 @@ function buildDesignRequestSection(id) {
   if (!c) return '';
   var dr = c.designRequest || {};
   var hasSaved = Object.keys(dr).length > 0;
-  var h = '<div class="dr-section">';
+  var h = '<div class="dr-section" data-cid="' + id + '">';
   h += '<div class="dr-title">\uD83D\uDCCB \uC124\uACC4\uC694\uCCAD' + (hasSaved ? ' <span class="dr-saved-badge">\u2705 \uC800\uC7A5\uB428</span>' : '') + ' <button class="dr-btn-manage" onclick="openDrItemManager('+id+')">\u2699\uFE0F \uD56D\uBAA9\uAD00\uB9AC</button> <button class="dr-btn-copy-header" onclick="copyDesignRequest('+id+')">\uD83D\uDCCB Copy</button></div>';
   _drOnPlans = {};
   _drOrig = JSON.parse(JSON.stringify(dr || {}));
   _drOrigOff = (c.drOff || []).slice();
   h += '<div class="dr-plans">';
   for (var pi = 0; pi < _drPlans.length; pi++) {
-    h += '<button class="dr-plan" data-p="'+_drPlans[pi].id+'" onclick="applyDrPlan(\''+_drPlans[pi].id+'\','+id+')">'+_drPlans[pi].name+'</button>';
+    h += '<button class="dr-plan" data-p="'+_drPlans[pi].id+'" data-tip="'+_drPlanTip(_drPlans[pi]).replace(/\n/g,'&#10;')+'" onclick="applyDrPlan(\''+_drPlans[pi].id+'\','+id+')">'+_drPlans[pi].name+'</button>';
   }
+  h += '<button class="dr-plan dr-reset" data-tip="\uC124\uACC4\uC694\uCCAD\uC744 \uC804\uBD80 \uC9C0\uC6C1\uB2C8\uB2E4&#10;\uC800\uC7A5\uB41C \uB0B4\uC6A9\uAE4C\uC9C0 \uC9C0\uC6CC\uC9C0\uBA70 \uB418\uB3CC\uB9B4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4" onclick="resetDrAll('+id+')">\u21BA \uCD08\uAE30\uD654</button>';
   h += '</div>';
   h += '<div class="dr-rec" id="dr-rec-box" style="display:none"></div>';
   h += '<div class="dr-grid">';
@@ -10029,23 +10053,37 @@ function copyDesignRequest(id) {
 
 function getDesignRequestText(id) {
   var c = customers.find(function(x){return x.id===id;});
-  if (!c || !c.designRequest) return '';
-  var dr = c.designRequest;
-  if (Object.keys(dr).length === 0) return '';
+  if (!c) return '';
+  /* ★ 화면에 설계요청이 떠 있으면 저장 전 값도 그대로 복사합니다 (2026-09-04) */
+  var live = !!document.querySelector('.dr-section[data-cid="' + id + '"]');
+  var dr = c.designRequest || {};
+  var off = c.drOff || [];
+  function _val(k) {
+    if (live) { var el = document.getElementById('dr-' + k); return el ? el.value : ''; }
+    return dr[k] || '';
+  }
+  function _on(k) {
+    if (live) { var ck = document.getElementById('drc-' + k); return !ck || ck.checked; }
+    return off.indexOf(k) < 0;
+  }
+  if (!live && Object.keys(dr).length === 0) return '';
   var lines = [];
-  var _off = c.drOff || [];
   for (var i = 0; i < _drItems.length; i++) {
     var item = _drItems[i];
-    if (_off.indexOf(item.key) >= 0) continue;   /* ★ 체크 해제 담보 제외 (2026-09-04) */
+    if (!_on(item.key)) continue;
     if (item.type === 'single') {
-      if (dr[item.key]) lines.push(item.short + ' - ' + _drFormatAmount(dr[item.key]));
+      var v = _val(item.key);
+      if (v) lines.push((item.short || item.label) + ' - ' + _drFormatAmount(v));
     } else {
       var parts = [];
-      for (var j = 0; j < item.subs.length; j++) { var subKey = item.key + '_' + item.subs[j].k; if (dr[subKey]) parts.push(item.subs[j].l + ' ' + _drFormatAmount(dr[subKey])); }
-      if (parts.length > 0) lines.push(item.short + ' - ' + parts.join(' / '));
+      for (var j = 0; j < item.subs.length; j++) {
+        var sv = _val(item.key + '_' + item.subs[j].k);
+        if (sv) parts.push(item.subs[j].l + ' ' + _drFormatAmount(sv));
+      }
+      if (parts.length > 0) lines.push((item.short || item.label) + ' - ' + parts.join(' / '));
     }
   }
-  return lines.length > 0 ? '\n\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n\n\uC124\uACC4\uC694\uCCAD\n' + lines.join('\n') : '';
+  return lines.length > 0 ? '\n\n────────────────────\n\n설계요청\n' + lines.join('\n') : '';
 }
 
 // ── 연락처 수정 ──────────────────────────────────────────────
@@ -17349,7 +17387,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   font-size:12.5px; font-weight:600; line-height:1.55; letter-spacing:-.2px;
   padding:7px 11px; border-radius:8px; max-width:280px; text-align:left;
   box-shadow:0 8px 22px rgba(0,0,0,.34); opacity:0;
-  transition:opacity .1s ease; white-space:normal; word-break:keep-all;
+  transition:opacity .1s ease; white-space:pre-line; word-break:keep-all;
 }
 #sg-tip.on { opacity:1; }
 #sg-tip::after {
@@ -17512,6 +17550,8 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .12s;}
 .dr-plan:hover{border-color:#e46a25;background:#fff4e9;}
 .dr-plan.on{background:#e46a25;border-color:#c2410c;color:#fff;}
+.dr-plan.dr-reset{background:#f8efe4;border-color:#e0cdb6;color:#9c7a5c;}
+.dr-plan.dr-reset:hover{background:#f0e2d0;border-color:#c9a889;color:#7c2d12;}
 .dr-rec{background:#fff;border-left:3px solid #e46a25;border-radius:6px;padding:7px 11px;margin-bottom:10px;
   font-size:12.5px;color:#7c2d12;line-height:1.65;}
 .dr-rec b{color:#c2410c;}
@@ -17632,6 +17672,20 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     }
   }
 
+
+  /* ★ 화면의 설계요청을 전부 비웁니다 (2026-09-04) — 저장은 💾 저장을 눌러야 반영됩니다 */
+  window.resetDrAll = function(custId){
+    var c = customers.find(function(x){return x.id === custId;});
+    if (!c) return;
+    if (!confirm('\uC124\uACC4\uC694\uCCAD\uC744 \uC804\uBD80 \uCD08\uAE30\uD654\uD560\uAE4C\uC694?\n\n\uC800\uC7A5\uB41C \uB0B4\uC6A9\uAE4C\uC9C0 \uBAA8\uB450 \uC9C0\uC6CC\uC9C0\uBA70 \uB418\uB3CC\uB9B4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.')) return;
+    c.designRequest = {};
+    delete c.drOff;
+    _drOnPlans = {};
+    autoSave();
+    if (typeof selectCustomer === 'function') selectCustomer(custId);
+    if (typeof showToast === 'function') showToast('\uC124\uACC4\uC694\uCCAD\uC774 \uCD08\uAE30\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4.', 'amber');
+  };
+
   /* 플랜 버튼 — 한 번에 하나만 켜집니다 (2026-09-04) */
   window.applyDrPlan = function(planId, custId){
     var plan = null;
@@ -17691,6 +17745,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .mv-dr-plan.on{background:#e46a25;border-color:#c2410c;color:#fff;}
 .mv-dr-plan.saved{border-style:dashed;}
+.mv-dr-reset{background:#f8efe4;border-color:#e0cdb6;color:#9c7a5c;}
 .mv-dr-rec{background:#fff8f0;border-left:3px solid #e46a25;border-radius:6px;padding:8px 11px;margin-bottom:10px;
   font-size:12.5px;color:#7c2d12;line-height:1.7;}
 .mv-dr-rec b{color:#c2410c;}
@@ -17856,6 +17911,21 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     return lines.join('\n');
   };
 
+  /* ★ 화면의 설계요청을 전부 비웁니다 (2026-09-04) — 저장은 💾 저장을 눌러야 반영됩니다 */
+  window.mvDrReset = function(){
+    if (!confirm('\uC124\uACC4\uC694\uCCAD\uC744 \uC804\uBD80 \uCD08\uAE30\uD654\uD560\uAE4C\uC694?\n\n\uC800\uC7A5\uB41C \uB0B4\uC6A9\uAE4C\uC9C0 \uBAA8\uB450 \uC9C0\uC6CC\uC9C0\uBA70 \uB418\uB3CC\uB9B4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4.')) return;
+    vals = {}; off = {}; onPlan = {}; orig = {}; origOff = {};
+    if (cust) {
+      cust.designRequest = {};
+      delete cust.drOff;
+      cust._updated = Date.now();
+      if (typeof window.mvCommit === 'function') window.mvCommit();
+    }
+    if (cust && typeof window.mvOpenDetail === 'function') window.mvOpenDetail(cust.id);
+    else mvDrRenderList();
+    if (typeof showToast === 'function') showToast('\uC124\uACC4\uC694\uCCAD\uC774 \uCD08\uAE30\uD654\uB418\uC5C8\uC2B5\uB2C8\uB2E4.', 'amber');
+  };
+
   window.mvDrSave = function(){
     var c = cust;
     if (!c) return;
@@ -17895,6 +17965,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     for (var i = 0; i < _drPlans.length; i++) {
       h += '<button class="mv-dr-plan" onclick="mvDrPlan(\'' + _drPlans[i].id + '\',this)">' + _drPlans[i].name + '</button>';
     }
+    h += '<button class="mv-dr-plan mv-dr-reset" onclick="mvDrReset()">\u21BA \uCD08\uAE30\uD654</button>';
     h += '</div>';
     h += '<div class="mv-dr-rec" id="mv-dr-rec" style="display:none"></div>';
     h += '<div id="mv-dr-list"><div class="mv-dr-empty">위에서 플랜을 고르시면<br>해당 담보가 여기에 나옵니다.</div></div>';
