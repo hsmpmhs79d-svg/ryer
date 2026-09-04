@@ -11067,6 +11067,7 @@ function copyContact(el) {
   /* ★ 저장 겹침 방지 (2026-08-15) — 자동저장이 동시에 두 개 돌면 내 저장을
      '다른 기기 변경'으로 오인해 배너가 뜨고 저장이 취소되던 문제 fix. 한 번에 하나만 실행. */
   var _saveInFlight = false;
+  var _lastSaveDoneAt = 0;   /* ★ 2026-09-04: 저장 직후 잠깐은 원격 확인을 쉰다 */
   var _dirtyDuringSave = false;
 
   // ─── 모바일 모드 즉시 표시 ───
@@ -12145,6 +12146,29 @@ function copyContact(el) {
 
   // ─── PC: Drive에 저장 ───
   // ★ _isRetry: 401/403 시 silentReauth 후 한 번만 재시도 (무한 루프 방지) (2026-06-23)
+  /* ★ 2026-09-04: 헤더의 저장 표시가 거짓말을 하고 있었다.
+     셔임 saveFile()이 곧바로 success를 돌려줘 '✓ 저장됨'이 켜지지만,
+     실제 Drive 업로드는 1.5초 뒤에 시작하고 실패해도 표시가 그대로였다.
+     배너는 3초 뒤 사라지므로 저장이 안 된 걸 알 방법이 없었다.
+     아래 두 함수로 '업로드가 끝난 뒤'의 결과를 표시에 남긴다. */
+  function _sgSaveOk() {
+    try {
+      window.hasUnsavedChanges = false;
+      if (typeof hasUnsavedChanges !== 'undefined') hasUnsavedChanges = false;
+      var el = document.getElementById('save-indicator');
+      if (el) { el.textContent = '✓ 저장됨'; el.className = 'save-indicator saved'; }
+    } catch (e) {}
+  }
+  function _sgSaveBad(msg) {
+    try {
+      window.hasUnsavedChanges = true;
+      if (typeof hasUnsavedChanges !== 'undefined') hasUnsavedChanges = true;
+      var el = document.getElementById('save-indicator');
+      /* sg-bad 는 스킨의 초록색 !important 를 이기려고 따로 둔 클래스 */
+      if (el) { el.textContent = msg; el.className = 'save-indicator unsaved sg-bad'; }
+    } catch (e) {}
+  }
+
   function saveToDrive(_isRetry) {
     if (!_accessToken) {
       banner('로그인 필요', 'err');
@@ -12168,6 +12192,7 @@ function copyContact(el) {
     }
     return _conflictCheck.then(function(_conflict) {
       if (_conflict) {
+        _sgSaveBad('⚠ 휴대폰 내용이 최신 — 새로고침 필요');
         banner('⚠️ 다른 기기에서 먼저 저장했어요 — 새로고침 후 다시 수정해주세요', 'err');
         return;
       }
@@ -12189,6 +12214,8 @@ function copyContact(el) {
         } else {
           _pendingLocalChanges = false;
         }
+        _lastSaveDoneAt = Date.now();
+        _sgSaveOk();
         banner('☁ 저장 완료', 'ok');
         // ★ 주간 자동 백업 사본 체크 (2026-06-20) — 7일 가드로 부담 거의 없음
         try { _checkWeeklyArchive(); } catch(e) {}
@@ -12206,6 +12233,7 @@ function copyContact(el) {
             if (ok) {
               saveToDrive(true).then(resolve).catch(function(){ resolve(); });
             } else {
+              _sgSaveBad('⚠ 저장 실패 — 다시 로그인 필요');
               banner('저장 실패: 자동 토큰 갱신 실패 — 새로고침 후 다시 로그인해주세요.', 'err');
               resolve();
             }
@@ -12222,6 +12250,7 @@ function copyContact(el) {
         }
       } catch(_e) {}
       if (!msg) msg = '알 수 없음 (Chrome 콘솔 확인 필요)';
+      _sgSaveBad('⚠ 저장 실패 — 새로고침 필요');
       banner('저장 실패: ' + msg, 'err');
     }).then(function(){ _saveSettle(); }, function(){ _saveSettle(); });
   }
@@ -12260,10 +12289,19 @@ function copyContact(el) {
     try {
       if (document.hidden) return;
       if (!_accessToken || !_driveFileId || !_lastKnownDriveTime) return;
-      if (_pendingLocalChanges) return;  // ★ 내 저장 진행·반영 중엔 확인 안 함 — 내 저장 오탐 방지 (2026-07-11)
+      if (_pendingLocalChanges || _saveInFlight) return;  // ★ 내 저장 진행·반영 중엔 확인 안 함 (2026-07-11)
+      /* ★ 2026-09-04: 저장 직후 12초는 쉰다.
+         스케줄을 연달아 옮기면 내 저장이 계속 이어지는데, 그 사이에 확인이 끼어들면
+         내가 방금 올린 파일을 '다른 기기가 바꿨다'고 읽어 파란 배너가 잘못 떴다. */
+      if (Date.now() - _lastSaveDoneAt < 12000) return;
       var _sb = document.getElementById('sync-banner');
       if (_sb && _sb.classList.contains('show')) return;  // 이미 알림 떠 있음 — 재확인 불필요
+      var _base = _lastKnownDriveTime;   /* 물어보기 직전의 기준 시각을 붙잡아 둔다 */
       gapi.client.drive.files.get({ fileId: _driveFileId, fields: 'modifiedTime' }).then(function(r) {
+        /* ★ 2026-09-04: 답을 기다리는 사이에 내가 저장을 시작·완료했으면 이 답은 못 믿는다 */
+        if (_pendingLocalChanges || _saveInFlight) return;
+        if (_lastKnownDriveTime !== _base) return;
+        if (Date.now() - _lastSaveDoneAt < 12000) return;
         var mt = r && r.result && r.result.modifiedTime;
         if (mt && (new Date(mt) - new Date(_lastKnownDriveTime)) > 2000) {
           var b = document.getElementById('sync-banner');
@@ -16626,6 +16664,10 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .card-header .btn-group button[onclick^="openClaim("] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M14%202H6a2%202%200%200%200-2%202v16a2%202%200%200%200%202%202h12a2%202%200%200%200%202-2V8z%22%2F%3E%3Cpolyline%20points%3D%2214%202%2014%208%2020%208%22%2F%3E%3Cpath%20d%3D%22M9%2015l2%202%204-4%22%2F%3E%3C%2Fsvg%3E"); background:#fff !important; }
 /* 카드납 해제 버튼은 카드 아이콘으로 */
 .card-header .btn-group button[onclick^="cancelCardPay"] { --sgbi:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%221%22%20y%3D%224%22%20width%3D%2222%22%20height%3D%2216%22%20rx%3D%222%22%2F%3E%3Cline%20x1%3D%221%22%20y1%3D%2210%22%20x2%3D%2223%22%20y2%3D%2210%22%2F%3E%3C%2Fsvg%3E"); }
+</style>
+<style>
+/* ★ 2026-09-04: 저장 실패 표시 — 스킨의 #save-indicator 초록색을 이겨야 눈에 띈다 */
+#save-indicator.sg-bad { color:#dc2626 !important; font-weight:800 !important; }
 </style>
 <!-- ═══ 기능 찾기 (2026-09-03) ═══════════════════════════════════════
      PC   — 상단 헤더 빈 칸에 검색창. Ctrl(⌘)+K 로도 열림
