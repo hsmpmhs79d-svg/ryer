@@ -1245,13 +1245,19 @@ body.mobile-mode #detail-area { display: none !important; }
 .mv-sched-item .mv-sched-date { font-size: 13px; color: #475569; margin-bottom: 4px; font-weight: 600; }
 .mv-sched-item .mv-sched-cust { font-weight: 700; font-size: 15px; color: #0f172a; }
 .mv-sched-item .mv-sched-memo { font-size: 13px; color: #64748b; margin-top: 4px; }
-/* ★ 타입별 색 (PC .sd-ev-* 와 동기화, 2026-06-19) */
+/* ★ 타입별 색 — PC 화면과 똑같이 맞춤 (2026-09-04)
+   재연락 초록 · 미팅 파랑 · 카톡관리 연노랑 · 중요 할 일 노랑 · 선물 빨강 · To Do 보라
+   PC 쪽 값: .sd-ev-재연락/미팅/카톡관리/task/gift/todo (미팅은 살구 스킨이 파랑으로 덮어씀) */
 .mv-sched-item.t-recall  { border-left-color: #15803d; background: #dcfce7; }
 .mv-sched-item.t-recall  .mv-sched-date { color: #15803d; }
-.mv-sched-item.t-meeting { border-left-color: #c2410c; background: #fdeadd; }
-.mv-sched-item.t-meeting .mv-sched-date { color: #c2410c; }
+.mv-sched-item.t-meeting { border-left-color: #2f5f8f; background: #e6eef7; }
+.mv-sched-item.t-meeting .mv-sched-date { color: #2f5f8f; }
 .mv-sched-item.t-kakao   { border-left-color: #854d0e; background: #fef9c3; }
 .mv-sched-item.t-kakao   .mv-sched-date { color: #854d0e; }
+.mv-sched-item.t-task    { border-left-color: #92400e; background: #fef3c7; }
+.mv-sched-item.t-task    .mv-sched-date { color: #92400e; }
+.mv-sched-item.t-gift    { border-left-color: #991b1b; background: #fee2e2; }
+.mv-sched-item.t-gift    .mv-sched-date { color: #991b1b; }
 .mv-sched-item.t-todo    { border-left-color: #7c3aed; background: #f3e8ff; }
 .mv-sched-item.t-todo    .mv-sched-date { color: #7c3aed; }
 
@@ -12713,7 +12719,9 @@ function copyContact(el) {
           var typeKey = s.type === '재연락' ? 'recall'
                       : s.type === '미팅' ? 'meeting'
                       : s.type === '카톡관리' ? 'kakao'
-                      : (s.type === 'To Do' || s.type === '중요할일') ? 'todo'
+                      : s.type === '중요할일' ? 'task'      /* ★ 2026-09-04: PC와 같은 노란색 */
+                      : s.type === '선물' ? 'gift'
+                      : s.type === 'To Do' ? 'todo'
                       : '';
           var typeLabel = s.type === '중요할일' ? '중요할일' : escapeHtml(s.type || '');
           // ★ 개인 일정은 mvOpenDetail 대신 PC 수정 모달 직접 호출 (2026-06-23)
@@ -12900,7 +12908,15 @@ function copyContact(el) {
     } else {
       for (var i = 0; i < sortedScheds.length; i++) {
         var s = sortedScheds[i].s, si = sortedScheds[i].i;
-        html += '<div class="mv-sched-item ' + (s.completed ? 'done' : '') + '">'
+        /* ★ 2026-09-04: 캘린더와 같은 색을 고객 카드 안 목록에도 */
+        var _tk = s.type === '재연락' ? 'recall'
+                : s.type === '미팅' ? 'meeting'
+                : s.type === '카톡관리' ? 'kakao'
+                : s.type === '중요할일' ? 'task'
+                : s.type === '선물' ? 'gift'
+                : s.type === 'To Do' ? 'todo'
+                : '';
+        html += '<div class="mv-sched-item ' + (_tk ? 't-' + _tk + ' ' : '') + (s.completed ? 'done' : '') + '">'
              +   '<div class="mv-sched-date">' + escapeHtml(s.date || '') + (s.time ? ' ' + escapeHtml(s.time) : '') + ' · ' + escapeHtml(s.type || '') + (s.completed ? ' ✓완료' : '') + '</div>'
              +   (s.memo ? '<div class="mv-sched-memo">' + escapeHtml(s.memo) + '</div>' : '')
              +   '<div class="mv-item-actions">'
