@@ -957,6 +957,8 @@
     .dr-btn-copy:hover{background:#c2410c;}
 .dr-btn-save:hover{background:#6b21a8;}
 .dr-btn-clear{background:#f8efe4;color:#64748b;border:1px solid #eee0cf;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.dr-btn-top{background:#fff4e9;color:#c2410c;border:1.5px solid #e8b98d;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:auto;}
+.dr-btn-top:hover{background:#fde7d3;border-color:#e46a25;}
 .dr-btn-clear:hover{background:#eee0cf;}
 .dr-saved-badge{font-size:12px;color:#16a34a;font-weight:700;margin-left:auto;}
 .dr-btn-manage{background:#f8efe4;border:1px solid #ddccb6;border-radius:6px;padding:2px 10px;font-size:12px;cursor:pointer;margin-left:8px;color:#475569;}
@@ -8823,6 +8825,8 @@ var _drPlanNewItems = [
   {key:'caregiverTop',label:'상급종합간병인일당',short:'상급간병',type:'single',range:'tiny',group:'간병'},
   {key:'caregiverUse181',label:'간병인사용일당(181일이상)',short:'간병181',type:'single',range:'tiny',group:'간병'},
   {key:'nurseCare181',label:'간호간병통합(181일이상)',short:'간호간병181',type:'single',range:'tiny',group:'간병'},
+  {key:'caregiverSupport',label:'간병인지원일당',short:'간병지원',type:'single',range:'tiny',group:'간병'},
+  {key:'caregiverSupport181',label:'간병인지원일당(181일이상)',short:'간병지원181',type:'single',range:'tiny',group:'간병'},
   {key:'antiDrug',label:'항암약물치료',short:'항암약물',type:'single',group:'항암치료'},
   {key:'antiRad',label:'항암방사선치료',short:'항암방사',type:'single',group:'항암치료'},
   {key:'antiHormone',label:'항암호르몬치료',short:'항암호르몬',type:'single',group:'항암치료'},
@@ -8897,7 +8901,8 @@ _drMergeNewItems();
 var _drGroupFix = {
   target:'항암치료', cart:'항암치료', nonCovAntican:'항암치료', hiclass:'항암치료',
   davinci:'항암치료', proton:'항암치료',
-  antiDrug:'항암치료', antiRad:'항암치료', antiHormone:'항암치료', protonBeam:'항암치료'
+  antiDrug:'항암치료', antiRad:'항암치료', antiHormone:'항암치료', protonBeam:'항암치료',
+  nurseCare:'간병'
 };
 // 일당류 담보는 6만·7만처럼 1만원 단위가 필요해 선택 범위를 넓힙니다.
 // 기존 선택지(10,20,...)를 모두 포함하므로 저장된 값은 그대로 남습니다.
@@ -8923,7 +8928,8 @@ var _drPlans = [
    vals:{surgery_s1:20, surgery_s2:30, surgery_s3:200, surgery_s4:500, surgery_s5:1000,
          diseaseSurg:20, injurySurg:30, diseaseHosp:5, injuryHosp:5, icuHosp:10, room1:30, room23:10}},
   {id:'p2', name:'간병비', rec:['한화손보','현대해상','흥국화재'],
-   vals:{caregiverRehab:6, caregiverUse:15, caregiverUse181:15, nurseCare:7, nurseCare181:7}},
+   vals:{caregiverRehab:6, caregiverUse:15, caregiverUse181:15, nurseCare:7, nurseCare181:7,
+         caregiverSupport:'max', caregiverSupport181:'max'}},
   {id:'p3', name:'암진단비+암주요치료비', rec:['KB손보','삼성화재','현대해상'],
    vals:{cancer:3000, smallCancer:600, cancerMain:1000,
          target:10000, nonCovAntican:3000, davinci:3000}},
@@ -10099,6 +10105,7 @@ function buildDesignRequestSection(id) {
   h += '<div class="dr-btn-row">';
   h += '<button class="dr-btn-save" onclick="saveDesignRequest('+id+')">\uD83D\uDCBE \uC124\uACC4\uC694\uCCAD \uC800\uC7A5</button>';
   h += '<button class="dr-btn-clear" onclick="clearDesignRequest('+id+')">\uCD08\uAE30\uD654</button>';
+  h += '<button class="dr-btn-top" data-tip="\uD50C\uB79C \uBC84\uD2BC\u00B7\uB0B4\uD50C\uB79C \uC800\uC7A5\u00B7\uCD08\uAE30\uD654 \uC904\uB85C \uC62C\uB77C\uAC11\uB2C8\uB2E4" onclick="scrollDrHead()">\u2191 \uD50C\uB79C\u00B7\uC800\uC7A5\uC73C\uB85C</button>';
   h += '</div></div>';
   return h;
 }
@@ -17590,7 +17597,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     '.auto-section':     '자동차보험 — 만기·갱신 관리',
     '.silson-section':   '실손 — 세대·자기부담금 적기',
     '.mr-section':       '매니저 — 요청 보내기',
-    '.dr-section':       '설계요청 — 보험사에 견적 의뢰'
+    '.dr-section':       '설계요청 — 보험사에 견적 의뢰\n담보를 채우다 이 버튼을 누르면 플랜·저장 줄로 바로 올라옵니다'
   };
 
   var tip = null, timer = null, cur = null;
@@ -17830,6 +17837,13 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   };
 
   /* ★ 이동 버튼 (2026-09-04) — 고른 플랜의 담보 중 가장 위쪽으로 */
+  /* ★ 설계요청 맨 위(플랜·저장 줄)로 (2026-09-04) */
+  window.scrollDrHead = function(){
+    var t = document.querySelector('.dr-section .dr-tabs') || document.querySelector('.dr-section');
+    if (!t) return;
+    try { t.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e) { t.scrollIntoView(); }
+  };
+
   window.scrollDrTop = function(){
     var names = {}, any = false;
     var _all = _drAllPlans();
