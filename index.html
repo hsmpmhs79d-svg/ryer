@@ -9961,8 +9961,7 @@ function _drChipsHtml(tab, id) {
          + ' onclick="applyDrPlan(\'' + m.id + '\',' + id + ')">' + _drEsc(m.name)
          + '<span class="dr-mine-x" onclick="event.stopPropagation();deleteMyPlan(\'' + m.id + '\',' + id + ')" title="이 플랜 지우기">×</span></button>';
     }
-    h += '<button class="dr-plan dr-add" data-tip="지금 화면에 채워진 담보를 이름 붙여 저장합니다&#10;체크를 뺀 담보는 저장되지 않습니다" onclick="saveMyPlan(' + id + ')">＋ 지금 설계 저장</button>';
-    if (!_drMyPlans.length) h += '<span class="dr-mine-empty">저장한 설계가 아직 없습니다</span>';
+    if (!_drMyPlans.length) h += '<span class="dr-mine-empty">저장한 설계가 아직 없습니다 — 담보를 채운 뒤 위 <b>＋ 내플랜 저장</b>을 누르세요</span>';
   } else {
     for (var j = 0; j < _drPlans.length; j++) {
       h += '<button class="dr-plan' + (_drOnPlans[_drPlans[j].id] ? ' on' : '') + '" data-p="' + _drPlans[j].id + '"'
@@ -10016,8 +10015,11 @@ function saveMyPlan(custId) {
   _drMyPlans.push({ id:'my_' + Date.now(), name:name, vals:vals, off:off,
                     made:(d.getMonth()+1) + '/' + d.getDate() });
   _saveMyPlans();
+  /* 화면은 그대로 두고 버튼·숫자만 갱신합니다 — 채워둔 담보가 지워지지 않도록 */
   _drTab = 'mine';
-  if (typeof selectCustomer === 'function' && custId) selectCustomer(custId);
+  drTab('mine', custId);
+  var _tn = document.querySelectorAll('.dr-section .dr-tab .dr-tn');
+  if (_tn.length > 1) _tn[1].textContent = _drMyPlans.length;
   showToast('"' + name + '" 저장됨 — 내 플랜에서 바로 쓰실 수 있습니다', 'green');
 }
 
@@ -10029,7 +10031,9 @@ function deleteMyPlan(id, custId) {
   _drMyPlans = _drMyPlans.filter(function(x){ return x.id !== id; });
   delete _drOnPlans[id];
   _saveMyPlans();
-  if (typeof selectCustomer === 'function' && custId) selectCustomer(custId);
+  drTab('mine', custId);
+  var _tn2 = document.querySelectorAll('.dr-section .dr-tab .dr-tn');
+  if (_tn2.length > 1) _tn2[1].textContent = _drMyPlans.length;
   showToast('플랜을 지웠습니다', 'green');
 }
 
@@ -10047,6 +10051,7 @@ function buildDesignRequestSection(id) {
   h += '<button class="dr-tab' + (_drTab === 'basic' ? ' on' : '') + '" data-t="basic" onclick="drTab(\'basic\','+id+')">\uAC04\uB2E8\uD50C\uB79C<span class="dr-tn">'+_drPlans.length+'</span></button>';
   h += '<button class="dr-tab' + (_drTab === 'mine' ? ' on' : '') + '" data-t="mine" onclick="drTab(\'mine\','+id+')">\uB0B4 \uD50C\uB79C<span class="dr-tn">'+_drMyPlans.length+'</span></button>';
   h += '<span class="dr-tab-sp"></span>';
+  h += '<button class="dr-plan dr-add" data-tip="\uC9C0\uAE08 \uD654\uBA74\uC5D0 \uCC44\uC6CC\uC9C4 \uB2F4\uBCF4\uB97C \uC774\uB984 \uBD99\uC5EC \uB0B4 \uD50C\uB79C\uC5D0 \uC800\uC7A5\uD569\uB2C8\uB2E4&#10;\uAC04\uB2E8\uD50C\uB79C\uC744 \uACE0\uCE58\uC168\uB4E0 \uCC98\uC74C\uBD80\uD130 \uC9DC\uC168\uB4E0 \uC0C1\uAD00\uC5C6\uC2B5\uB2C8\uB2E4&#10;\uCCB4\uD06C\uB97C \uBBFC \uB2F4\uBCF4\uB294 \uC800\uC7A5\uB418\uC9C0 \uC54A\uC2B5\uB2C8\uB2E4" onclick="saveMyPlan('+id+')">\uFF0B \uB0B4\uD50C\uB79C \uC800\uC7A5</button>';
   h += '<button class="dr-plan dr-go" data-tip="\uACE0\uB978 \uD50C\uB79C\uC758 \uB2F4\uBCF4 \uC704\uCE58\uB85C \uD654\uBA74\uC744 \uC62E\uAE41\uB2C8\uB2E4" onclick="scrollDrTop()">\u2193 \uC774\uB3D9</button>';
   h += '<button class="dr-plan dr-reset" data-tip="\uC124\uACC4\uC694\uCCAD\uC744 \uC804\uBD80 \uC9C0\uC6C1\uB2C8\uB2E4&#10;\uC800\uC7A5\uB41C \uB0B4\uC6A9\uAE4C\uC9C0 \uC9C0\uC6CC\uC9C0\uBA70 \uB418\uB3CC\uB9B4 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4" onclick="resetDrAll('+id+')">\u21BA \uCD08\uAE30\uD654</button>';
   h += '</div>';
@@ -18053,8 +18058,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
            + _drEsc(m.name)
            + '<span class="mv-dr-x" onclick="event.stopPropagation();mvDelMyPlan(\'' + m.id + '\')">×</span></button>';
       }
-      h += '<button class="mv-dr-plan mv-dr-add" onclick="mvSaveMyPlan()">＋ 지금 설계 저장</button>';
-      if (!_drMyPlans.length) h += '<span class="mv-dr-noplan">저장한 설계가 아직 없습니다</span>';
+      if (!_drMyPlans.length) h += '<span class="mv-dr-noplan">저장한 설계가 아직 없습니다 — 담보를 채운 뒤 위 ＋내플랜 을 누르세요</span>';
     } else {
       if (savedN === undefined) savedN = Object.keys(orig).length;
       if (savedN) h += '<button class="mv-dr-plan saved' + (onPlan.saved ? ' on' : '') + '" onclick="mvDrPlan(\'saved\',this)">✓ 저장된 항목 ' + savedN + '</button>';
@@ -18094,6 +18098,8 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
                       made:(d.getMonth()+1) + '/' + d.getDate() });
     if (typeof _saveMyPlans === 'function') _saveMyPlans();
     mvDrTab('mine');
+    var _t1 = document.querySelectorAll('.mv-dr-tab .mv-tn');
+    if (_t1.length > 1) _t1[1].textContent = _drMyPlans.length;
     if (typeof showToast === 'function') showToast('"' + name + '" 저장됨', 'green');
   };
 
@@ -18106,6 +18112,8 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     delete onPlan[id];
     if (typeof _saveMyPlans === 'function') _saveMyPlans();
     mvDrTab('mine');
+    var _t2 = document.querySelectorAll('.mv-dr-tab .mv-tn');
+    if (_t2.length > 1) _t2[1].textContent = _drMyPlans.length;
     if (typeof showToast === 'function') showToast('플랜을 지웠습니다', 'green');
   };
 
@@ -18234,6 +18242,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
        + '<button class="mv-dr-tab' + (mvTab === 'basic' ? ' on' : '') + '" data-t="basic" onclick="mvDrTab(\'basic\')">간단플랜<span class="mv-tn">' + _drPlans.length + '</span></button>'
        + '<button class="mv-dr-tab' + (mvTab === 'mine' ? ' on' : '') + '" data-t="mine" onclick="mvDrTab(\'mine\')">내 플랜<span class="mv-tn">' + _drMyPlans.length + '</span></button>'
        + '<span class="mv-dr-tab-sp"></span>'
+       + '<button class="mv-dr-plan mv-dr-add" onclick="mvSaveMyPlan()">\uFF0B \uB0B4\uD50C\uB79C</button>'
        + '<button class="mv-dr-plan mv-dr-go" onclick="mvDrGo()">\u2193 \uC774\uB3D9</button>'
        + '<button class="mv-dr-plan mv-dr-reset" onclick="mvDrReset()">\u21BA \uCD08\uAE30\uD654</button>'
        + '</div>';
