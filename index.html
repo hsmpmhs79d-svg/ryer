@@ -3040,7 +3040,7 @@ function selectCustomer(id) {
     +  '<button type="button" onclick="scrollToCardTab(\'.auto-section\')">자동차</button>'
     +  '<button type="button" onclick="scrollToCardTab(\'.silson-section\')">실손</button>'
     +  '<button type="button" onclick="scrollToCardTab(\'.mr-section\')">매니저</button>'
-    +  '<button type="button" onclick="scrollToCardTab(\'.dr-section\')">설계요청</button>'
+    +  '<button type="button" id="tab-dr" onclick="scrollToCardTab(\'.dr-section\')">설계요청</button>'
     +'</div>'
     +'</div>'
     +'<div class="card-body">'
@@ -17584,7 +17584,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     'delCustomer':             '이 고객을 지웁니다',
     'openJoinAlertModal':      '추가로 가입한 건을 등록합니다',
     'cancelCardPay':           '카드납 표시를 해제합니다',
-    'openMrList':              '매니저에게 보낸 요청 목록을 봅니다',
+    'openMrList':              '매니저를 골라 요청한 설계를 기록',
     'toggleStatusSort':        '이 상태인 고객을 목록 맨 위로 올립니다'
   };
   /* 고객 카드 안 이동 버튼 — scrollToCardTab('.xxx') */
@@ -17596,7 +17596,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     '.gift-section':     '중요 할 일 — 챙길 것·선물 약속',
     '.auto-section':     '자동차보험 — 만기·갱신 관리',
     '.silson-section':   '실손 — 세대·자기부담금 적기',
-    '.mr-section':       '매니저 — 요청 보내기',
+    '.mr-section':       '매니저 — 어느 매니저에게 요청했는지 기록',
     '.dr-section':       '설계요청 — 보험사에 견적 의뢰\n담보를 채우다 이 버튼을 누르면 플랜·저장 줄로 바로 올라옵니다'
   };
 
@@ -17712,6 +17712,17 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .dr-plan.dr-add{background:#fff;border:1.5px dashed #d9bd9c;color:#9c7a5c;}
 .dr-plan.dr-add:hover{border-color:#e46a25;color:#c2410c;background:#fff;}
 .dr-mine-empty{align-self:center;font-size:12.5px;color:#a8907a;margin-left:4px;}
+/* ★ 담보를 채우면 켜지는 강조 (2026-09-04) */
+.card-header .btn-group button.btn-copy-info.dr-hot,
+.card-header > div:first-child button.btn-copy-info.dr-hot,
+.btn-copy-info.dr-hot{background:#e46a25 !important;color:#fff !important;border-color:#c2410c !important;font-weight:800 !important;}
+.card-header .btn-group button.btn-copy-info.dr-hot::before,
+.card-header > div:first-child button.btn-copy-info.dr-hot::before{background:#fff !important;}
+.card-header .btn-group button.btn-copy-info.dr-hot:hover,
+.card-header > div:first-child button.btn-copy-info.dr-hot:hover{background:#c2410c !important;border-color:#9a3412 !important;}
+.card-tabs button#tab-dr.dr-hot{color:#fff !important;background:#e46a25 !important;border-radius:8px 8px 0 0 !important;
+  padding:9px 11px !important;border-bottom-color:#c2410c !important;}
+.card-tabs button#tab-dr.dr-hot::before{background:#fff !important;}
 .dr-plan.dr-go{background:#fff4e9;border-color:#e8b98d;color:#c2410c;font-weight:800;}
 .dr-plan.dr-go:hover{background:#fde7d3;border-color:#e46a25;}
 .dr-plan.dr-reset{background:#f8efe4;border-color:#e0cdb6;color:#9c7a5c;}
@@ -17779,6 +17790,12 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       items[i].classList.toggle('dr-filled', on);
       items[i].classList.toggle('dr-muted', has && !on);
     }
+    /* ★ 담보가 채워지면 위쪽 두 버튼을 살구색으로 (2026-09-04) — 눈이 가서 툴팁을 보게 */
+    var any = sec.querySelectorAll('.dr-item.dr-filled').length > 0;
+    var b1 = document.getElementById('btn-copy-info-dr');
+    if (b1) b1.classList.toggle('dr-hot', any);
+    var b2 = document.getElementById('tab-dr');
+    if (b2) b2.classList.toggle('dr-hot', any);
   };
 
   /* 추천 보험사 줄 */
