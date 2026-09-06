@@ -9977,6 +9977,7 @@ function _drChipsHtml(tab, id) {
   }
   return h;
 }
+/* 카드 상단 고정 바 높이만큼 아래에 붙입니다 */
 function drTab(tab, id) {
   _drTab = tab;
   var wrap = document.querySelector('.dr-section .dr-plans');
@@ -10105,7 +10106,6 @@ function buildDesignRequestSection(id) {
   h += '<div class="dr-btn-row">';
   h += '<button class="dr-btn-save" onclick="saveDesignRequest('+id+')">\uD83D\uDCBE \uC124\uACC4\uC694\uCCAD \uC800\uC7A5</button>';
   h += '<button class="dr-btn-clear" onclick="clearDesignRequest('+id+')">\uCD08\uAE30\uD654</button>';
-  h += '<button class="dr-btn-top" data-tip="\uD50C\uB79C \uBC84\uD2BC\u00B7\uB0B4\uD50C\uB79C \uC800\uC7A5\u00B7\uCD08\uAE30\uD654 \uC904\uB85C \uC62C\uB77C\uAC11\uB2C8\uB2E4" onclick="scrollDrHead()">\u2191 \uD50C\uB79C\u00B7\uC800\uC7A5\uC73C\uB85C</button>';
   h += '</div></div>';
   return h;
 }
@@ -17918,6 +17918,10 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 
     var btn = document.querySelector('.dr-plan[data-p="' + planId + '"]');
     if (btn) btn.classList.toggle('on', turningOn);
+    if (turningOn && !window._drHintShown) {
+      window._drHintShown = 1;
+      try { showToast('\uB2E4 \uACE0\uB974\uC168\uC73C\uBA74 \uC774 \uC904\uC758 \uFF0B\uB0B4\uD50C\uB79C \uC800\uC7A5\uC73C\uB85C \uB098\uB9CC\uC758 \uD50C\uB79C\uC744 \uB9CC\uB4DC\uC2E4 \uC218 \uC788\uC2B5\uB2C8\uB2E4', 'amber'); } catch(e) {}
+    }
     _drPaintFilled();
     _drPaintRec();
   };
@@ -17929,7 +17933,14 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     var it = t.closest ? t.closest('.dr-item') : null;
     if (!it) return;
     t.removeAttribute('data-byplan');
-    if (t.tagName === 'SELECT' && t.value) { var ck = it.querySelector('.dr-ck'); if (ck) ck.checked = true; }
+    if (t.tagName === 'SELECT' && t.value) {
+      var ck = it.querySelector('.dr-ck'); if (ck) ck.checked = true;
+      /* ★ 처음 담보를 채울 때 한 번만 안내 (2026-09-04) — 위 버튼을 모르고 지나치지 않도록 */
+      if (!window._drHintShown) {
+        window._drHintShown = 1;
+        try { showToast('\uB2E4 \uCC44\uC6B0\uC168\uC73C\uBA74 \uB9E8 \uC704 \uFF0B\uB0B4\uD50C\uB79C \uC800\uC7A5 \uB610\uB294 \uB9E8 \uC544\uB798 \uD83D\uDCBE \uC124\uACC4\uC694\uCCAD \uC800\uC7A5\uC744 \uB20C\uB7EC\uC8FC\uC138\uC694', 'amber'); } catch(e) {}
+      }
+    }
     _drPaintFilled();
   }, true);
 })();
