@@ -17612,16 +17612,21 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   }
 
   /* 이 요소에 붙일 문구 찾기 — 없으면 빈 문자열 */
+  /* 우리 툴팁을 띄우는 요소에서는 브라우저 기본 툴팁(title)을 떼어냅니다.
+     그대로 두면 살구 툴팁과 브라우저 툴팁이 겹쳐 두 개로 보입니다. (2026-09-04) */
+  function dropTitle(el) {
+    var t = el.getAttribute('title');
+    if (t) { el.setAttribute('data-title-was', t); el.removeAttribute('title'); }
+  }
   function textFor(el) {
     var d = el.getAttribute('data-tip');
-    if (d) return d;
+    if (d) { dropTitle(el); return d; }
     var h = el.getAttribute('onclick') || el.getAttribute('onchange') || '';
     var m = h.match(/scrollToCardTab\(\s*['"]([^'"]+)/);
-    if (m && CARD[m[1]]) return CARD[m[1]];
+    if (m && CARD[m[1]]) { dropTitle(el); return CARD[m[1]]; }
     var n = (h.match(/([A-Za-z_$][\w$]*)\s*\(/) || [])[1];
-    if (n && TIP[n]) return TIP[n];
-    /* 원래 달려 있던 title 은 브라우저 기본 툴팁(1초)이라 느리다 —
-       문구만 가져오고 속성은 떼어 두 개가 겹치지 않게 한다 */
+    if (n && TIP[n]) { dropTitle(el); return TIP[n]; }
+    /* 우리 문구가 없으면 title 문구를 그대로 쓰되, 속성은 떼어 하나만 뜨게 합니다 */
     var t = el.getAttribute('title');
     if (t) { el.setAttribute('data-tip', t); el.removeAttribute('title'); return t; }
     return '';
@@ -17667,7 +17672,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 
   document.addEventListener('mouseover', function (e) {
     var el = e.target && e.target.closest
-      ? e.target.closest('button,[data-tip],select,.filter-toggle,.status-sort-btn') : null;
+      ? e.target.closest('button,[data-tip],[title],select,.filter-toggle,.status-sort-btn') : null;
     if (!el || el === cur) return;
     hide();
     var txt = textFor(el);
@@ -17677,7 +17682,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   }, true);
 
   document.addEventListener('mouseout', function (e) {
-    var el = e.target && e.target.closest ? e.target.closest('button,[data-tip],select') : null;
+    var el = e.target && e.target.closest ? e.target.closest('button,[data-tip],[title],select') : null;
     if (el && el === cur) hide();
   }, true);
 
