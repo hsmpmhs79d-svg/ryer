@@ -16218,6 +16218,10 @@ body.mobile-mode #consult-vfoot{display:flex;gap:8px;padding:10px 12px 18px;flex
 .header .header-right { display:none !important; }
 .header .header-toggle { display:none !important; }
 .header h1 #user-name-input { background:#fff !important; border:1.5px solid #ecd5bd !important; color:#334155 !important; }
+/* ★ 로고 = 새로고침 버튼 (2026-09-04) */
+#sg-logo { cursor:pointer; border-radius:8px; padding:2px 6px; margin-left:-6px; transition:background .12s, opacity .12s; }
+#sg-logo:hover { background:#fdeadd; }
+#sg-logo:active { opacity:.6; }
 .header .header-toggle { background:#fff !important; border:1.5px solid #ecd5bd !important; color:#9a3412 !important; }
 /* 헤더 버튼: 테두리 없는 글자 메뉴 스타일 (샘플 이미지 톤) */
 .header-quick-btns button, .header-tools button {
@@ -16895,6 +16899,17 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
     var h1 = document.querySelector('.header h1');
     if (h1 && h1.firstChild && h1.firstChild.nodeType === 3) {
       h1.firstChild.textContent = '🍑 살구 CRM ';
+      /* ★ 로고 클릭 = 새로고침 (2026-09-04) — 모바일 로고와 같은 동작.
+         저장 안 한 변경이 있으면 beforeunload 가 먼저 물어봅니다. */
+      try {
+        var _lg = document.createElement('span');
+        _lg.id = 'sg-logo';
+        _lg.textContent = '🍑 살구 CRM';
+        _lg.title = '\uB204\uB974\uBA74 \uC0C8\uB85C\uACE0\uCE68 (Drive\uC5D0\uC11C \uCD5C\uC2E0 \uB370\uC774\uD130 \uBC1B\uAE30)';
+        _lg.addEventListener('click', function(){ location.reload(); });
+        h1.replaceChild(_lg, h1.firstChild);
+        h1.insertBefore(document.createTextNode(' '), _lg.nextSibling);
+      } catch (e) {}
     }
 
     /* 5-00) 스크립트 탭: 선택된 탭이 살구색으로 활성 표시되게 (요청) */
