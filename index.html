@@ -12148,6 +12148,8 @@ function copyContact(el) {
   // ─── 로그인 후 처리 ───
   function afterLogin() {
     saveTokenToStorage();
+    /* 로드가 끝까지 성공하면 다음 만료 때도 한 번 더 되살릴 수 있게 표식을 지웁니다 */
+    setTimeout(function(){ try { window.__salguReauthTried__ = false; } catch(e) {} }, 8000);
     fetchUserInfo();
     banner('Drive에서 데이터 불러오는 중...', '');
 
@@ -12497,7 +12499,40 @@ function copyContact(el) {
       });
     }).catch(function(e) {
       console.error('load err:', e);
-      banner('로드 실패: ' + (e.message || JSON.stringify(e)), 'err');
+      /* ★ 구글 로그인 만료(401/403) 되살리기 (2026-09-07)
+         예전에는 구글이 준 오류 덩어리를 그대로 화면에 뿌리고 끝나서
+         사용자가 뭘 해야 할지 알 수 없었습니다.
+         이제 조용히 토큰을 다시 받아 한 번 재시도하고, 그래도 안 되면
+         로그인 화면을 다시 띄웁니다. */
+      var _code = 0, _msg = '';
+      try {
+        _code = (e && (e.status || (e.result && e.result.error && e.result.error.code))) || 0;
+        _msg  = String((e && (e.message || (e.result && e.result.error && e.result.error.message))) || '');
+      } catch (e2) {}
+      var _isAuth = (_code === 401 || _code === 403) ||
+                    /401|invalid authentication|UNAUTHENTICATED|invalid_token|Invalid Credentials/i.test(_msg);
+
+      if (_isAuth && !window.__salguReauthTried__) {
+        window.__salguReauthTried__ = true;
+        banner('\uB85C\uADF8\uC778 \uC2DC\uAC04\uC774 \uC9C0\uB098 \uB2E4\uC2DC \uC5F0\uACB0\uD558\uB294 \uC911...', '');
+        silentReauth(function(ok) {
+          if (ok) { afterLogin(); return; }
+          clearTokenStorage();
+          banner('\u26A0\uFE0F \uAD6C\uAE00 \uB85C\uADF8\uC778\uC774 \uB9CC\uB8CC\uB410\uC2B5\uB2C8\uB2E4. [Google\uB85C \uC2DC\uC791]\uC744 \uB2E4\uC2DC \uB20C\uB7EC\uC8FC\uC138\uC694.', 'err');
+          try {
+            var _ov = document.getElementById('login-overlay');
+            if (_ov) _ov.style.display = '';
+            showLoginErr('\uB85C\uADF8\uC778 \uC2DC\uAC04\uC774 \uB9CC\uB8CC\uB410\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574\uC8FC\uC138\uC694.');
+          } catch (e3) {}
+        });
+        return;
+      }
+
+      if (_isAuth) {
+        banner('\u26A0\uFE0F \uAD6C\uAE00 \uB85C\uADF8\uC778\uC774 \uB9CC\uB8CC\uB410\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C\uACE0\uCE68 \uD6C4 \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574\uC8FC\uC138\uC694.', 'err');
+      } else {
+        banner('\uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C\uACE0\uCE68 \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694. (' + (_msg.slice(0, 60) || '\uC54C \uC218 \uC5C6\uB294 \uC624\uB958') + ')', 'err');
+      }
       hideLogin();
     });
   }
