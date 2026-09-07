@@ -8744,6 +8744,7 @@ function copyCustomerInfo(id) {
   if (c.phone) lines.push('전화번호: ' + c.phone);
   if (c.address) lines.push('주소: ' + c.address);
   if (c.job) lines.push('직업: ' + c.job);
+  if (c.driving) lines.push('\uC6B4\uC804\uC5EC\uBD80: ' + c.driving);
   if (c.medical_history) lines.push('병력/고지사항: ' + c.medical_history);
   var text = lines.join('\n');
   _copyCustInfoCore(text, 'btn-copy-info', '복사', '고객 정보 복사됨!');
@@ -8760,6 +8761,7 @@ function copyCustomerInfoWithDr(id) {
   if (c.phone) lines.push('전화번호: ' + c.phone);
   if (c.address) lines.push('주소: ' + c.address);
   if (c.job) lines.push('직업: ' + c.job);
+  if (c.driving) lines.push('\uC6B4\uC804\uC5EC\uBD80: ' + c.driving);
   if (c.medical_history) lines.push('병력/고지사항: ' + c.medical_history);
   var drText = (typeof getDesignRequestText === 'function') ? getDesignRequestText(id) : '';
   var text = lines.join('\n') + drText;
@@ -10050,7 +10052,7 @@ function buildDesignRequestSection(id) {
   var dr = c.designRequest || {};
   var hasSaved = Object.keys(dr).length > 0;
   var h = '<div class="dr-section" data-cid="' + id + '">';
-  h += '<div class="dr-title">\uD83D\uDCCB \uC124\uACC4\uC694\uCCAD' + (hasSaved ? ' <span class="dr-saved-badge">\u2705 \uC800\uC7A5\uB428</span>' : '') + ' <button class="dr-btn-manage" onclick="openDrItemManager('+id+')">\u2699\uFE0F \uD56D\uBAA9\uAD00\uB9AC</button> <button class="dr-btn-copy-header" onclick="copyDesignRequest('+id+')">\uD83D\uDCCB Copy</button></div>';
+  h += '<div class="dr-title">\uD83D\uDCCB \uC124\uACC4\uC694\uCCAD' + (hasSaved ? ' <span class="dr-saved-badge">\u2705 \uC800\uC7A5\uB428</span>' : '') + ' <button class="dr-btn-manage" onclick="openDrItemManager('+id+')">\u2699\uFE0F \uD56D\uBAA9\uAD00\uB9AC</button> <button class="dr-btn-copy-header" data-tip="\uACE0\uAC1D \uC815\uBCF4\uC5D0 \uC124\uACC4\uC694\uCCAD \uB0B4\uC6A9\uAE4C\uC9C0 \uBD99\uC5EC \uBCF5\uC0AC\uD569\uB2C8\uB2E4&#10;\uCCB4\uD06C\uB97C \uBE80 \uB2F4\uBCF4\uB294 \uBE60\uC9D1\uB2C8\uB2E4" onclick="copyCustomerInfoWithDr('+id+')">\uD83D\uDCCB \uC815\uBCF4+\uC124\uACC4\uC694\uCCAD</button></div>';
   _drOnPlans = {};
   _drOrig = JSON.parse(JSON.stringify(dr || {}));
   _drOrigOff = (c.drOff || []).slice();
@@ -12509,6 +12511,28 @@ function copyContact(el) {
         _code = (e && (e.status || (e.result && e.result.error && e.result.error.code))) || 0;
         _msg  = String((e && (e.message || (e.result && e.result.error && e.result.error.message))) || '');
       } catch (e2) {}
+
+      /* ★ 진단 기록 (2026-09-07) — 왜 실패했는지 다음에 바로 알 수 있게.
+         개인정보는 담지 않습니다(이메일은 앞 3글자만). */
+      window.__salguDiag__ = (function() {
+        var d = [];
+        try { d.push('코드 ' + (_code || '?')); } catch(x) {}
+        try { d.push('토큰 ' + (_accessToken ? (String(_accessToken).length + '자') : '없음')); } catch(x) {}
+        try {
+          var sv = (e && e.headers && e.headers.date) ? Date.parse(e.headers.date) : 0;
+          if (sv) {
+            var gap = Math.round((Date.now() - sv) / 1000);
+            d.push('시계차 ' + gap + '초' + (Math.abs(gap) > 300 ? ' ⚠️시계 어긋남' : ''));
+          } else { d.push('시계차 확인불가'); }
+        } catch(x) { d.push('시계차 오류'); }
+        try { d.push('계정 ' + (_userEmail ? (String(_userEmail).slice(0,3) + '***') : '미확인')); } catch(x) {}
+        try { d.push('기억하기 ' + (_isRemember() ? 'ON' : 'OFF')); } catch(x) {}
+        try { d.push('쿠키 ' + (navigator.cookieEnabled ? 'OK' : '차단')); } catch(x) {}
+        try { d.push('저장소 ' + ((function(){ try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return 'OK'; } catch(z){ return '차단'; } })())); } catch(x) {}
+        try { d.push('화면 ' + (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches ? '바로가기앱' : '브라우저')); } catch(x) {}
+        return d.join(' · ');
+      })();
+      console.error('살구 진단:', window.__salguDiag__, e);
       var _isAuth = (_code === 401 || _code === 403) ||
                     /401|invalid authentication|UNAUTHENTICATED|invalid_token|Invalid Credentials/i.test(_msg);
 
@@ -12522,7 +12546,7 @@ function copyContact(el) {
           try {
             var _ov = document.getElementById('login-overlay');
             if (_ov) _ov.style.display = '';
-            showLoginErr('\uB85C\uADF8\uC778 \uC2DC\uAC04\uC774 \uB9CC\uB8CC\uB410\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574\uC8FC\uC138\uC694.');
+            showLoginErr('\uB85C\uADF8\uC778\uC774 \uB9CC\uB8CC\uB410\uC2B5\uB2C8\uB2E4. \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574\uC8FC\uC138\uC694.  \u2014  ' + (window.__salguDiag__ || ''));
           } catch (e3) {}
         });
         return;
@@ -12532,6 +12556,7 @@ function copyContact(el) {
         banner('\u26A0\uFE0F \uAD6C\uAE00 \uB85C\uADF8\uC778\uC774 \uB9CC\uB8CC\uB410\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C\uACE0\uCE68 \uD6C4 \uB2E4\uC2DC \uB85C\uADF8\uC778\uD574\uC8FC\uC138\uC694.', 'err');
       } else {
         banner('\uB370\uC774\uD130\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC2B5\uB2C8\uB2E4. \uC0C8\uB85C\uACE0\uCE68 \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574\uC8FC\uC138\uC694. (' + (_msg.slice(0, 60) || '\uC54C \uC218 \uC5C6\uB294 \uC624\uB958') + ')', 'err');
+        try { showLoginErr(window.__salguDiag__ || ''); } catch (e4) {}
       }
       hideLogin();
     });
@@ -13688,6 +13713,7 @@ function copyContact(el) {
     if (c.phone) lines.push('전화번호: ' + c.phone);
     if (c.address) lines.push('주소: ' + c.address);
     if (c.job) lines.push('직업: ' + c.job);
+    if (c.driving) lines.push('\uC6B4\uC804\uC5EC\uBD80: ' + c.driving);
     var _h = c.medical_history || c.history;
     if (_h) lines.push('병력/고지사항: ' + _h);
     var text = lines.join('\n');
@@ -13736,6 +13762,7 @@ function copyContact(el) {
     if (c.phone) lines.push('전화번호: ' + c.phone);
     if (c.address) lines.push('주소: ' + c.address);
     if (c.job) lines.push('직업: ' + c.job);
+    if (c.driving) lines.push('\uC6B4\uC804\uC5EC\uBD80: ' + c.driving);
     var _h = c.medical_history || c.history;
     if (_h) lines.push('병력/고지사항: ' + _h);
     return lines.join('\n');
