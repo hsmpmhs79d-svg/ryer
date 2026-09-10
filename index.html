@@ -15006,10 +15006,18 @@ function copyContact(el) {
     }
     function keyOf(i) { return (dir === 'pull' ? 'p' : 's') + i; }
     /* 폰에 저장될 이름 미리보기 — 「인카 홍길동」 */
+    function _pfNow() {
+      try { return (typeof window.sgSyncPrefixOut === 'function') ? String(window.sgSyncPrefixOut() || '') : ''; }
+      catch (e) { return ''; }
+    }
     function _pfSample() {
-      var pf = '';
-      try { pf = (typeof window.sgSyncPrefixOut === 'function') ? String(window.sgSyncPrefixOut() || '') : ''; } catch (e) {}
+      var pf = _pfNow();
       return pf ? ('「' + pf + ' 홍길동」') : '「홍길동」';
+    }
+    /* 버튼 이름에도 지금 글자를 그대로 넣는다 — 「인카」 바꾸기 */
+    function _pfBtnLabel() {
+      var pf = _pfNow();
+      return pf ? ('⚙️ 「' + pf + '」 바꾸기') : '⚙️ 앞 글자 넣기';
     }
 
     var ov = document.createElement('div');
@@ -15106,7 +15114,7 @@ function copyContact(el) {
           + '폰에는 <b style="color:#c2410c;">' + _pfSample() + '</b> 처럼 저장됩니다. '
           + '<button type="button" id="_pcm-set2" style="font-family:inherit;font-size:12px;font-weight:800;'
           + 'cursor:pointer;background:#fff;border:1.5px solid #e7d4bd;color:#c2410c;border-radius:7px;'
-          + 'padding:3px 10px;vertical-align:middle;white-space:nowrap;margin-left:2px;">⚙️ 바꾸기</button>';
+          + 'padding:3px 10px;vertical-align:middle;white-space:nowrap;margin-left:2px;">' + _pfBtnLabel() + '</button>';
 
       /* 폰→살구 안쪽 탭 */
       card.querySelector('#_pcm-subtabs').style.display = (dir === 'pull') ? 'flex' : 'none';
