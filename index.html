@@ -11506,6 +11506,12 @@ function copyContact(el) {
       var tb = document.getElementById('drive-toolbar');
       if (tb) tb.classList.add('show');
     }
+    /* ★ 공지사항 자동 1회 (2026-09-11) — 로그인이 끝나 화면이 열리는 모든 길에서 한 번.
+       (신규·기존·백업 직접 연결 등 경로가 여러 갈래라 여기 한 곳에서 받는다.
+        이미 보신 분께는 sgNoticeAuto 안에서 걸러집니다.) */
+    try {
+      if (!window.__salguBlocked__ && typeof window.sgNoticeAuto === 'function') window.sgNoticeAuto();
+    } catch (eNt0) {}
   }
 
   function showLoginErr(msg) {
@@ -12398,6 +12404,8 @@ function copyContact(el) {
           // ★ 사용자 이름 prompt는 PC에서만 — 모바는 PC 등록 후 진입하므로 불필요 (2026-06-20)
           hideLogin();
           banner('데이터 로드 완료', 'ok');
+          /* ★ 공지사항 자동 1회 (2026-09-11) — 기존 사용자(백업을 불러온 경우)도 새 소식을 본다 */
+          try { if (typeof window.sgNoticeAuto === 'function') window.sgNoticeAuto(); } catch (eNt) {}
         } else {
           // PC는 데이터를 현재 페이지에 주입 후 캐시된 전역 변수도 강제 재로드
           injectDataToPage(data);
@@ -12559,6 +12567,8 @@ function copyContact(el) {
           } catch(e) { console.error('자동 고객 선택 실패:', e); }
           hideLogin();
           banner('데이터 로드 완료', 'ok');
+          /* ★ 공지사항 자동 1회 (2026-09-11) — 기존 사용자(백업을 불러온 경우)도 새 소식을 본다 */
+          try { if (typeof window.sgNoticeAuto === 'function') window.sgNoticeAuto(); } catch (eNt) {}
         }
       });
     }).catch(function(e) {
@@ -17843,7 +17853,7 @@ window.sgNotice = function () {
             + ';border-radius:9px;padding:9px 11px;font-size:12.4px;line-height:1.75;letter-spacing:-.3px;color:'
             + (mint ? '#4a5f52' : '#6b5240') + ';">' + it.note + '</div>'
           : '')
-      + (it.b
+      + (it.b && !(window.__IS_MOBILE__ && (it.fn === 'import' || it.fn === 'sync'))
           ? '<button type="button" class="sgnt-go" data-fn="' + it.fn + '" style="margin-top:9px;border:none;'
             + 'border-radius:8px;padding:6px 13px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;'
             + 'color:#fff;background:' + (mint ? '#166534' : 'linear-gradient(135deg,#9a3412,#e46a25)') + ';">'
