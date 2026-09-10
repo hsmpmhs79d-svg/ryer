@@ -2920,7 +2920,22 @@ function renderList() {
 
 // ── 고객 상세 ─────────────────────────────────────────────────────────────
 // ★ 고객 카드 상단 탭 — 클릭 시 해당 섹션으로 부드럽게 스크롤 (2026-07-02)
+/* ★ 고객 카드에서 지금 보고 있는 탭을 색으로 채운다 (2026-09-10)
+   selector 를 넘기면 그 탭만 켜지고 나머지는 꺼진다. 없는 값이면 전부 꺼진다.
+   모바일에는 .card-tabs 가 없으므로 아무 일도 하지 않는다. */
+function sgMarkCardTab(selector) {
+  try {
+    var tabs = document.querySelectorAll('.customer-card .card-tabs button');
+    for (var i = 0; i < tabs.length; i++) {
+      var oc = tabs[i].getAttribute('onclick') || '';
+      tabs[i].classList.toggle('tab-on', !!selector && oc.indexOf("'" + selector + "'") >= 0);
+    }
+  } catch (e) {}
+}
+window.sgMarkCardTab = sgMarkCardTab;
+
 function scrollToCardTab(selector) {
+  sgMarkCardTab(selector);          /* ★ 누른 탭에 색 채우기 (2026-09-10) */
   var el = document.querySelector('.customer-card ' + selector);
   if (!el) return;
   var rp = document.getElementById('right-panel');
@@ -12235,6 +12250,13 @@ function copyContact(el) {
           try { if (typeof renderList === 'function') renderList(); } catch(e) {}
         } catch(e) { console.error('clean init err:', e); }
         banner('첫 시작: 빈 백업 파일을 생성합니다...', '');
+        /* ★ 연습용 샘플 고객 5명 (2026-09-10) — 고객이 0명일 때만 1회.
+           텅 빈 화면 대신 실제로 눌러볼 수 있는 화면으로 시작하게 한다. */
+        try {
+          if (typeof window.sgSeedSamples === 'function' && window.sgSeedSamples()) {
+            if (typeof renderList === 'function') renderList();
+          }
+        } catch (eSd) {}
         hideLogin();
         // ★ 신규 사용자 첫 진입 — 이름 prompt + 입력 후 화면 갱신 (2026-06-20)
         // ★ PC에서만 — 모바는 PC 등록 후 진입하므로 prompt 불필요 (2026-06-20)
@@ -12254,8 +12276,22 @@ function copyContact(el) {
             }, 600);
           }
         } catch(e) {}
+        /* ★ 이름 prompt 가 뜨지 않는 신규 사용자도 가이드를 보게 한다 (2026-09-10)
+           — 모바일 신규, 그리고 이름이 이미 등록된 PC 신규.
+             prompt 가 뜰 상황이면 그쪽에서 부르므로 여기서는 부르지 않는다
+             (안내창이 prompt 에 가려지지 않도록). */
+        try {
+          var _willPrompt = (!IS_MOBILE && typeof window._getUserName === 'function' && !window._getUserName());
+          if (!_willPrompt && typeof window.sgGuideAuto === 'function') window.sgGuideAuto();
+        } catch(eG2) {}
         if (IS_MOBILE) {
-          renderMobile([]);
+          /* ★ 샘플 고객을 모바일 목록에도 반영 (2026-09-10) */
+          try {
+            if (window.customers && window.customers.length && window.__mvSetCustomers) {
+              window.__mvSetCustomers(window.customers);
+            }
+          } catch (eMv) {}
+          renderMobile();
           // ★ 모바일 첫 진입 시 노란 배너가 안 사라지는 문제 — 1.5초 뒤 ok 처리해서 페이드아웃 (2026-06-20)
           setTimeout(function() { banner('✅ 환영합니다! 새 고객을 추가해보세요.', 'ok'); }, 1500);
         } else {
@@ -12755,6 +12791,16 @@ function copyContact(el) {
   var _mvSort = 'updated';        // 기본: 최신 수정순 (PC와 동일)
   var _mvStatusTop = '';          // '' | '가입완료' | '가망고객' — 해당 상태만 보기
   var _mvSangMonth = '', _mvBirthMonth = '';  // ★ 상령일·생일 월 필터 (2026-08-15)
+
+  /* ★ 신규 사용자 샘플 고객을 모바일 목록에도 보이게 하는 최소 통로 (2026-09-10)
+     모바일 목록은 _mvCustomers 라는 별도 배열을 쓴다. 신규 경로에서는 그 배열이
+     비어 있어 window.customers 에 넣은 샘플이 보이지 않았다.
+     넘겨준 배열을 둘이 함께 쓰도록 참조만 맞춘다. */
+  window.__mvSetCustomers = function (arr) {
+    if (!Array.isArray(arr)) return;
+    _mvCustomers = arr;
+    window.customers = arr;
+  };
 
   function renderMobileFromData(data) {
     // 고객 데이터 파싱
@@ -17181,6 +17227,140 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 /* ★ 2026-09-04: 저장 실패 표시 — 스킨의 #save-indicator 초록색을 이겨야 눈에 띈다 */
 #save-indicator.sg-bad { color:#dc2626 !important; font-weight:800 !important; }
 </style>
+<script>
+
+/* ═══ 🍑 샘플 고객 5명 (2026-09-10) ═══════════════════════════════════
+   처음 쓰시는 분이 텅 빈 화면을 보지 않도록, 서로 다른 5가지 상황의
+   연습용 고객을 넣어드립니다. 고객이 한 명도 없을 때만 1회.
+   날짜·나이는 '지금'을 기준으로 계산하므로 언제 가입해도 자연스럽습니다.
+   전부 '샘플' 태그가 붙어 있어, 검색창에 샘플 이라고 치면 한 번에 모아
+   지울 수 있습니다.
+   ─ 전화번호는 실제로 걸리지 않는 결번(010-0000-00XX)이고,
+     주민번호 뒷자리는 ****** 로 두어 실제 번호가 아닙니다. */
+window.sgSeedSamples = function () {
+  try {
+    if (!Array.isArray(window.customers) || window.customers.length) return false;  /* 이미 고객이 있으면 손대지 않는다 */
+    if (typeof calcAge !== 'function') return false;
+
+    function pad(n) { return ('0' + n).slice(-2); }
+    function dStr(offset) {                       /* 오늘로부터 offset 일 */
+      var d = new Date(); d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + offset);
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    }
+    /* 상령일이 오늘로부터 dLeft 일 뒤가 되도록 생년월일을 만든다.
+       (상령일 = 최근 생일 + 6개월) 만든 뒤 calcAge 로 검산해 연도를 보정한다. */
+    function mkJumin(age, dLeft, female) {
+      var t = new Date(); t.setHours(0, 0, 0, 0);
+      var sang = new Date(t.getFullYear(), t.getMonth(), t.getDate() + dLeft);
+      var bir = new Date(sang.getFullYear(), sang.getMonth() - 6, sang.getDate());
+      var mm = bir.getMonth() + 1, dd = bir.getDate();
+      var cand = [0, -1, 1, -2, 2];
+      for (var i = 0; i < cand.length; i++) {
+        var y = t.getFullYear() - age + cand[i];
+        var g = (y < 2000) ? (female ? '2' : '1') : (female ? '4' : '3');
+        var jm = pad(y % 100) + pad(mm) + pad(dd) + '-' + g + '******';
+        if (String(calcAge(jm)) === String(age)) return jm;
+      }
+      return '';
+    }
+
+    var S = [
+      { name: '김샘플', gender: '남', phone: '010-0000-0001',
+        jumin: mkJumin(42, 8, false), status: '가망고객',
+        job: '자영업 (음식점)', driving: '자가용 출퇴근',
+        address: '서울 강남구 (샘플 주소)',
+        notes: '【샘플 ①】 상령일이 코앞인 고객입니다.\n이름 옆 빨간 ❗상령일 표시를 보세요. 그날이 지나면 보험나이가 한 살 올라 보험료가 오릅니다.\n이런 분은 먼저 연락드려야 합니다.',
+        consultations: [
+          { date: dStr(-2),  content: '상령일 안내드림. 이번 주 안에 결정하시겠다고 하심. 종합보험 위주로 설계 요청 예정.' },
+          { date: dStr(-9),  content: '지인 소개로 첫 통화. 기존 보험은 실손만 있고 진단비가 없다고 하심.' }
+        ],
+        schedules: [ { type: '미팅', date: dStr(2), time: '14:00', memo: '가게 근처 카페 · 설계안 2개 준비', simple: false, completed: false } ] },
+
+      { name: '박샘플', gender: '여', phone: '010-0000-0002',
+        jumin: mkJumin(38, 100, true), status: '가입완료',
+        job: '회사원 (사무직)', driving: '대중교통',
+        address: '경기 성남시 분당구 (샘플 주소)',
+        silsonDate: dStr(-1200), silsonIns: '삼성화재',
+        silsonMemo: '4세대 실손. 비급여 할증 구간 안내 완료.',
+        autoIns: [ { id: 'sample-auto-1', company: 'DB손보', premium: 780000,
+                     startDate: dStr(-340), memo: '갱신 시기 다가옴 · 마일리지 특약 확인', completed: false, completedAt: null } ],
+        notes: '【샘플 ②】 계약까지 끝난 고객입니다.\n자동차 탭에 넣어둔 갱신일이 다가오면 알려드리고, 실손 탭에는 몇 세대인지가 자동으로 계산돼 나옵니다.\n계약이 끝나도 챙길 일이 계속 생기는 자리입니다.',
+        consultations: [
+          { date: dStr(-25), content: '청약 완료. 증권 도착하면 보장내용 한 번 더 설명드리기로 함.' },
+          { date: dStr(-38), content: '설계안 3개 비교 설명. 암 진단비 3천 / 뇌·심 각 1천으로 결정.' },
+          { date: dStr(-52), content: '실손만 있고 진단비가 없어 상담 시작. 자녀 둘, 보험료는 15만원 선 희망.' }
+        ],
+        schedules: [ { type: '카톡관리', date: dStr(20), time: '10:00', memo: '증권 도착 확인 · 감사 인사', simple: true, completed: false } ] },
+
+      { name: '이샘플', gender: '남', phone: '010-0000-0003',
+        jumin: mkJumin(59, 150, false), status: '가망고객', preexisting: true,
+        job: '건설업', driving: '화물차 운행',
+        address: '인천 남동구 (샘플 주소)',
+        medical_history: '고혈압 약 5년 복용 중 / 3년 전 담낭절제술 / 최근 2년 내 입원 이력 없음',
+        notes: '【샘플 ③】 병력이 있는 고객입니다.\n고객 정보에서 유병자로 표시해두면 이름 옆에 배지가 붙고, 검색창에 유병자 라고 치면 이런 분들만 모아 볼 수 있습니다.\n간편심사(유병자) 상품으로 방향을 잡는 자리입니다.',
+        consultations: [
+          { date: dStr(-5),  content: '간편심사 3.3.5 안내. 고지 항목 하나씩 짚어드림. 담낭 수술은 5년 경과 전이라 확인 필요.' },
+          { date: dStr(-14), content: '일반심사는 어렵다고 판단. 간편심사 쪽으로 알아보기로 함.' }
+        ],
+        schedules: [ { type: '재연락', date: dStr(4), time: '19:00', memo: '퇴근 후 통화 · 간편심사 견적 안내', simple: false, completed: false } ] },
+
+      { name: '김살구', gender: '남', phone: '010-0000-0004',
+        jumin: mkJumin(7, 30, false), status: '가망고객',
+        job: '초등학생', address: '서울 송파구 (샘플 주소)',
+        notes: '【샘플 ④】 자녀 보험 케이스입니다.\n연락은 어머니(박샘플)와 하고, 카드에는 아이 이름으로 관리합니다.\n설계요청에서 어린이보험 플랜을 눌러보세요. 담보가 한 번에 채워집니다.',
+        consultations: [
+          { date: dStr(-7), content: '어머니 통해 상담. 태아보험 없이 지나와서 지금이라도 준비하고 싶어 하심. 예산 5만원 선.' }
+        ],
+        schedules: [ { type: '카톡관리', date: dStr(6), time: '11:00', memo: '어린이보험 설계안 카톡 발송', simple: true, completed: false } ] },
+
+      { name: '이살구', gender: '여', phone: '010-0000-0005',
+        jumin: mkJumin(47, -20, true), status: '재연락',
+        job: '학원 강사', driving: '자가용',
+        address: '서울 마포구 (샘플 주소)',
+        notes: '【샘플 ⑤】 상령일이 이미 지나간 고객입니다.\n이름 옆을 보시면 만 나이보다 보험 나이가 한 살 많습니다. 그만큼 보험료가 오른 상태예요.\n미루면 이렇게 된다는 걸 보여드릴 때 쓰기 좋은 화면입니다.',
+        consultations: [
+          { date: dStr(-3),  content: '상령일이 지나 보험료가 올랐다고 안내. 그래도 진행 의사 있으심.' },
+          { date: dStr(-31), content: '두 번째 통화. 남편분과 상의 후 연락 주기로 하심.' },
+          { date: dStr(-60), content: '학원 원장님 소개. 암 가족력 있어 진단비 위주로 보고 싶어 하심.' }
+        ],
+        schedules: [ { type: '재연락', date: dStr(5), time: '15:30', memo: '수업 없는 시간 · 진단비 견적 안내', simple: false, completed: false } ] }
+    ];
+
+    var now = Date.now();
+    var today = (typeof _todayLocalStr === 'function') ? _todayLocalStr() : dStr(0);
+    for (var i = 0; i < S.length; i++) {
+      var c = S[i];
+      window.customers.push({
+        id: i + 1,
+        name: c.name, gender: c.gender || '', phone: c.phone || '',
+        resident_number: c.jumin || '', jumin: c.jumin || '',
+        address: c.address || '', meetingAddress: '',
+        job: c.job || '', driving: c.driving || '',
+        medical_history: c.medical_history || '',
+        notes: c.notes || '',
+        status: c.status || '',
+        preexisting: !!c.preexisting,
+        tags: ['샘플'],
+        consultations: c.consultations || [],
+        schedules: c.schedules || [],
+        autoIns: c.autoIns || [],
+        silsonDate: c.silsonDate || '',
+        silsonIns: c.silsonIns || '',
+        silsonMemo: c.silsonMemo || '',
+        bank: '', holder: '', account: '',
+        _updated: now - i * 1000,   /* 김샘플이 맨 위(첫 화면)에 오도록 */
+        _created: today
+      });
+    }
+    return true;
+  } catch (e) {
+    try { console.error('샘플 고객 생성 실패:', e); } catch (e2) {}
+    return false;   /* 실패해도 앱 동작에는 영향 없음 */
+  }
+};
+
+</script>
 <!-- ═══ 🍑 사용법 가이드 (2026-09-10) ═══════════════════════════════
      스포트라이트 8단계. 외부 라이브러리 없음.
      열기 — 상단 [❓ 사용법] 버튼 · window.sgGuideStart()
@@ -17212,7 +17392,8 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 #sgg-bub .sgg-d { font-size:14px; line-height:1.68; color:#5b4636; letter-spacing:-.3px; }
 #sgg-bub .sgg-d b { color:#c2410c; font-weight:800; }
 #sgg-bub .sgg-f { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-top:9px; }
-#sgg-bub .sgg-dots { display:flex; gap:5px; margin-top:15px; }
+#sgg-bub .sgg-dots { display:flex; align-items:center; gap:5px; margin-top:15px; }
+#sgg-bub .sgg-num { margin-left:9px; font-size:11.5px; font-weight:700; color:#a8907a; letter-spacing:0; }
 #sgg-bub .sgg-dots i { width:7px; height:7px; border-radius:50%; background:#ecd9c4; display:block; }
 #sgg-bub .sgg-dots i.on { background:#e46a25; }
 #sgg-bub button { font-family:inherit; font-size:13px; font-weight:700; border-radius:8px;
@@ -17257,6 +17438,23 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       if (cs.length && typeof window.selectCustomer === 'function') window.selectCustomer(cs[0].id);
     } catch (e) {}
   }
+  /* 상담 스크립트 패널 — 닫혀 있으면 열고, 가이드가 연 것이면 끝날 때 도로 닫는다 */
+  var _spOpened = false;
+  function openScript() {
+    try {
+      var el = document.getElementById('script-panel');
+      if (el && (el.style.display === 'none' || !el.style.display) && typeof window.toggleScriptPanel === 'function') {
+        window.toggleScriptPanel();
+        _spOpened = true;
+      }
+    } catch (e) {}
+  }
+  function closeScriptIfOpened() {
+    if (!_spOpened) return;
+    _spOpened = false;
+    try { if (typeof window.toggleScriptPanel === 'function') window.toggleScriptPanel(); } catch (e) {}
+  }
+
   function openDetailMB() {
     try {
       if (q('.mv-detail')) return;
@@ -17273,23 +17471,38 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     { sel: '#customer-list',
       t: '② 등록한 고객이 여기 쌓입니다',
       d: '이름을 누르면 오른쪽에 그 고객의 <b>카드</b>가 열립니다.<br>위쪽 검색칸에 <b>이름·전화 일부만</b> 쳐도 찾아집니다.' },
-    { pre: openCard, sel: '.customer-card',
+    { pre: openCard, tab: '.info-grid', sel: '.customer-card',
       t: '③ 고객 카드 — 여기가 중심입니다',
       d: '이 한 장에 <b>그 고객의 모든 것</b>이 들어 있습니다.<br>상담 기록, 스케줄, 설계요청, 실손, 자동차보험, 제안서까지 전부 이 안입니다.' },
-    { pre: openCard, sel: '.consult-form',
+    { pre: openCard, tab: '.consult-form', sel: '.consult-form',
       t: '④ 상담 내용을 적어두세요',
       d: '통화하고 나서 한 줄만 적어두면 됩니다.<br>날짜별로 쌓여서, 다음에 전화할 때 <b>지난번에 무슨 얘기를 했는지</b> 바로 보입니다.' },
-    { pre: openCard, sel: '.sched-add-form',
+    { pre: openCard, tab: '.sched-add-form', sel: '.sched-add-form',
       t: '⑤ 다시 연락할 날을 잡아두세요',
       d: '재연락·미팅 날짜를 넣으면 <b>스케줄 대시보드</b>에 모여서 보입니다.<br>그날이 오면 알려드리니, 놓치는 고객이 없어집니다.' },
-    { pre: openCard, sel: '.dr-section',
+    { pre: openCard, tab: '.dr-section', sel: '.dr-section',
       t: '⑥ 설계요청 — 플랜 버튼 한 번이면 됩니다',
       d: '담보를 하나하나 고르지 않아도, <b>간단플랜</b> 버튼을 누르면 금액까지 한 번에 채워집니다.<br>여러 개를 겹쳐 골라도 되고, 자주 쓰는 조합은 <b>내 플랜</b>으로 저장해두세요.' },
     { sel: '#save-indicator',
       t: '⑦ 저장 버튼은 없습니다',
       d: '적는 대로 <b>본인 구글 드라이브에 저절로 저장</b>됩니다.<br>회사 서버에는 고객 정보가 남지 않고, PC에서 적은 것이 <b>휴대폰에도 그대로</b> 나옵니다.' },
+    { sel: '.header-quick-btns button[onclick*="toggleScriptPanel"]',
+      t: '⑧ 전화 걸기 전에 대본을 펴세요',
+      d: '<b>SCRIPT</b>를 누르면 오른쪽에 상담 대본이 펼쳐집니다.<br><b>DB TA 상담</b>과 <b>이관DB</b> 두 가지가 들어 있고, 본인 화법에 맞게 고쳐 쓰셔도 됩니다.<br>대본 속 <b>{설계사}</b> 자리에는 등록하신 이름이 저절로 들어갑니다.' },
+    { pre: openScript, sel: '#script-tab-3',
+      t: '⑨ 통화하면서 메모하세요',
+      d: '대본 옆 <b>📝 메모</b>는 적는 즉시 저장됩니다.<br>고객별 기록이 아니라 <b>내 작업용 메모장</b>이라, 오늘 걸 명단이나 급한 메모를 적어두기 좋습니다.' },
+    { sel: '.header-quick-btns button[onclick*="openSchedDashboard"]',
+      t: '⑩ 잡아둔 일정을 한눈에',
+      d: '고객마다 넣어둔 재연락·미팅이 <b>달력 한 장</b>에 모입니다.<br>날짜를 <b>끌어다 옮길 수도</b> 있고, 오늘 할 일이 몇 건인지 바로 보입니다.' },
+    { sel: '.header-quick-btns button[onclick*="openDmTemplates"]',
+      t: '⑪ 자주 보내는 문자는 저장해두세요',
+      d: '안부·감사·생일 인사처럼 <b>매번 비슷한 문자</b>를 template 로 저장해두고 눌러서 복사합니다.<br><b>{이름}</b> 자리에 고객 이름이 자동으로 들어가서, 고객 카드에서 누르면 그 사람 이름으로 바로 나옵니다.' },
+    { sel: '.sg-menu-wrap',
+      t: '⑫ 상담 도구 · 내 도구',
+      d: '<b>상담 도구</b> — 상담자료 · 청구서 양식 · 필요서류 · 약관 공시실<br><b>내 도구</b> — 연락처·캘린더 동기화 · 대표코드 · 아이디/비번 · 백업 폴더<br>자주 쓰지 않는 것들을 두 곳에 모아뒀습니다.' },
     { sel: '#sgf-pc',
-      t: '⑧ 길을 잃으면 여기에 쳐보세요',
+      t: '⑬ 길을 잃으면 여기에 쳐보세요',
       d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>이 안내를 다시 보시려면 검색창 옆 <b>❓ 사용법</b>을 누르세요.' }
   ];
 
@@ -17310,7 +17523,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     { pre: openDetailMB, sel: '.mv-detail',
       t: '⑤ 상세 화면 — 여기가 중심입니다',
       d: '상담 기록, 스케줄, 실손, 자동차보험이 <b>이 안에 다</b> 있습니다.<br>고친 내용은 곧바로 저장됩니다.' },
-    { pre: openDetailMB, sel: '.dr-section',
+    { pre: openDetailMB, sel: '.mv-dr-plans',
       t: '⑥ 설계요청도 휴대폰에서 됩니다',
       d: '<b>추천 플랜</b>을 고르면 그 담보만 목록으로 떠서, 금액을 드롭다운으로 바로 고칠 수 있습니다.<br>다 채우고 <b>정보+설계요청</b>을 누르면 그대로 복사됩니다.' },
     { sel: '.mv-header',
@@ -17417,7 +17630,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       '<button class="sgg-x" type="button" data-a="skip" aria-label="닫기">✕</button>' +
       '<div class="sgg-t">' + s.t + '</div>' +
       '<div class="sgg-d">' + s.d + '</div>' +
-      '<div class="sgg-dots">' + dots(i) + '</div>' +
+      '<div class="sgg-dots">' + dots(i) + '<span class="sgg-num">' + (i + 1) + ' / ' + STEPS.length + '</span></div>' +
       '<div class="sgg-f">' +
       (i > 0 ? '<button type="button" data-a="prev">◀ 이전</button>' : '') +
       '<button type="button" data-a="skip">그만 보기</button>' +
@@ -17425,7 +17638,11 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       (i === STEPS.length - 1 ? '다 봤어요' : '다음 ▶') + '</button></div>';
     bub.style.display = 'block';
     catchEl.style.display = 'block';
-    setTimeout(function () { locate(s); }, s.pre ? 320 : 0);
+    setTimeout(function () {
+      /* 카드가 다시 그려지면 탭 표시가 지워지므로 여기서 켠다 */
+      if (s.tab && window.sgMarkCardTab) { try { window.sgMarkCardTab(s.tab); } catch (eT) {} }
+      locate(s);
+    }, s.pre ? 320 : 0);
   }
 
   function close(mark) {
@@ -17433,6 +17650,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     catchEl.style.display = 'none';
     ring.style.display = 'none';
     bub.style.display = 'none';
+    closeScriptIfOpened();
     if (!window.__IS_MOBILE__) { try { window.scrollTo(_sx, _sy); } catch (eC) {} }
     if (mark) { try { localStorage.setItem(SEEN, '1'); } catch (e) {} }
     if (onCloseGo) { var f = onCloseGo; onCloseGo = null; try { f(); } catch (e) {} }
@@ -17447,6 +17665,8 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   };
   /* 신규 사용자에게 1회만. 이미 본 사람은 그냥 넘어간다. */
   window.sgGuideAuto = function () {
+    if (window.__sgGuideAuto__) return;      /* 두 군데서 불러도 한 번만 */
+    window.__sgGuideAuto__ = true;
     try { if (localStorage.getItem(SEEN)) return; } catch (e) {}
     setTimeout(function () { try { window.sgGuideStart(); } catch (e) {} }, 900);
   };
@@ -18151,6 +18371,12 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 .card-tabs button#tab-dr.dr-hot{color:#fff !important;background:#e46a25 !important;border-radius:8px 8px 0 0 !important;
   padding:9px 11px !important;border-bottom-color:#c2410c !important;}
 .card-tabs button#tab-dr.dr-hot::before{background:#fff !important;}
+/* ★ 지금 보고 있는 탭 (2026-09-10) — 누르면 그 버튼만 채워진다 */
+.card-tabs button.tab-on{color:#fff !important;background:#e46a25 !important;border-radius:8px 8px 0 0 !important;
+  padding:9px 11px !important;border-bottom-color:#c2410c !important;}
+.card-tabs button.tab-on::before{background:#fff !important;}
+.card-tabs button.tab-on:hover{color:#fff !important;background:#c2410c !important;border-bottom-color:#9a3412 !important;}
+.card-tabs button.tab-on:hover::before{background:#fff !important;}
 .dr-plan.dr-go{background:#fff4e9;border-color:#e8b98d;color:#c2410c;font-weight:800;}
 .dr-plan.dr-go:hover{background:#fde7d3;border-color:#e46a25;}
 .dr-plan.dr-reset{background:#f8efe4;border-color:#e0cdb6;color:#9c7a5c;}
