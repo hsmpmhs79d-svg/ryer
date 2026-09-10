@@ -12492,10 +12492,15 @@ function copyContact(el) {
           // ★ 가장 최근 수정 고객 자동 선택 (원본은 페이지 로드 시점에 호출돼서 Drive 데이터 못 봤음)
           try {
             if (window.customers && window.customers.length && typeof selectCustomer === 'function') {
-              var _best = window.customers.reduce(function(a,b){
-                return (b._updated||0) > (a._updated||0) ? b : a;
-              }, window.customers[0]);
-              if (_best) selectCustomer(_best.id);
+              /* ★ '(개인 일정)' 가상 고객은 자동 선택에서 뺀다 (2026-09-10)
+                 — 개인 일정을 손대면 그게 '가장 최근 수정'이 되어 매번 첫 화면에 열렸다 */
+              var _pool = window.customers.filter(function(c){ return !c._personal; });
+              if (_pool.length) {
+                var _best = _pool.reduce(function(a,b){
+                  return (b._updated||0) > (a._updated||0) ? b : a;
+                }, _pool[0]);
+                if (_best) selectCustomer(_best.id);
+              }
             }
           } catch(e) { console.error('자동 고객 선택 실패:', e); }
           hideLogin();
@@ -17182,6 +17187,15 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
      신규 사용자는 첫 로그인 때 1회 자동 (window.sgGuideAuto)
      기존 사용자는 자동으로 뜨지 않는다. -->
 <style>
+#sgg-btn {
+  display:inline-flex; align-items:center; gap:4px; vertical-align:middle; flex:0 0 auto;
+  background:#fdeadd; color:#c2410c; border:1.5px solid #f0cbaa; border-radius:20px;
+  padding:6px 13px; font-size:13px; font-weight:800; font-family:inherit;
+  cursor:pointer; white-space:nowrap; letter-spacing:-.3px; margin:0 4px 0 0;
+}
+#sgg-btn:hover { background:#e46a25; color:#fff; border-color:#c2410c; }
+#sgg-btn.tiny { padding:6px 10px; }
+#sgg-btn.tiny .lb { display:none; }
 #sgg-catch { position:fixed; top:0; left:0; right:0; bottom:0; z-index:99990; display:none; background:transparent; }
 #sgg-ring {
   position:fixed; z-index:99991; display:none; border-radius:12px; pointer-events:none;
@@ -17239,15 +17253,15 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   function openCard() {
     try {
       if (q('.customer-card')) return;
-      var cs = window.customers;
-      if (cs && cs.length && typeof window.selectCustomer === 'function') window.selectCustomer(cs[0].id);
+      var cs = (window.customers || []).filter(function (c) { return !c._personal; });
+      if (cs.length && typeof window.selectCustomer === 'function') window.selectCustomer(cs[0].id);
     } catch (e) {}
   }
   function openDetailMB() {
     try {
       if (q('.mv-detail')) return;
-      var cs = window.customers;
-      if (cs && cs.length && typeof window.mvOpenDetail === 'function') window.mvOpenDetail(cs[0].id);
+      var cs = (window.customers || []).filter(function (c) { return !c._personal; });
+      if (cs.length && typeof window.mvOpenDetail === 'function') window.mvOpenDetail(cs[0].id);
     } catch (e) {}
   }
 
@@ -17276,7 +17290,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       d: '적는 대로 <b>본인 구글 드라이브에 저절로 저장</b>됩니다.<br>회사 서버에는 고객 정보가 남지 않고, PC에서 적은 것이 <b>휴대폰에도 그대로</b> 나옵니다.' },
     { sel: '#sgf-pc',
       t: '⑧ 길을 잃으면 여기에 쳐보세요',
-      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>이 안내를 다시 보시려면 <b>내 도구 ▾ → 사용법 안내</b>를 누르시거나, 여기에 <b>사용법</b>이라고 쳐보세요.' }
+      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>이 안내를 다시 보시려면 검색창 옆 <b>❓ 사용법</b>을 누르세요.' }
   ];
 
   /* ── 모바일 코스 ────────────────────────────────────────── */
@@ -17437,12 +17451,66 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     setTimeout(function () { try { window.sgGuideStart(); } catch (e) {} }, 900);
   };
 
-  /* ── 여는 자리 ────────────────────────────────────────────
-     헤더에 버튼을 넣었더니 1512px 이하에서 상단 메뉴가 두 줄이 되어 빼냈다.
-     PC   — 상단 [내 도구 ▾] > 사용법 안내
-     모바 — 고객 목록 위 [❓ 사용법]
-     공통 — 기능 찾기에 '사용법' 이라고 쳐도 열린다.
-     폭을 전혀 차지하지 않는 자리들이라 헤더가 밀리지 않는다. */
+  /* ── [❓ 사용법] 버튼 — 기능 찾기 검색창 바로 옆 ────────────
+     검색창 폭을 300 → 230px 로 줄여 자리를 만들었다.
+     좁은 화면에서는 '사용법' 글자를 접고 ❓ 만 남긴다.
+     모바 — 고객 목록 위 [❓ 사용법] / 공통 — 기능 찾기에 '사용법' */
+  function mountPC() {
+    var sgf = document.getElementById('sgf-pc');
+    if (!sgf) return false;                       /* 검색창이 아직 안 붙었으면 잠시 뒤 다시 */
+    if (document.getElementById('sgg-btn')) return true;
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'sgg-btn';
+    b.innerHTML = '❓<span class="lb">사용법</span>';
+    b.title = '살구 사용법을 화면에서 차근차근 보여드립니다';
+    b.addEventListener('click', function () { window.sgGuideStart(); });
+    sgf.parentNode.insertBefore(b, sgf.nextSibling);
+    /* ★ 기능 찾기는 '오른쪽 메뉴가 첫 줄에 남을 때까지' 검색창을 줄인다.
+       그런데 그 계산은 로그인 화면이 떠 있는 동안(.header-tools 가 아직 안 보일 때)
+       그냥 포기하고, 그 뒤로는 다시 재지 않는다. 그래서 나중에 붙는 이 버튼이
+       계산에 안 들어가 헤더가 두 줄이 됐다.
+       화면이 실제로 보이기 시작하면 resize 를 한 번 쏴서 다시 재게 한다. */
+    var _n = 0;
+    var _nt = setInterval(function () {
+      var t = document.querySelector('.header-tools');
+      var ok = !!(t && t.offsetParent);          /* 화면에 실제로 그려졌는가 */
+      if (ok) { try { window.dispatchEvent(new Event('resize')); } catch (eR) {} }
+      if (ok || ++_n > 80) clearInterval(_nt);
+    }, 500);
+
+    /* 그래도 두 줄이면 '사용법' 글자를 감추고 ❓ 만 남긴다 (마지막 안전망) */
+    /* 자리가 모자라면 3단계로 물러선다:
+         ❓ 사용법  →  ❓ 만  →  숨김(1280px 같은 아주 좁은 화면)
+       숨겨져도 [내 도구 ▾ > 사용법 안내] 와 기능 찾기 검색으로 열 수 있다.
+       화면을 넓히면 매번 처음 상태로 되돌린 뒤 다시 재므로 저절로 나타난다. */
+    var _st = '';
+    function fit() {
+      var h1 = document.querySelector('.header h1');
+      if (!h1) return;
+      b.style.display = ''; b.classList.remove('tiny');
+      var st = 'full';
+      if (h1.getBoundingClientRect().height > 52) {
+        b.classList.add('tiny'); st = 'tiny';
+        if (h1.getBoundingClientRect().height > 52) { b.style.display = 'none'; st = 'hidden'; }
+      }
+      if (st !== _st) {   /* 상태가 바뀐 경우에만 검색창 폭을 다시 재게 한다 */
+        _st = st;
+        setTimeout(function () { try { window.dispatchEvent(new Event('resize')); } catch (e) {} }, 30);
+      }
+    }
+    setTimeout(fit, 1500);
+    var _ft;
+    /* 기능 찾기(120ms)가 먼저 폭을 맞춘 뒤에 재야 하므로 조금 늦게 */
+    window.addEventListener('resize', function () { clearTimeout(_ft); _ft = setTimeout(fit, 260); });
+    document.addEventListener('click', function (e) {
+      if (e.target && e.target.closest && e.target.closest('#header-toggle-btn')) setTimeout(fit, 220);
+    });
+    return true;
+  }
+  var _tries = 0;
+  var _timer = setInterval(function () {
+    if (window.__IS_MOBILE__ || mountPC() || ++_tries > 60) clearInterval(_timer);
+  }, 400);
 })();
 </script>
 
@@ -17452,12 +17520,13 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
      메뉴 이름을 몰라도 '실비', '견적', 'ㅊㄱㅅ' 처럼 쳐서 찾습니다. -->
 <style>
 /* ── PC: 헤더 안 검색창 ── */
-#sgf-pc { position:relative; display:inline-flex; align-items:center; width:300px; min-width:0; flex:0 0 auto; margin:0 4px; vertical-align:middle; }
+#sgf-pc { position:relative; display:inline-flex; align-items:center; width:230px; min-width:0; flex:0 0 auto; margin:0 4px; vertical-align:middle; }
 #sgf-pc .sgf-mag { position:absolute; left:10px; font-size:12.5px; opacity:.55; pointer-events:none; }
 #sgf-pc input {
   width:100%; padding:6px 12px 6px 30px; font-size:13px; font-family:inherit; font-weight:500;
-  border:1.5px solid rgba(255,255,255,.55); border-radius:20px;
-  background:rgba(255,255,255,.92); color:#3a2a20;
+  border:1.5px solid #e6c3a0; border-radius:20px;
+  background:#fff; color:#3a2a20;
+  box-shadow:inset 0 1px 2px rgba(124,45,18,.05);
 }
 #sgf-pc input::placeholder { color:#b9a08a; font-weight:500; }
 #sgf-pc input:focus { outline:none; border-color:#e46a25; box-shadow:0 0 0 3px rgba(228,106,37,.2); background:#fff; }
@@ -17758,7 +17827,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 
     /* ★ 헤더는 flex-wrap 이라 조금만 넘쳐도 오른쪽 메뉴가 통째로 다음 줄로 내려간다.
        오른쪽 메뉴가 첫 줄에 남아 있을 때까지만 검색창을 넓힌다. */
-    var MAXW = 300, MINW = 40;
+    var MAXW = 230, MINW = 40;   /* ★ 300 → 230 : 옆에 [❓ 사용법] 버튼 자리를 냈다 (2026-09-10) */
     function fit() {
       var h1 = wrap.parentNode;
       var ref = document.getElementById('user-name-input') || h1.firstElementChild;
