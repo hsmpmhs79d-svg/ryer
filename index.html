@@ -15005,6 +15005,12 @@ function copyContact(el) {
       return out;
     }
     function keyOf(i) { return (dir === 'pull' ? 'p' : 's') + i; }
+    /* 폰에 저장될 이름 미리보기 — 「인카 홍길동」 */
+    function _pfSample() {
+      var pf = '';
+      try { pf = (typeof window.sgSyncPrefixOut === 'function') ? String(window.sgSyncPrefixOut() || '') : ''; } catch (e) {}
+      return pf ? ('「' + pf + ' 홍길동」') : '「홍길동」';
+    }
 
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:99999;'
@@ -15096,7 +15102,11 @@ function copyContact(el) {
       card.querySelector('#_pcm-help').innerHTML = (dir === 'pull')
         ? '폰에 있고 살구에 없는 분들입니다. 데려올 분은 <b style="color:#16a34a;">가져오기</b>, '
           + '앞으로 이 목록에 뜨지 않게 하려면 <b style="color:#b91c1c;">안 함</b>.'
-        : '살구에 있고 폰 주소록에 없는 고객입니다. 폰에 저장할 분만 <b style="color:#16a34a;">보내기</b>를 누르세요.';
+        : '살구에 있고 폰 주소록에 없는 고객입니다. 폰에 저장할 분만 <b style="color:#16a34a;">보내기</b>를 누르세요.<br>'
+          + '폰에는 <b style="color:#c2410c;">' + _pfSample() + '</b> 처럼 저장됩니다. '
+          + '<button type="button" id="_pcm-set2" style="font-family:inherit;font-size:12px;font-weight:800;'
+          + 'cursor:pointer;background:#fff;border:1.5px solid #e7d4bd;color:#c2410c;border-radius:7px;'
+          + 'padding:3px 10px;vertical-align:middle;white-space:nowrap;margin-left:2px;">⚙️ 바꾸기</button>';
 
       /* 폰→살구 안쪽 탭 */
       card.querySelector('#_pcm-subtabs').style.display = (dir === 'pull') ? 'flex' : 'none';
@@ -15129,6 +15139,10 @@ function copyContact(el) {
         b.style.opacity = b.disabled ? '.4' : '1';
         b.style.cursor = b.disabled ? 'not-allowed' : 'pointer';
       });
+
+      /* 이름 표시는 '살구 → 폰' 으로 내보낼 때만 쓰인다.
+         그래서 아래 줄이 아니라 그 설명 안에 [⚙️ 바꾸기] 로 들어간다. */
+      card.querySelector('#_pcm-set-open').style.display = 'none';
 
       card.querySelector('#_pcm-exc-open').textContent =
         '🚫 제외해둔 사람 보기' + (excludedCount > 0 ? ' (' + excludedCount + '명)' : '');
@@ -15227,9 +15241,21 @@ function copyContact(el) {
     card.querySelector('#_pcm-exc-open').onclick = function () {
       try { if (typeof window.openExcludedContactsModal === 'function') window.openExcludedContactsModal(); } catch (e) {}
     };
-    card.querySelector('#_pcm-set-open').onclick = function () {
+    function _openPrefixSettings() {
       try { if (typeof window.sgSyncSettings === 'function') window.sgSyncSettings(); } catch (e) {}
-    };
+      /* 설정 창을 닫으면 바뀐 이름이 바로 보이게 다시 그린다 */
+      var _w = setInterval(function () {
+        if (document.getElementById('sgsy-ov')) return;
+        clearInterval(_w); try { render(); } catch (e) {}
+      }, 400);
+      setTimeout(function () { clearInterval(_w); }, 120000);
+    }
+    card.querySelector('#_pcm-set-open').onclick = _openPrefixSettings;
+    /* 안내문 안의 [⚙️ 바꾸기] 는 다시 그릴 때마다 새로 만들어지므로 위임으로 받는다 */
+    card.addEventListener('click', function (ev) {
+      var t = ev.target && ev.target.closest ? ev.target.closest('#_pcm-set2') : null;
+      if (t) _openPrefixSettings();
+    });
     card.querySelector('#_pcm-cancel').onclick = function () {
       close(); if (onResult) onResult({ cancelled: true });
     };
