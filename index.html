@@ -12248,6 +12248,9 @@ function copyContact(el) {
                 if (typeof window._refreshUserNameInput === 'function') window._refreshUserNameInput();
                 if (typeof _refreshScriptPanelsDisplay === 'function') _refreshScriptPanelsDisplay();
               }
+              /* ★ 사용법 가이드 자동 1회 (2026-09-10) — 여기는 '백업 없는 신규 사용자' 경로.
+                 기존 사용자는 이 분기에 오지 않으므로 자동으로 뜨지 않는다. */
+              try { if (typeof window.sgGuideAuto === 'function') window.sgGuideAuto(); } catch(eG) {}
             }, 600);
           }
         } catch(e) {}
@@ -17171,6 +17174,288 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 /* ★ 2026-09-04: 저장 실패 표시 — 스킨의 #save-indicator 초록색을 이겨야 눈에 띈다 */
 #save-indicator.sg-bad { color:#dc2626 !important; font-weight:800 !important; }
 </style>
+<!-- ═══ 🍑 사용법 가이드 (2026-09-10) ═══════════════════════════════
+     스포트라이트 8단계. 외부 라이브러리 없음.
+     열기 — 상단 [❓ 사용법] 버튼 · window.sgGuideStart()
+     신규 사용자는 첫 로그인 때 1회 자동 (window.sgGuideAuto)
+     기존 사용자는 자동으로 뜨지 않는다. -->
+<style>
+#sgg-catch { position:fixed; top:0; left:0; right:0; bottom:0; z-index:99990; display:none; background:transparent; }
+#sgg-ring {
+  position:fixed; z-index:99991; display:none; border-radius:12px; pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(28,14,4,.70), 0 0 0 3px #e46a25, 0 0 22px 5px rgba(228,106,37,.55);
+  transition:top .2s ease, left .2s ease, width .2s ease, height .2s ease;
+}
+#sgg-ring.sgg-full { box-shadow:0 0 0 9999px rgba(28,14,4,.70); }
+#sgg-bub {
+  position:fixed; z-index:99992; display:none; width:352px; max-width:88vw;
+  background:#fff; border:2px solid #f0dcc6; border-radius:14px; padding:16px 18px 14px;
+  box-shadow:0 18px 44px -12px rgba(124,45,18,.45); font-family:inherit; text-align:left;
+}
+#sgg-bub .sgg-t { font-size:16.5px; font-weight:800; color:#7c2d12; letter-spacing:-.4px; margin-bottom:7px; padding-right:20px; }
+#sgg-bub .sgg-d { font-size:14px; line-height:1.68; color:#5b4636; letter-spacing:-.3px; }
+#sgg-bub .sgg-d b { color:#c2410c; font-weight:800; }
+#sgg-bub .sgg-f { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-top:9px; }
+#sgg-bub .sgg-dots { display:flex; gap:5px; margin-top:15px; }
+#sgg-bub .sgg-dots i { width:7px; height:7px; border-radius:50%; background:#ecd9c4; display:block; }
+#sgg-bub .sgg-dots i.on { background:#e46a25; }
+#sgg-bub button { font-family:inherit; font-size:13px; font-weight:700; border-radius:8px;
+  padding:7px 12px; cursor:pointer; border:1.5px solid #e7d4bd; background:#fff; color:#8a6f5c; white-space:nowrap; }
+#sgg-bub button.p { background:linear-gradient(135deg,#9a3412,#e46a25); border-color:#c2410c; color:#fff; }
+#sgg-bub .sgg-x { position:absolute; top:8px; right:10px; border:none; background:transparent;
+  font-size:16px; color:#c0a68d; padding:2px 5px; }
+/* 살구 스킨이 .header-tools button 에 !important 를 걸어두어서, 아이디로 한 단계 더 좁힌다 */
+#sgg-btn { cursor:pointer; font-family:inherit; white-space:nowrap; }
+.header .header-tools button#sgg-btn {
+  background:#fdeadd !important; color:#c2410c !important;
+  border:1.5px solid #f3d5bb !important; border-radius:7px !important;
+  font-weight:800 !important; font-size:13px !important; padding:5px 11px !important;
+}
+.header .header-tools button#sgg-btn:hover { background:#e46a25 !important; color:#fff !important; }
+#sgg-mbtn {
+  background:rgba(255,255,255,.22); color:#fff; border:1.5px solid rgba(255,255,255,.45);
+  padding:4px 9px; border-radius:7px; font-size:12.5px; font-weight:800; cursor:pointer;
+  font-family:inherit; white-space:nowrap; margin-left:5px; letter-spacing:-.3px;
+}
+#sgg-mbtn.tiny .lb { display:none; }
+@media (max-width:700px) { #sgg-bub { width:auto; left:12px !important; right:12px !important; } }
+</style>
+<script>
+(function () {
+  'use strict';
+  var SEEN = 'sgGuideSeen_v1';
+  var catchEl, ring, bub, cur = 0, STEPS = [], onCloseGo = null;
+
+  function q(s) { try { return document.querySelector(s); } catch (e) { return null; } }
+
+  /* 고객 카드 안쪽을 설명하는 단계 — 카드가 안 열려 있으면 첫 고객을 열어준다.
+     고객이 하나도 없으면 아무것도 하지 않고, 말풍선만 화면 가운데에 뜬다. */
+  function openCard() {
+    try {
+      if (q('.customer-card')) return;
+      var cs = window.customers;
+      if (cs && cs.length && typeof window.selectCustomer === 'function') window.selectCustomer(cs[0].id);
+    } catch (e) {}
+  }
+  function openDetailMB() {
+    try {
+      if (q('.mv-detail')) return;
+      var cs = window.customers;
+      if (cs && cs.length && typeof window.mvOpenDetail === 'function') window.mvOpenDetail(cs[0].id);
+    } catch (e) {}
+  }
+
+  /* ── PC 코스 ────────────────────────────────────────────── */
+  var PC = [
+    { sel: '.add-btn-mini[onclick="openAddModal()"]',
+      t: '① 고객은 여기서 등록합니다',
+      d: '<b>+ 새고객</b>을 누르면 이름·전화·주민번호·주소를 적는 창이 열립니다.<br>주민번호를 넣으면 <b>성별과 나이가 저절로</b> 채워집니다.' },
+    { sel: '#customer-list',
+      t: '② 등록한 고객이 여기 쌓입니다',
+      d: '이름을 누르면 오른쪽에 그 고객의 <b>카드</b>가 열립니다.<br>위쪽 검색칸에 <b>이름·전화 일부만</b> 쳐도 찾아집니다.' },
+    { pre: openCard, sel: '.customer-card',
+      t: '③ 고객 카드 — 여기가 중심입니다',
+      d: '이 한 장에 <b>그 고객의 모든 것</b>이 들어 있습니다.<br>상담 기록, 스케줄, 설계요청, 실손, 자동차보험, 제안서까지 전부 이 안입니다.' },
+    { pre: openCard, sel: '.consult-form',
+      t: '④ 상담 내용을 적어두세요',
+      d: '통화하고 나서 한 줄만 적어두면 됩니다.<br>날짜별로 쌓여서, 다음에 전화할 때 <b>지난번에 무슨 얘기를 했는지</b> 바로 보입니다.' },
+    { pre: openCard, sel: '.sched-add-form',
+      t: '⑤ 다시 연락할 날을 잡아두세요',
+      d: '재연락·미팅 날짜를 넣으면 <b>스케줄 대시보드</b>에 모여서 보입니다.<br>그날이 오면 알려드리니, 놓치는 고객이 없어집니다.' },
+    { pre: openCard, sel: '.dr-section',
+      t: '⑥ 설계요청 — 플랜 버튼 한 번이면 됩니다',
+      d: '담보를 하나하나 고르지 않아도, <b>간단플랜</b> 버튼을 누르면 금액까지 한 번에 채워집니다.<br>여러 개를 겹쳐 골라도 되고, 자주 쓰는 조합은 <b>내 플랜</b>으로 저장해두세요.' },
+    { sel: '#save-indicator',
+      t: '⑦ 저장 버튼은 없습니다',
+      d: '적는 대로 <b>본인 구글 드라이브에 저절로 저장</b>됩니다.<br>회사 서버에는 고객 정보가 남지 않고, PC에서 적은 것이 <b>휴대폰에도 그대로</b> 나옵니다.' },
+    { sel: '#sgf-pc',
+      t: '⑧ 길을 잃으면 여기에 쳐보세요',
+      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>더 자세한 내용은 상단 <b>📖 사용설명서</b>에 있습니다.' }
+  ];
+
+  /* ── 모바일 코스 ────────────────────────────────────────── */
+  var MB = [
+    { sel: '.mv-tabs',
+      t: '① 고객과 캘린더, 두 칸입니다',
+      d: '<b>고객</b>은 명단, <b>캘린더</b>는 잡아둔 일정입니다.<br>휴대폰에서는 이 두 칸만 오가시면 됩니다.' },
+    { sel: '.mv-dm-btn[onclick*="mvAddCustomer"]',
+      t: '② 새 고객 등록',
+      d: '밖에서 만난 고객을 <b>그 자리에서</b> 넣어두세요.<br>PC를 켤 필요 없이, 넣는 즉시 본인 드라이브에 저장됩니다.' },
+    { sel: '#mv-search',
+      t: '③ 이름 일부만 쳐도 찾아집니다',
+      d: '이름·전화번호는 물론 <b>메모 안의 글자</b>로도 찾아집니다.<br>아래 정렬·상태로 가망고객만 따로 볼 수도 있습니다.' },
+    { sel: '.mv-card',
+      t: '④ 고객을 누르면 상세가 열립니다',
+      d: '전화·문자·길찾기가 <b>한 번에 연결</b>됩니다.<br>운전 중이시면 T맵으로 바로 넘어갑니다.' },
+    { pre: openDetailMB, sel: '.mv-detail',
+      t: '⑤ 상세 화면 — 여기가 중심입니다',
+      d: '상담 기록, 스케줄, 실손, 자동차보험이 <b>이 안에 다</b> 있습니다.<br>고친 내용은 곧바로 저장됩니다.' },
+    { pre: openDetailMB, sel: '.dr-section',
+      t: '⑥ 설계요청도 휴대폰에서 됩니다',
+      d: '<b>추천 플랜</b>을 고르면 그 담보만 목록으로 떠서, 금액을 드롭다운으로 바로 고칠 수 있습니다.<br>다 채우고 <b>정보+설계요청</b>을 누르면 그대로 복사됩니다.' },
+    { sel: '.mv-header',
+      t: '⑦ 위쪽 버튼들',
+      d: '📚 상담자료 · 📋 청구 필요서류 · 📜 약관 공시실 · 🎂 생일자.<br>🔄 를 누르면 <b>최신 데이터를 다시 받아옵니다.</b>' },
+    { sel: '#sgf-mbtn',
+      t: '⑧ 길을 잃으면 여기를 누르세요',
+      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.' }
+  ];
+
+  /* ── 화면 ───────────────────────────────────────────────── */
+  function build() {
+    if (catchEl) return;
+    catchEl = document.createElement('div'); catchEl.id = 'sgg-catch';
+    ring = document.createElement('div'); ring.id = 'sgg-ring';
+    bub = document.createElement('div'); bub.id = 'sgg-bub';
+    document.body.appendChild(catchEl);
+    document.body.appendChild(ring);
+    document.body.appendChild(bub);
+
+    bub.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('button') : null;
+      if (!b) return;
+      var a = b.getAttribute('data-a');
+      if (a === 'next') show(cur + 1);
+      else if (a === 'prev') show(cur - 1);
+      else close(true);
+    });
+    catchEl.addEventListener('click', function () { close(true); });
+    document.addEventListener('keydown', function (ev) {
+      if (catchEl.style.display !== 'block') return;
+      if (ev.key === 'Escape') { ev.stopPropagation(); close(true); }
+      else if (ev.key === 'ArrowRight') show(cur + 1);
+      else if (ev.key === 'ArrowLeft') show(cur - 1);
+    }, true);
+  }
+
+  function place(el) {
+    var r = el.getBoundingClientRect(), pad = 6;
+    var vw = window.innerWidth, vh = window.innerHeight;
+    /* 설계요청처럼 화면보다 긴 영역은 위쪽만 비춘다 — 전체를 뚫으면 강조가 사라진다 */
+    var rt = r.top, rh = r.height;
+    if (rh > vh * 0.62) { rt = Math.max(8, r.top); rh = vh * 0.42; }
+    ring.classList.remove('sgg-full');
+    ring.style.top = Math.max(0, rt - pad) + 'px';
+    ring.style.left = Math.max(0, r.left - pad) + 'px';
+    ring.style.width = (r.width + pad * 2) + 'px';
+    ring.style.height = (rh + pad * 2) + 'px';
+    ring.style.display = 'block';
+
+    var bw = bub.offsetWidth, bh = bub.offsetHeight;
+    var top = rt + rh + 14, left = r.left;
+    if (top + bh > vh - 10) top = rt - bh - 14;
+    if (top < 10) top = Math.max(10, (vh - bh) / 2);
+    if (left + bw > vw - 10) left = vw - bw - 10;
+    if (left < 10) left = 10;
+    bub.style.top = top + 'px';
+    bub.style.left = left + 'px';
+  }
+
+  function center() {
+    ring.classList.add('sgg-full');
+    ring.style.top = '50%'; ring.style.left = '50%';
+    ring.style.width = '0px'; ring.style.height = '0px';
+    ring.style.display = 'block';
+    bub.style.top = Math.max(10, (window.innerHeight - bub.offsetHeight) / 2) + 'px';
+    bub.style.left = Math.max(10, (window.innerWidth - bub.offsetWidth) / 2) + 'px';
+  }
+
+  function locate(s) {
+    var el = s.sel ? q(s.sel) : null;
+    if (!el) { center(); return; }
+    var tall = el.getBoundingClientRect().height > window.innerHeight * 0.62;
+    /* ★ 부드러운 스크롤은 끝나기 전에 위치를 재게 되어 링이 엉뚱한 데 그려진다. 즉시 이동. */
+    try { el.scrollIntoView({ behavior: 'auto', block: tall ? 'start' : 'center' }); }
+    catch (e) { try { el.scrollIntoView(); } catch (e2) {} }
+    function put() {
+      var e2 = q(s.sel);
+      if (e2 && e2.getBoundingClientRect().width > 0) place(e2); else center();
+    }
+    setTimeout(put, 180);
+    setTimeout(put, 620);   /* 늦게 그려지는 화면 대비 한 번 더 */
+  }
+
+  function dots(i) {
+    var o = '';
+    for (var k = 0; k < STEPS.length; k++) o += '<i class="' + (k === i ? 'on' : '') + '"></i>';
+    return o;
+  }
+
+  function show(i) {
+    if (i < 0) i = 0;
+    if (i >= STEPS.length) { close(true); return; }
+    cur = i;
+    var s = STEPS[i];
+    if (s.pre) { try { s.pre(); } catch (e) {} }
+    bub.innerHTML =
+      '<button class="sgg-x" type="button" data-a="skip" aria-label="닫기">✕</button>' +
+      '<div class="sgg-t">' + s.t + '</div>' +
+      '<div class="sgg-d">' + s.d + '</div>' +
+      '<div class="sgg-dots">' + dots(i) + '</div>' +
+      '<div class="sgg-f">' +
+      (i > 0 ? '<button type="button" data-a="prev">◀ 이전</button>' : '') +
+      '<button type="button" data-a="skip">그만 보기</button>' +
+      '<button type="button" class="p" data-a="next">' +
+      (i === STEPS.length - 1 ? '다 봤어요' : '다음 ▶') + '</button></div>';
+    bub.style.display = 'block';
+    catchEl.style.display = 'block';
+    setTimeout(function () { locate(s); }, s.pre ? 320 : 0);
+  }
+
+  function close(mark) {
+    if (!catchEl) return;
+    catchEl.style.display = 'none';
+    ring.style.display = 'none';
+    bub.style.display = 'none';
+    if (mark) { try { localStorage.setItem(SEEN, '1'); } catch (e) {} }
+    if (onCloseGo) { var f = onCloseGo; onCloseGo = null; try { f(); } catch (e) {} }
+  }
+
+  /* ── 시작 ───────────────────────────────────────────────── */
+  window.sgGuideStart = function () {
+    build();
+    STEPS = window.__IS_MOBILE__ ? MB : PC;
+    show(0);
+  };
+  /* 신규 사용자에게 1회만. 이미 본 사람은 그냥 넘어간다. */
+  window.sgGuideAuto = function () {
+    try { if (localStorage.getItem(SEEN)) return; } catch (e) {}
+    setTimeout(function () { try { window.sgGuideStart(); } catch (e) {} }, 900);
+  };
+
+  /* ── [❓ 사용법] 버튼 달기 ──────────────────────────────── */
+  function mountPC() {
+    var tools = document.querySelector('.header-tools');
+    if (!tools || document.getElementById('sgg-btn')) return true;
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'sgg-btn'; b.textContent = '❓ 사용법';
+    b.title = '살구 사용법을 화면에서 차근차근 보여드립니다';
+    b.addEventListener('click', function () { window.sgGuideStart(); });
+    tools.insertBefore(b, tools.firstChild);
+    return true;
+  }
+  function mountMB() {
+    var title = document.getElementById('sg-mv-title');
+    if (!title) return false;
+    if (document.getElementById('sgg-mbtn')) return true;
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'sgg-mbtn';
+    b.innerHTML = '❓<span class="lb">사용법</span>';
+    b.setAttribute('aria-label', '사용법');
+    b.addEventListener('click', function () { window.sgGuideStart(); });
+    var right = document.getElementById('sg-mvt-right');
+    if (right) title.insertBefore(b, right); else title.appendChild(b);
+    if (title.getBoundingClientRect().height > 40) b.classList.add('tiny');
+    return true;
+  }
+  var tries = 0;
+  var timer = setInterval(function () {
+    var ok = window.__IS_MOBILE__ ? mountMB() : mountPC();
+    if (ok || ++tries > 40) clearInterval(timer);
+  }, 400);
+})();
+</script>
+
 <!-- ═══ 기능 찾기 (2026-09-03) ═══════════════════════════════════════
      PC   — 상단 헤더 빈 칸에 검색창. Ctrl(⌘)+K 로도 열림
      모바일 — 로고 오른쪽 🔍 버튼 → 전체화면 검색. 처음 3번만 말풍선 안내
