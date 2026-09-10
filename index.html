@@ -15507,18 +15507,10 @@ function copyContact(el) {
     if (window.__IS_MOBILE__) return;
     if (!_accessToken) { alert('Google 로그인이 필요합니다'); return; }
     if (!gapi.client.people) { alert('People API 로딩 중... 5초 뒤 다시 시도해주세요'); return; }
-    if (!_isRetry) {
-      /* ★ 2026-09-11: 안내문을 현재 동작에 맞게. 표시 글자는 설정값을 그대로 보여준다. */
-      var _pf = (typeof window.sgSyncPrefixOut === 'function') ? window.sgSyncPrefixOut() : '인카';
-      var _pfTxt = _pf ? ('"' + _pf + ' ○○○" 로 보냅니다.') : '이름 그대로 보냅니다.';
-      if (!confirm('Google 연락처를 불러옵니다.\n\n'
-        + '불러온 뒤 창이 하나 열리고, 거기서 두 가지를 고르실 수 있습니다.\n\n'
-        + '  📥 폰 → 살구 : 데려올 사람\n'
-        + '  📤 살구 → 폰 : 폰에 저장할 고객 ' + (_pf ? ('(' + _pf + ' ○○○ 로)') : '(이름 그대로)') + '\n\n'
-        + '고르지 않은 사람은 아무 일도 일어나지 않습니다.\n'
-        + '기존 데이터는 손대지 않습니다.')) return;
-    }
-    if (typeof showToast === 'function') showToast(_isRetry ? '🔄 토큰 갱신 후 재시도...' : '🔄 폰 → CRM 가져오는 중...', 'amber');
+    /* ★ 2026-09-11: 시작 확인창을 없앴다.
+       여기서는 폰 연락처를 '읽기만' 하고, 실제로 등록·전송하는 것은
+       다음에 열리는 동기화 창에서 고른 사람만이다. 그러니 앞에서 또 물을 이유가 없다. */
+    if (typeof showToast === 'function') showToast(_isRetry ? '🔄 토큰 갱신 후 재시도...' : '🔄 폰 연락처 불러오는 중...', 'amber');
     pullContactsFromGoogle(function(added, skipped, err) {
       if (err) {
         var statusCode = 0;
