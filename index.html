@@ -17788,7 +17788,7 @@ window.sgImportGuide = function () {
     + '<button type="button" id="sgimp-x" style="margin-left:auto;border:none;background:transparent;'
     + 'font-size:18px;color:#c0a68d;cursor:pointer;padding:2px 6px;">✕</button></div>'
     + '<div style="font-size:13.5px;color:#8a6f5c;margin-bottom:13px;letter-spacing:-.3px;">'
-    + '손으로 적어두신 명단도, 사진으로 찍어두신 명단도, 양식이 제각각인 엑셀도 옮길 수 있습니다.</div>'
+    + '손으로 적어두신 명단도, 사진으로 찍어두신 명단도, 양식이 제각각인 엑셀도 옮길 수 있습니다. 폰 주소록에서 바로 가져오는 방법은 맨 아래에 있습니다.</div>'
 
     /* 순서 한눈에 */
     + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;background:#fff7ef;'
@@ -17842,6 +17842,24 @@ window.sgImportGuide = function () {
     + 'border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">📋 프롬프트 복사</button>'
     + '</div>'
 
+    /* ③ 폰 주소록 */
+    + '<div style="background:#f4fbf7;border:1.5px solid #cfe8db;border-radius:12px;padding:14px 16px;margin-bottom:14px;">'
+    + '<div style="font-size:14.5px;font-weight:800;color:#166534;margin-bottom:6px;">📱 폰 주소록에서 바로 가져오기</div>'
+    + '<div style="font-size:13px;line-height:1.75;color:#3f5a4b;letter-spacing:-.3px;">'
+    + '엑셀을 만들지 않으셔도, 폰에 저장된 분들을 살구로 바로 데려올 수 있습니다. '
+    + '상단 <b>[🔄 연락처 동기화]</b> 를 누르시면 고르는 창이 열립니다.</div>'
+    + '<div style="margin-top:9px;background:#fff;border:1.5px dashed #cfe8db;border-radius:9px;padding:9px 12px;'
+    + 'font-size:12.6px;line-height:1.75;color:#4a5f52;letter-spacing:-.3px;">'
+    + '<b style="color:#166534;">다만 이것만으로 다 되지는 않습니다.</b><br>'
+    + '· 넘어오는 것은 <b>이름과 전화번호뿐</b>입니다.<br>'
+    + '· 주소록에 적어두신 <b>주소 · 메모 · 이메일 · 생일은 넘어오지 않습니다.</b><br>'
+    + '· 다만 이름 칸에 <b>「홍길동 / 메리츠 / 부재중」</b> 처럼 / 로 적어두신 내용은 메모로 옮겨집니다.<br>'
+    + '· <b>구글 주소록에 들어 있는 분</b>만 보입니다. 아이폰(iCloud)·기기 저장·유심 저장 연락처는 보이지 않습니다.<br>'
+    + '· 그래서 주민번호 · 주소 · 직업 · 병력까지 옮기시려면 <b>위 엑셀 방법</b>이 낫습니다.</div>'
+    + '<button type="button" id="sgimp-sync" style="margin-top:9px;background:#166534;color:#fff;border:none;'
+    + 'border-radius:8px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 연락처 동기화 열기</button>'
+    + '</div>'
+
     /* 하단 */
     + '<div style="display:flex;align-items:center;gap:10px;">'
     + '<label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#8a6f5c;cursor:pointer;margin-right:auto;">'
@@ -17880,6 +17898,11 @@ window.sgImportGuide = function () {
     if (el.classList.contains('sgimp-j')) { withJumin = (el.getAttribute('data-j') === '1'); paint(); return; }
     if (id === 'sgimp-x' || id === 'sgimp-cancel') { close(); return; }
     if (id === 'sgimp-tpl') { window.sgDownloadTemplate(); return; }
+    if (id === 'sgimp-sync') {
+      close();
+      try { if (typeof window.syncContacts === 'function') window.syncContacts(); } catch (e) {}
+      return;
+    }
     if (id === 'sgimp-copy') {
       var t = card.querySelector('#sgimp-txt');
       try {
