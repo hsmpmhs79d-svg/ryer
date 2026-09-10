@@ -15062,7 +15062,7 @@ function copyContact(el) {
       + '<button type="button" id="_pcm-all-exc" style="font-family:inherit;font-size:12px;font-weight:800;border-radius:7px;'
       + 'padding:5px 11px;cursor:pointer;border:1.5px solid #f2cfcf;background:#fdf2f2;color:#b91c1c;"></button>'
       + '<button type="button" id="_pcm-clear" style="font-family:inherit;font-size:12px;font-weight:800;border-radius:7px;'
-      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;">고른 것 모두 지우기</button>'
+      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;">선택 해제</button>'
       + '</div></div>'
 
       + '<div id="_pcm-list" style="flex:1;overflow-y:auto;padding:0 20px;"></div>'
@@ -15108,9 +15108,9 @@ function copyContact(el) {
       });
 
       card.querySelector('#_pcm-help').innerHTML = (dir === 'pull')
-        ? '폰에 있고 살구에 없는 분들입니다. 데려올 분은 <b style="color:#16a34a;">가져오기</b>, '
-          + '앞으로 이 목록에 뜨지 않게 하려면 <b style="color:#b91c1c;">안 함</b>.'
-        : '살구에 있고 폰 주소록에 없는 고객입니다. 폰에 저장할 분만 <b style="color:#16a34a;">보내기</b>를 누르세요.<br>'
+        ? '폰에 있고 살구에 없는 분들입니다. 데려올 분은 <b style="color:#16a34a;">선택</b>, '
+          + '앞으로 이 목록에 뜨지 않게 하려면 <b style="color:#b91c1c;">제외</b>.'
+        : '살구에 있고 폰 주소록에 없는 고객입니다. 폰에 저장할 분만 <b style="color:#16a34a;">선택</b>하세요.<br>'
           + '폰에는 <b style="color:#c2410c;">' + _pfSample() + '</b> 처럼 저장됩니다. '
           + '<button type="button" id="_pcm-set2" style="font-family:inherit;font-size:12px;font-weight:800;'
           + 'cursor:pointer;background:#fff;border:1.5px solid #e7d4bd;color:#c2410c;border-radius:7px;'
@@ -15133,15 +15133,18 @@ function copyContact(el) {
       var v = visible();
       var c = counts();
       card.querySelector('#_pcm-cnt').innerHTML =
-        '보이는 <b style="color:#c2410c;">' + v.length + '</b>명'
+        '새로운 번호 <b style="color:#c2410c;">' + v.length + '</b>명'
         + (dir === 'pull'
-            ? (c.add || c.exc ? ' · 고름 <b style="color:#16a34a;">' + c.add + '</b>/<b style="color:#b91c1c;">' + c.exc + '</b>' : '')
-            : (c.push ? ' · 고름 <b style="color:#16a34a;">' + c.push + '</b>' : ''));
+            ? (c.add || c.exc
+                ? ' · 선택 <b style="color:#16a34a;">' + c.add + '</b>'
+                  + (c.exc ? ' · 제외 <b style="color:#b91c1c;">' + c.exc + '</b>' : '')
+                : '')
+            : (c.push ? ' · 선택 <b style="color:#16a34a;">' + c.push + '</b>' : ''));
 
       var bAdd = card.querySelector('#_pcm-all-add'), bExc = card.querySelector('#_pcm-all-exc');
-      bAdd.textContent = (dir === 'pull') ? '보이는 것 전체 가져오기' : '보이는 것 전체 보내기';
+      bAdd.textContent = '전체 선택';
       bExc.style.display = (dir === 'pull') ? '' : 'none';
-      bExc.textContent = '보이는 것 전체 안 함';
+      bExc.textContent = '전체 제외';
       [bAdd, bExc].forEach(function (b) {
         b.disabled = !v.length;
         b.style.opacity = b.disabled ? '.4' : '1';
@@ -15154,8 +15157,11 @@ function copyContact(el) {
 
       card.querySelector('#_pcm-exc-open').textContent =
         '🚫 제외해둔 사람 보기' + (excludedCount > 0 ? ' (' + excludedCount + '명)' : '');
-      card.querySelector('#_pcm-ok').textContent =
-        (c.add + c.exc + c.push) ? ('고른 대로 반영 (' + (c.add + c.exc + c.push) + ')') : '고른 대로 반영';
+      var _okN = c.add + c.exc + c.push;
+      var _okBtn = card.querySelector('#_pcm-ok');
+      var _okTxt = (dir === 'pull') ? '살구로 가져오기' : '폰으로 내보내기';
+      _okBtn.textContent = _okN ? (_okTxt + ' (' + _okN + ')') : _okTxt;
+      _okBtn.style.background = 'linear-gradient(135deg,#15803d,#16a34a)';
 
       if (!v.length) {
         var msg;
@@ -15205,14 +15211,14 @@ function copyContact(el) {
           + 'padding:5px 11px;white-space:nowrap;'
           + (on ? 'background:#16a34a;border:1.5px solid #16a34a;color:#fff;'
                 : 'background:#fff;border:1.5px solid #e7d4bd;color:#c0ab95;')
-          + '">' + (dir === 'pull' ? '가져오기' : '보내기') + '</button>'
+          + '">선택</button>'
           + (dir === 'pull'
               ? ('<button type="button" data-i="' + i + '" data-v="exc" '
                  + 'style="font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;border-radius:7px;'
                  + 'padding:5px 11px;white-space:nowrap;'
                  + (st === 'exc' ? 'background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;'
                                  : 'background:#fff;border:1.5px solid #e7d4bd;color:#c0ab95;')
-                 + '">안 함</button>')
+                 + '">제외</button>')
               : '')
           + '</div></div>';
       }
@@ -17613,13 +17619,12 @@ window.sgSyncPrefixOut = function () {          /* 폰에 저장할 때 붙일 �
   var v = window.sgSyncPrefixRead().out;
   return (v === undefined || v === null) ? '인카' : String(v).trim();
 };
-window.sgSyncPrefixIn = function () {           /* 폰에서 가져올 때 알아볼 표시들 */
-  var raw = window.sgSyncPrefixRead()['in'];
-  if (raw === undefined || raw === null || !String(raw).trim()) {
-    var out = window.sgSyncPrefixOut();
-    return out ? [out] : [];
-  }
-  return String(raw).split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+/* 폰에서 알아볼 표시는 '폰에 저장할 표시' 와 같은 것을 씁니다.
+   예전에는 따로 적는 칸이 있었지만, 폰 → 살구 목록은 [전체] 탭에서
+   표시가 없는 분까지 다 보여주고 검색으로도 찾을 수 있어서 없앴습니다. (2026-09-11) */
+window.sgSyncPrefixIn = function () {
+  var out = window.sgSyncPrefixOut();
+  return out ? [out] : [];
 };
 /* 이름 앞에 붙은 표시를 찾아 돌려준다. 없으면 빈 문자열. */
 window.sgMatchPrefix = function (name) {
@@ -17648,29 +17653,20 @@ window.sgSyncSettings = function () {
   card.innerHTML =
     '<div style="display:flex;align-items:center;gap:9px;margin-bottom:4px;">'
     + '<span style="font-size:20px;">⚙️</span>'
-    + '<span style="font-size:18px;font-weight:800;color:#7c2d12;letter-spacing:-.5px;">연락처 동기화 설정</span>'
+    + '<span style="font-size:18px;font-weight:800;color:#7c2d12;letter-spacing:-.5px;">폰에 저장될 이름</span>'
     + '<button type="button" id="sgsy-x" style="margin-left:auto;border:none;background:transparent;'
     + 'font-size:18px;color:#c0a68d;cursor:pointer;padding:2px 6px;">✕</button></div>'
     + '<div style="font-size:13px;color:#8a6f5c;margin-bottom:18px;letter-spacing:-.3px;">'
-    + '폰 주소록에서 고객을 알아보는 표시를 정합니다. 한 번만 정해두면 됩니다.</div>'
+    + '살구에서 폰으로 고객을 보낼 때, 이름 앞에 붙일 글자를 정합니다. 한 번만 정해두면 됩니다.</div>'
 
     + '<div style="margin-bottom:16px;">'
-    + '<div style="font-size:13.5px;font-weight:800;color:#9a3412;margin-bottom:3px;">폰에 저장할 때 붙일 표시</div>'
+    + '<div style="font-size:13.5px;font-weight:800;color:#9a3412;margin-bottom:3px;">이름 앞에 붙일 글자</div>'
     + '<div style="font-size:12.5px;color:#8a6f5c;margin-bottom:7px;line-height:1.55;">'
-    + '살구에서 폰으로 내보낼 때 이름 앞에 붙습니다. 비워두면 이름만 저장됩니다.</div>'
+    + '비워두시면 이름만 저장됩니다.</div>'
     + '<input type="text" id="sgsy-out" autocomplete="off" style="width:100%;font-family:inherit;font-size:14px;'
     + 'color:#4a3728;border:1.5px solid #e6c3a0;border-radius:9px;padding:9px 12px;background:#fff;box-sizing:border-box;">'
     + '<div id="sgsy-prev" style="margin-top:8px;background:#fffaf5;border:1.5px dashed #e7d4bd;border-radius:9px;'
     + 'padding:8px 12px;font-size:12.5px;color:#5b4636;"></div>'
-    + '</div>'
-
-    + '<div style="margin-bottom:18px;">'
-    + '<div style="font-size:13.5px;font-weight:800;color:#9a3412;margin-bottom:3px;">폰에서 가져올 때 알아볼 표시</div>'
-    + '<div style="font-size:12.5px;color:#8a6f5c;margin-bottom:7px;line-height:1.55;">'
-    + '쉼표로 여러 개를 넣을 수 있습니다. 저장할 표시를 바꾸시더라도 <b style="color:#c2410c;">예전 표시를 여기 남겨두면</b> 계속 알아봅니다.<br>'
-    + '비워두면 위에 적으신 표시 하나만 씁니다.</div>'
-    + '<input type="text" id="sgsy-in" autocomplete="off" placeholder="예: 인카, 흥국, 고객" style="width:100%;font-family:inherit;font-size:14px;'
-    + 'color:#4a3728;border:1.5px solid #e6c3a0;border-radius:9px;padding:9px 12px;background:#fff;box-sizing:border-box;">'
     + '</div>'
 
     + '<div style="display:flex;gap:8px;align-items:center;">'
@@ -17686,16 +17682,13 @@ window.sgSyncSettings = function () {
   document.body.appendChild(ov);
 
   var elOut = card.querySelector('#sgsy-out');
-  var elIn = card.querySelector('#sgsy-in');
   elOut.value = window.sgSyncPrefixOut();
-  var _cur = window.sgSyncPrefixRead();
-  elIn.value = (_cur['in'] === undefined || _cur['in'] === null) ? '' : String(_cur['in']);
 
   function prev() {
     var p = elOut.value.trim();
     card.querySelector('#sgsy-prev').innerHTML = p
       ? '폰에는 <b style="color:#c2410c;">' + p.replace(/[<>&]/g, '') + ' 홍길동</b> 으로 저장됩니다'
-      : '폰에는 <b style="color:#c2410c;">홍길동</b> 으로 저장됩니다 — 표시가 없으면 나중에 가져오실 때 전체에서 찾으셔야 합니다';
+      : '폰에는 <b style="color:#c2410c;">홍길동</b> 으로 저장됩니다 — 앞에 아무 글자도 붙지 않습니다';
   }
   prev();
   elOut.addEventListener('input', prev);
@@ -17704,9 +17697,9 @@ window.sgSyncSettings = function () {
     var b = ev.target.closest ? ev.target.closest('button') : null;
     if (!b) return;
     if (b.id === 'sgsy-x' || b.id === 'sgsy-cancel') { close(); return; }
-    if (b.id === 'sgsy-reset') { elOut.value = '인카'; elIn.value = ''; prev(); return; }
+    if (b.id === 'sgsy-reset') { elOut.value = '인카'; prev(); return; }
     if (b.id === 'sgsy-save') {
-      window.sgSyncPrefixWrite(elOut.value, elIn.value);
+      window.sgSyncPrefixWrite(elOut.value, '');
       /* 예전에 이 브라우저에만 남아 있던 값은 정리합니다 (이제 드라이브에 있습니다) */
       try { localStorage.removeItem('sgSyncPrefixOut'); localStorage.removeItem('sgSyncPrefixIn'); } catch (e) {}
       close();
