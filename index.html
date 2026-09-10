@@ -12875,6 +12875,7 @@ function copyContact(el) {
         '<div style="display:flex;justify-content:flex-start;gap:8px;margin:12px 12px 18px;">' +
           '<button type="button" class="mv-dm-btn" onclick="openDmTemplates(\'\')" style="margin:0;">퀵메시지</button>' +
           '<button type="button" class="mv-dm-btn" onclick="mvAddCustomer()" style="margin:0;background:linear-gradient(135deg,#e46a25,#ef8a4a);border-color:#e46a25;color:#fff;">＋ 새 고객</button>' +
+          '<button type="button" class="mv-dm-btn" onclick="if(window.sgGuideStart)window.sgGuideStart()" style="margin:0;margin-left:auto;">❓ 사용법</button>' +
         '</div>' +
         '<input type="search" class="mv-search" placeholder="이름·전화·메모 검색" id="mv-search">' +
         '<div class="mv-toolbar" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 12px;align-items:center;">' +
@@ -16564,6 +16565,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
       ['내 아이디/비번', function(){ toggleIdpwPanel(); }],
       ['백업 폴더', function(){ openBackupFolder(); }],
       ['사용설명서', function(){ window.sgOpenManual(); }],   /* ★ 웹 설명서 (2026-08-15) */
+      ['사용법 안내 (화면에서 보기)', function(){ if (window.sgGuideStart) window.sgGuideStart(); }],   /* ★ 가이드 (2026-09-10) */
       '-',
       ['화면: 기본', function(){ setLayoutMode('default'); }],
       ['화면: 넓게', function(){ setLayoutMode('wide'); }]
@@ -17204,20 +17206,6 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
 #sgg-bub button.p { background:linear-gradient(135deg,#9a3412,#e46a25); border-color:#c2410c; color:#fff; }
 #sgg-bub .sgg-x { position:absolute; top:8px; right:10px; border:none; background:transparent;
   font-size:16px; color:#c0a68d; padding:2px 5px; }
-/* 살구 스킨이 .header-tools button 에 !important 를 걸어두어서, 아이디로 한 단계 더 좁힌다 */
-#sgg-btn { cursor:pointer; font-family:inherit; white-space:nowrap; }
-.header .header-tools button#sgg-btn {
-  background:#fdeadd !important; color:#c2410c !important;
-  border:1.5px solid #f3d5bb !important; border-radius:7px !important;
-  font-weight:800 !important; font-size:13px !important; padding:5px 11px !important;
-}
-.header .header-tools button#sgg-btn:hover { background:#e46a25 !important; color:#fff !important; }
-#sgg-mbtn {
-  background:rgba(255,255,255,.22); color:#fff; border:1.5px solid rgba(255,255,255,.45);
-  padding:4px 9px; border-radius:7px; font-size:12.5px; font-weight:800; cursor:pointer;
-  font-family:inherit; white-space:nowrap; margin-left:5px; letter-spacing:-.3px;
-}
-#sgg-mbtn.tiny .lb { display:none; }
 @media (max-width:700px) { #sgg-bub { width:auto; left:12px !important; right:12px !important; } }
 </style>
 <script>
@@ -17225,8 +17213,26 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   'use strict';
   var SEEN = 'sgGuideSeen_v1';
   var catchEl, ring, bub, cur = 0, STEPS = [], onCloseGo = null;
+  var _sy = 0, _sx = 0;   /* 가이드 시작 때의 문서 스크롤 위치 — 끝나면 그대로 되돌린다 */
 
   function q(s) { try { return document.querySelector(s); } catch (e) { return null; } }
+
+  /* ★ 문서(window)는 절대 스크롤하지 않는다 — 스크롤되면 상단 메뉴가 잘려 올라가 버린다.
+     대상이 들어 있는 '안쪽 스크롤 상자'만 움직이고, 못 찾으면 false 를 돌려준다. */
+  function innerScroll(el, toTop) {
+    var sc = el.parentNode;
+    while (sc && sc.nodeType === 1 && sc !== document.body && sc !== document.documentElement) {
+      var ov = '';
+      try { ov = getComputedStyle(sc).overflowY; } catch (e) {}
+      if ((ov === 'auto' || ov === 'scroll') && sc.scrollHeight > sc.clientHeight + 4) break;
+      sc = sc.parentNode;
+    }
+    if (!sc || sc.nodeType !== 1 || sc === document.body || sc === document.documentElement) return false;
+    var er = el.getBoundingClientRect(), cr = sc.getBoundingClientRect();
+    var want = toTop ? 12 : Math.max(12, (cr.height - er.height) / 2);
+    sc.scrollTop += (er.top - cr.top) - want;
+    return true;
+  }
 
   /* 고객 카드 안쪽을 설명하는 단계 — 카드가 안 열려 있으면 첫 고객을 열어준다.
      고객이 하나도 없으면 아무것도 하지 않고, 말풍선만 화면 가운데에 뜬다. */
@@ -17270,7 +17276,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       d: '적는 대로 <b>본인 구글 드라이브에 저절로 저장</b>됩니다.<br>회사 서버에는 고객 정보가 남지 않고, PC에서 적은 것이 <b>휴대폰에도 그대로</b> 나옵니다.' },
     { sel: '#sgf-pc',
       t: '⑧ 길을 잃으면 여기에 쳐보세요',
-      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>더 자세한 내용은 상단 <b>📖 사용설명서</b>에 있습니다.' }
+      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>이 안내를 다시 보시려면 <b>내 도구 ▾ → 사용법 안내</b>를 누르시거나, 여기에 <b>사용법</b>이라고 쳐보세요.' }
   ];
 
   /* ── 모바일 코스 ────────────────────────────────────────── */
@@ -17298,7 +17304,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
       d: '📚 상담자료 · 📋 청구 필요서류 · 📜 약관 공시실 · 🎂 생일자.<br>🔄 를 누르면 <b>최신 데이터를 다시 받아옵니다.</b>' },
     { sel: '#sgf-mbtn',
       t: '⑧ 길을 잃으면 여기를 누르세요',
-      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.' }
+      d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>이 안내를 다시 보시려면 고객 목록 위 <b>❓ 사용법</b>을 누르세요.' }
   ];
 
   /* ── 화면 ───────────────────────────────────────────────── */
@@ -17364,10 +17370,16 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     var el = s.sel ? q(s.sel) : null;
     if (!el) { center(); return; }
     var tall = el.getBoundingClientRect().height > window.innerHeight * 0.62;
-    /* ★ 부드러운 스크롤은 끝나기 전에 위치를 재게 되어 링이 엉뚱한 데 그려진다. 즉시 이동. */
-    try { el.scrollIntoView({ behavior: 'auto', block: tall ? 'start' : 'center' }); }
-    catch (e) { try { el.scrollIntoView(); } catch (e2) {} }
+    /* 안쪽 상자를 못 찾았을 때만, 그리고 휴대폰에서만 문서를 스크롤한다.
+       PC 는 화면이 고정 레이아웃이라 문서를 스크롤하면 헤더가 잘린다. */
+    if (!innerScroll(el, tall) && window.__IS_MOBILE__) {
+      try { el.scrollIntoView({ behavior: 'auto', block: tall ? 'start' : 'center' }); } catch (e) {}
+    }
     function put() {
+      /* 다른 코드가 문서를 밀어놨으면 되돌린다 (PC 한정) */
+      if (!window.__IS_MOBILE__ && (window.scrollY !== _sy || window.scrollX !== _sx)) {
+        try { window.scrollTo(_sx, _sy); } catch (eS) {}
+      }
       var e2 = q(s.sel);
       if (e2 && e2.getBoundingClientRect().width > 0) place(e2); else center();
     }
@@ -17407,6 +17419,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     catchEl.style.display = 'none';
     ring.style.display = 'none';
     bub.style.display = 'none';
+    if (!window.__IS_MOBILE__) { try { window.scrollTo(_sx, _sy); } catch (eC) {} }
     if (mark) { try { localStorage.setItem(SEEN, '1'); } catch (e) {} }
     if (onCloseGo) { var f = onCloseGo; onCloseGo = null; try { f(); } catch (e) {} }
   }
@@ -17414,6 +17427,7 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
   /* ── 시작 ───────────────────────────────────────────────── */
   window.sgGuideStart = function () {
     build();
+    _sy = window.scrollY || 0; _sx = window.scrollX || 0;
     STEPS = window.__IS_MOBILE__ ? MB : PC;
     show(0);
   };
@@ -17423,36 +17437,12 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     setTimeout(function () { try { window.sgGuideStart(); } catch (e) {} }, 900);
   };
 
-  /* ── [❓ 사용법] 버튼 달기 ──────────────────────────────── */
-  function mountPC() {
-    var tools = document.querySelector('.header-tools');
-    if (!tools || document.getElementById('sgg-btn')) return true;
-    var b = document.createElement('button');
-    b.type = 'button'; b.id = 'sgg-btn'; b.textContent = '❓ 사용법';
-    b.title = '살구 사용법을 화면에서 차근차근 보여드립니다';
-    b.addEventListener('click', function () { window.sgGuideStart(); });
-    tools.insertBefore(b, tools.firstChild);
-    return true;
-  }
-  function mountMB() {
-    var title = document.getElementById('sg-mv-title');
-    if (!title) return false;
-    if (document.getElementById('sgg-mbtn')) return true;
-    var b = document.createElement('button');
-    b.type = 'button'; b.id = 'sgg-mbtn';
-    b.innerHTML = '❓<span class="lb">사용법</span>';
-    b.setAttribute('aria-label', '사용법');
-    b.addEventListener('click', function () { window.sgGuideStart(); });
-    var right = document.getElementById('sg-mvt-right');
-    if (right) title.insertBefore(b, right); else title.appendChild(b);
-    if (title.getBoundingClientRect().height > 40) b.classList.add('tiny');
-    return true;
-  }
-  var tries = 0;
-  var timer = setInterval(function () {
-    var ok = window.__IS_MOBILE__ ? mountMB() : mountPC();
-    if (ok || ++tries > 40) clearInterval(timer);
-  }, 400);
+  /* ── 여는 자리 ────────────────────────────────────────────
+     헤더에 버튼을 넣었더니 1512px 이하에서 상단 메뉴가 두 줄이 되어 빼냈다.
+     PC   — 상단 [내 도구 ▾] > 사용법 안내
+     모바 — 고객 목록 위 [❓ 사용법]
+     공통 — 기능 찾기에 '사용법' 이라고 쳐도 열린다.
+     폭을 전혀 차지하지 않는 자리들이라 헤더가 밀리지 않는다. */
 })();
 </script>
 
@@ -17623,7 +17613,9 @@ button.silson-btn[onclick^="delSilson"]::before { display:none !important; }
     { e:'📂', t:'백업 폴더 열기', g:'내 정보', w:['백업','드라이브','내파일함','저장','복구','폴더'],
       pc:go('openBackupFolder'), mb:go('sgMobileMyFiles') },
     { e:'📖', t:'사용설명서', g:'도움말', w:['설명서','매뉴얼','도움말','사용법','가이드','어떻게'],
-      pc:go('sgOpenManual'), mb:go('sgOpenManual') }
+      pc:go('sgOpenManual'), mb:go('sgOpenManual') },
+    { e:'❓', t:'사용법 안내 (화면에서 보기)', g:'도움말', w:['사용법','가이드','안내','처음','튜토리얼','따라하기','시작','어떻게'],
+      pc:go('sgGuideStart'), mb:go('sgGuideStart') }
   ];
 
   var MB = !!window.__IS_MOBILE__;
