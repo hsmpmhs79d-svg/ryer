@@ -14939,9 +14939,24 @@ function copyContact(el) {
      그대로 두면 [확인] 한 번에 수백 명이 들어옵니다.
      그래서 아무도 미리 고르지 않고, 찾아서 직접 고르는 방식으로 바꿨습니다.
      바깥에서 부르는 방법과 돌려주는 값은 예전 그대로입니다.            */
-  function _showPullCandidatesModal(candidates, excludedCount, onResult) {
-    var pick = {};                 /* idx → 'add' | 'exc' */
-    var tab = 'mine';              /* 기본은 '내 표시만' — 예전에 보이던 범위와 같다 */
+  /* ─── 연락처 동기화 창 (2026-09-11 두 방향 통합) ────────────────────
+     한 창에서 두 방향을 다 다룹니다.
+       📥 폰 → 살구 : 폰에 있고 살구에 없는 사람. [가져오기] / [안 함]
+       📤 살구 → 폰 : 살구에 있고 폰에 없는 고객. [보내기]
+     아무것도 고르지 않으면 그 사람은 그대로 둡니다.
+     [안 함] 은 제외 목록에 쌓여 다음부터 뜨지 않고, 제외 목록에서 되돌립니다.
+
+     바깥에서 부르는 법:
+       _showPullCandidatesModal(폰후보, 제외수, 콜백, 폰으로보낼후보)
+     돌려주는 값:
+       { cancelled, toAdd, toExclude, toPush }                        */
+  function _showPullCandidatesModal(candidates, excludedCount, onResult, pushCandidates) {
+    candidates = candidates || [];
+    pushCandidates = pushCandidates || [];
+
+    var pick = {};                 /* 'p0' → 'add'|'exc' , 's0' → 'push' */
+    var dir = 'pull';              /* pull = 폰→살구 , push = 살구→폰 */
+    var sub = 'mine';              /* 폰→살구 안에서 : 내 표시만 / 전체 */
     var q = '';
 
     function mineCount() {
@@ -14949,39 +14964,56 @@ function copyContact(el) {
       for (var i = 0; i < candidates.length; i++) if (candidates[i].prefix) n++;
       return n;
     }
-    /* 표시가 하나도 없으면 '내 표시만' 탭이 빈 화면이 되므로 전체로 연다 */
-    if (mineCount() === 0) tab = 'all';
+    if (mineCount() === 0) sub = 'all';
+    if (!candidates.length && pushCandidates.length) dir = 'push';
 
+    function hit(name, phone) {
+      if (!q) return true;
+      var nm = String(name || '').toLowerCase();
+      var ph = String(phone || '').replace(/-/g, '');
+      var qq = q.toLowerCase(), qd = q.replace(/-/g, '');
+      return nm.indexOf(qq) >= 0 || (!!qd && ph.indexOf(qd) >= 0);
+    }
     function visible() {
       var out = [];
-      for (var i = 0; i < candidates.length; i++) {
-        var c = candidates[i];
-        if (tab === 'mine' && !c.prefix) continue;
-        if (q) {
-          var nm = String(c.cleanName || '').toLowerCase();
-          var ph = String(c.phone || '').replace(/-/g, '');
-          var qq = q.toLowerCase(), qd = q.replace(/-/g, '');
-          if (nm.indexOf(qq) < 0 && (!qd || ph.indexOf(qd) < 0)) continue;
+      if (dir === 'pull') {
+        for (var i = 0; i < candidates.length; i++) {
+          var c = candidates[i];
+          if (sub === 'mine' && !c.prefix) continue;
+          if (!hit(c.cleanName, c.phone)) continue;
+          out.push(i);
         }
-        out.push(i);
+      } else {
+        for (var j = 0; j < pushCandidates.length; j++) {
+          var d = pushCandidates[j];
+          if (!hit(d.name, d.phone)) continue;
+          out.push(j);
+        }
       }
       return out;
     }
+    function keyOf(i) { return (dir === 'pull' ? 'p' : 's') + i; }
 
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:99999;'
       + 'display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit;';
     var card = document.createElement('div');
-    card.style.cssText = 'background:#fff;color:#4a3728;border-radius:16px;width:620px;max-width:100%;'
+    card.style.cssText = 'background:#fff;color:#4a3728;border-radius:16px;width:640px;max-width:100%;'
       + 'max-height:88vh;display:flex;flex-direction:column;overflow:hidden;'
       + 'box-shadow:0 24px 70px rgba(124,45,18,.4);text-align:left;';
 
     card.innerHTML =
-      '<div style="padding:16px 20px 12px;border-bottom:1.5px solid #f0dcc6;background:#fdf0e4;">'
-      + '<div style="font-size:16.5px;font-weight:800;color:#7c2d12;letter-spacing:-.5px;">📥 폰에서 가져오기</div>'
-      + '<div style="font-size:12.5px;color:#8a6f5c;margin-top:3px;line-height:1.55;">'
-      + '데려올 분은 <b style="color:#16a34a;">✅</b>, 앞으로 뜨지 않게 하려면 <b style="color:#b91c1c;">🚫</b> 를 누르세요. '
-      + '고르지 않은 사람은 그대로 둡니다.</div></div>'
+      '<div style="padding:15px 20px 0;background:#fdf0e4;">'
+      + '<div style="font-size:16.5px;font-weight:800;color:#7c2d12;letter-spacing:-.5px;margin-bottom:11px;">🔄 연락처 동기화</div>'
+      + '<div style="display:flex;gap:4px;">'
+      + '<button type="button" id="_pcm-dir-pull" style="font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;'
+      + 'border:none;background:transparent;padding:9px 15px;border-radius:10px 10px 0 0;"></button>'
+      + '<button type="button" id="_pcm-dir-push" style="font-family:inherit;font-size:13.5px;font-weight:800;cursor:pointer;'
+      + 'border:none;background:transparent;padding:9px 15px;border-radius:10px 10px 0 0;"></button>'
+      + '</div></div>'
+
+      + '<div id="_pcm-help" style="padding:11px 20px;background:#fffaf5;border-bottom:1.5px solid #f0dcc6;'
+      + 'font-size:12.5px;color:#8a6f5c;line-height:1.6;"></div>'
 
       + '<div style="padding:12px 20px 0;">'
       + '<div style="position:relative;margin-bottom:10px;">'
@@ -14989,22 +15021,22 @@ function copyContact(el) {
       + '<input type="text" id="_pcm-q" placeholder="이름·번호로 찾기" autocomplete="off" style="width:100%;font-family:inherit;'
       + 'font-size:14px;color:#4a3728;border:1.5px solid #e6c3a0;border-radius:9px;padding:9px 12px 9px 34px;'
       + 'background:#fff;box-sizing:border-box;"></div>'
-      + '<div style="display:flex;gap:6px;margin-bottom:10px;">'
+      + '<div id="_pcm-subtabs" style="display:flex;gap:6px;margin-bottom:10px;">'
       + '<button type="button" id="_pcm-tab-mine" style="font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;'
       + 'border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;border-radius:20px;padding:6px 14px;"></button>'
       + '<button type="button" id="_pcm-tab-all" style="font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;'
       + 'border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;border-radius:20px;padding:6px 14px;"></button>'
       + '</div>'
-      + '<div id="_pcm-lock" style="display:none;font-size:12px;color:#8a6100;background:#fff8e6;'
-      + 'border:1.5px solid #f2ddaa;border-radius:8px;padding:7px 11px;margin-bottom:10px;line-height:1.55;">'
-      + '전체에서는 <b>검색어를 넣어야</b> 일괄 버튼이 켜집니다. 주소록이 통째로 넘어오는 것을 막기 위해서입니다.</div>'
+      + '<div id="_pcm-lock" style="display:none;"></div>'
       + '<div style="display:flex;align-items:center;gap:7px;padding:9px 11px;margin-bottom:10px;background:#fffaf5;'
       + 'border:1.5px solid #f0dcc6;border-radius:9px;flex-wrap:wrap;">'
       + '<span id="_pcm-cnt" style="font-size:12.5px;font-weight:700;color:#8a6f5c;margin-right:auto;"></span>'
       + '<button type="button" id="_pcm-all-add" style="font-family:inherit;font-size:12px;font-weight:800;border-radius:7px;'
-      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #c8e8d2;background:#f0faf2;color:#16a34a;">보이는 것 전체 ✅</button>'
+      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #c8e8d2;background:#f0faf2;color:#16a34a;"></button>'
       + '<button type="button" id="_pcm-all-exc" style="font-family:inherit;font-size:12px;font-weight:800;border-radius:7px;'
-      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #f2cfcf;background:#fdf2f2;color:#b91c1c;">보이는 것 전체 🚫</button>'
+      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #f2cfcf;background:#fdf2f2;color:#b91c1c;"></button>'
+      + '<button type="button" id="_pcm-clear" style="font-family:inherit;font-size:12px;font-weight:800;border-radius:7px;'
+      + 'padding:5px 11px;cursor:pointer;border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;">고른 것 모두 지우기</button>'
       + '</div></div>'
 
       + '<div id="_pcm-list" style="flex:1;overflow-y:auto;padding:0 20px;"></div>'
@@ -15018,7 +15050,7 @@ function copyContact(el) {
       + 'background:#fff;color:#8a6f5c;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:700;">취소</button>'
       + '<button type="button" id="_pcm-ok" style="font-family:inherit;padding:9px 18px;border:none;'
       + 'background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;border-radius:9px;cursor:pointer;'
-      + 'font-size:13.5px;font-weight:800;">고른 대로 반영</button>'
+      + 'font-size:13.5px;font-weight:800;"></button>'
       + '</div>';
 
     ov.appendChild(card);
@@ -15028,68 +15060,127 @@ function copyContact(el) {
     var elQ = card.querySelector('#_pcm-q');
     var elList = card.querySelector('#_pcm-list');
 
+    function counts() {
+      var a = 0, x = 0, p = 0;
+      for (var k in pick) {
+        if (pick[k] === 'add') a++;
+        else if (pick[k] === 'exc') x++;
+        else if (pick[k] === 'push') p++;
+      }
+      return { add: a, exc: x, push: p };
+    }
+
     function render() {
-      var mine = mineCount(), all = candidates.length;
-      var tm = card.querySelector('#_pcm-tab-mine'), ta = card.querySelector('#_pcm-tab-all');
-      tm.innerHTML = '내 표시만 <span style="font-size:11.5px;opacity:.8;">(' + mine + ')</span>';
-      ta.innerHTML = '전체 <span style="font-size:11.5px;opacity:.8;">(' + all + ')</span>';
-      [[tm, tab === 'mine'], [ta, tab === 'all']].forEach(function (p) {
-        p[0].style.background = p[1] ? '#e46a25' : '#fff';
-        p[0].style.color = p[1] ? '#fff' : '#8a6f5c';
-        p[0].style.borderColor = p[1] ? '#c2410c' : '#e7d4bd';
+      /* 방향 탭 */
+      var dp = card.querySelector('#_pcm-dir-pull'), ds = card.querySelector('#_pcm-dir-push');
+      dp.innerHTML = '📥 폰 → 살구 <span style="font-size:12px;opacity:.75;">(' + candidates.length + ')</span>';
+      ds.innerHTML = '📤 살구 → 폰 <span style="font-size:12px;opacity:.75;">(' + pushCandidates.length + ')</span>';
+      [[dp, dir === 'pull'], [ds, dir === 'push']].forEach(function (t) {
+        t[0].style.background = t[1] ? '#fff' : 'transparent';
+        t[0].style.color = t[1] ? '#c2410c' : '#a8907a';
+        t[0].style.boxShadow = t[1] ? '0 -2px 0 #e46a25 inset' : 'none';
       });
 
-      var v = visible();
-      card.querySelector('#_pcm-cnt').innerHTML =
-        '보이는 <b style="color:#c2410c;">' + v.length + '</b>명';
+      card.querySelector('#_pcm-help').innerHTML = (dir === 'pull')
+        ? '폰에 있고 살구에 없는 분들입니다. 데려올 분은 <b style="color:#16a34a;">가져오기</b>, '
+          + '앞으로 이 목록에 뜨지 않게 하려면 <b style="color:#b91c1c;">안 함</b>.'
+        : '살구에 있고 폰 주소록에 없는 고객입니다. 폰에 저장할 분만 <b style="color:#16a34a;">보내기</b>를 누르세요.';
 
-      var locked = (tab === 'all') && !q;
-      card.querySelector('#_pcm-lock').style.display = locked ? 'block' : 'none';
-      [card.querySelector('#_pcm-all-add'), card.querySelector('#_pcm-all-exc')].forEach(function (b) {
-        b.disabled = locked || !v.length;
+      /* 폰→살구 안쪽 탭 */
+      card.querySelector('#_pcm-subtabs').style.display = (dir === 'pull') ? 'flex' : 'none';
+      if (dir === 'pull') {
+        var mine = mineCount();
+        var tm = card.querySelector('#_pcm-tab-mine'), ta = card.querySelector('#_pcm-tab-all');
+        tm.innerHTML = '내 표시만 <span style="font-size:11.5px;opacity:.8;">(' + mine + ')</span>';
+        ta.innerHTML = '전체 <span style="font-size:11.5px;opacity:.8;">(' + candidates.length + ')</span>';
+        [[tm, sub === 'mine'], [ta, sub === 'all']].forEach(function (p) {
+          p[0].style.background = p[1] ? '#e46a25' : '#fff';
+          p[0].style.color = p[1] ? '#fff' : '#8a6f5c';
+          p[0].style.borderColor = p[1] ? '#c2410c' : '#e7d4bd';
+        });
+      }
+
+      var v = visible();
+      var c = counts();
+      card.querySelector('#_pcm-cnt').innerHTML =
+        '보이는 <b style="color:#c2410c;">' + v.length + '</b>명'
+        + (dir === 'pull'
+            ? (c.add || c.exc ? ' · 고름 <b style="color:#16a34a;">' + c.add + '</b>/<b style="color:#b91c1c;">' + c.exc + '</b>' : '')
+            : (c.push ? ' · 고름 <b style="color:#16a34a;">' + c.push + '</b>' : ''));
+
+      var bAdd = card.querySelector('#_pcm-all-add'), bExc = card.querySelector('#_pcm-all-exc');
+      bAdd.textContent = (dir === 'pull') ? '보이는 것 전체 가져오기' : '보이는 것 전체 보내기';
+      bExc.style.display = (dir === 'pull') ? '' : 'none';
+      bExc.textContent = '보이는 것 전체 안 함';
+      [bAdd, bExc].forEach(function (b) {
+        b.disabled = !v.length;
         b.style.opacity = b.disabled ? '.4' : '1';
         b.style.cursor = b.disabled ? 'not-allowed' : 'pointer';
       });
 
       card.querySelector('#_pcm-exc-open').textContent =
         '🚫 제외해둔 사람 보기' + (excludedCount > 0 ? ' (' + excludedCount + '명)' : '');
+      card.querySelector('#_pcm-ok').textContent =
+        (c.add + c.exc + c.push) ? ('고른 대로 반영 (' + (c.add + c.exc + c.push) + ')') : '고른 대로 반영';
 
       if (!v.length) {
-        var _msg;
-        if (!candidates.length) {
-          _msg = '새로 가져올 사람이 없습니다.<br>'
-               + '<span style="font-size:12px;">폰에 있는 분이 이미 다 등록돼 있거나, 제외해두셨거나,<br>'
-               + '구글 주소록에 저장돼 있지 않은 경우입니다.</span>';
-        } else if (tab === 'mine') {
-          _msg = '표시가 붙은 연락처가 없습니다.<br><span style="font-size:12px;">전체에서 찾아보세요.</span>';
+        var msg;
+        if (dir === 'push') {
+          msg = pushCandidates.length
+            ? '찾는 사람이 없습니다.'
+            : '폰에 없는 고객이 없습니다.<br><span style="font-size:12px;">살구 고객이 모두 폰 주소록에 있습니다.</span>';
+        } else if (!candidates.length) {
+          msg = '새로 가져올 사람이 없습니다.<br>'
+              + '<span style="font-size:12px;">폰에 있는 분이 이미 다 등록돼 있거나, 안 함으로 해두셨거나,<br>'
+              + '구글 주소록에 저장돼 있지 않은 경우입니다.</span>';
+        } else if (sub === 'mine') {
+          msg = '표시가 붙은 연락처가 없습니다.<br><span style="font-size:12px;">전체에서 찾아보세요.</span>';
         } else {
-          _msg = '찾는 사람이 없습니다.';
+          msg = '찾는 사람이 없습니다.';
         }
         elList.innerHTML = '<div style="padding:28px 10px;text-align:center;font-size:13.5px;color:#b09880;line-height:1.7;">'
-          + _msg + '</div>';
+          + msg + '</div>';
         return;
       }
+
       var h = '';
       for (var k = 0; k < v.length; k++) {
-        var i = v[k], c = candidates[i], st = pick[i] || '';
-        var bg = st === 'add' ? '#f0faf2' : st === 'exc' ? '#fdf2f2' : '#fff';
+        var i = v[k];
+        var nm, ph, note, pfx;
+        if (dir === 'pull') {
+          var cc = candidates[i];
+          nm = cc.cleanName; ph = cc.phone; note = cc.slashNote; pfx = cc.prefix;
+        } else {
+          var dd = pushCandidates[i];
+          nm = dd.name; ph = dd.phone; note = ''; pfx = '';
+        }
+        var st = pick[keyOf(i)] || '';
+        var on = (st === 'add' || st === 'push');
+        var bg = on ? '#f0faf2' : st === 'exc' ? '#fdf2f2' : '#fff';
         h += '<div style="display:flex;align-items:center;gap:11px;padding:9px 2px;'
           + 'border-bottom:1px solid #f7ece0;background:' + bg + ';">'
           + '<div style="flex:1;min-width:0;">'
           + '<div style="font-size:13.5px;font-weight:700;color:#4a3728;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'
-          + (c.prefix ? '<span style="color:#c2410c;">' + _pcmEsc(c.prefix) + '</span> ' : '')
-          + _pcmEsc(c.cleanName) + '</div>'
+          + (pfx ? '<span style="color:#c2410c;">' + _pcmEsc(pfx) + '</span> ' : '')
+          + _pcmEsc(nm) + '</div>'
           + '<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:#b09880;">'
-          + _pcmEsc(c.phone) + (c.slashNote ? ' · ' + _pcmEsc(c.slashNote) : '') + '</div></div>'
+          + _pcmEsc(ph) + (note ? ' · ' + _pcmEsc(note) : '') + '</div></div>'
           + '<div style="display:flex;gap:5px;flex:0 0 auto;">'
-          + '<button type="button" data-i="' + i + '" data-v="add" style="font-family:inherit;font-size:12px;font-weight:800;'
-          + 'cursor:pointer;border-radius:7px;padding:4px 10px;'
-          + (st === 'add' ? 'background:#16a34a;border:1.5px solid #16a34a;color:#fff;' : 'background:#fff;border:1.5px solid #e7d4bd;color:#b09880;')
-          + '">✅</button>'
-          + '<button type="button" data-i="' + i + '" data-v="exc" style="font-family:inherit;font-size:12px;font-weight:800;'
-          + 'cursor:pointer;border-radius:7px;padding:4px 10px;'
-          + (st === 'exc' ? 'background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;' : 'background:#fff;border:1.5px solid #e7d4bd;color:#b09880;')
-          + '">🚫</button></div></div>';
+          + '<button type="button" data-i="' + i + '" data-v="' + (dir === 'pull' ? 'add' : 'push') + '" '
+          + 'style="font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;border-radius:7px;'
+          + 'padding:5px 11px;white-space:nowrap;'
+          + (on ? 'background:#16a34a;border:1.5px solid #16a34a;color:#fff;'
+                : 'background:#fff;border:1.5px solid #e7d4bd;color:#c0ab95;')
+          + '">' + (dir === 'pull' ? '가져오기' : '보내기') + '</button>'
+          + (dir === 'pull'
+              ? ('<button type="button" data-i="' + i + '" data-v="exc" '
+                 + 'style="font-family:inherit;font-size:12px;font-weight:800;cursor:pointer;border-radius:7px;'
+                 + 'padding:5px 11px;white-space:nowrap;'
+                 + (st === 'exc' ? 'background:#b91c1c;border:1.5px solid #b91c1c;color:#fff;'
+                                 : 'background:#fff;border:1.5px solid #e7d4bd;color:#c0ab95;')
+                 + '">안 함</button>')
+              : '')
+          + '</div></div>';
       }
       elList.innerHTML = h;
     }
@@ -15097,23 +15188,29 @@ function copyContact(el) {
     elList.addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('button[data-i]') : null;
       if (!b) return;
-      var i = +b.getAttribute('data-i'), val = b.getAttribute('data-v');
-      pick[i] = (pick[i] === val) ? '' : val;
+      var i = +b.getAttribute('data-i'), val = b.getAttribute('data-v'), k = keyOf(i);
+      pick[k] = (pick[k] === val) ? '' : val;
       render();
     });
     elQ.addEventListener('input', function () { q = this.value.trim(); render(); });
-    card.querySelector('#_pcm-tab-mine').onclick = function () { tab = 'mine'; render(); };
-    card.querySelector('#_pcm-tab-all').onclick = function () { tab = 'all'; render(); };
+    card.querySelector('#_pcm-tab-mine').onclick = function () { sub = 'mine'; render(); };
+    card.querySelector('#_pcm-tab-all').onclick = function () { sub = 'all'; render(); };
+    card.querySelector('#_pcm-dir-pull').onclick = function () { dir = 'pull'; elList.scrollTop = 0; render(); };
+    card.querySelector('#_pcm-dir-push').onclick = function () { dir = 'push'; elList.scrollTop = 0; render(); };
 
     function bulk(val, word) {
       var v = visible();
       if (!v.length) return;
-      if (v.length > 30 && !confirm(v.length + '명을 모두 ' + word + '합니다.\n\n계속할까요?')) return;
-      for (var k = 0; k < v.length; k++) pick[v[k]] = val;
+      if (v.length > 30 && !confirm(v.length + '명을 모두 ' + word + ' 로 표시합니다.\n\n계속할까요?')) return;
+      for (var k = 0; k < v.length; k++) pick[keyOf(v[k])] = val;
       render();
     }
-    card.querySelector('#_pcm-all-add').onclick = function () { if (!this.disabled) bulk('add', '추가'); };
-    card.querySelector('#_pcm-all-exc').onclick = function () { if (!this.disabled) bulk('exc', '제외'); };
+    card.querySelector('#_pcm-all-add').onclick = function () {
+      if (this.disabled) return;
+      bulk(dir === 'pull' ? 'add' : 'push', dir === 'pull' ? '가져오기' : '보내기');
+    };
+    card.querySelector('#_pcm-all-exc').onclick = function () { if (!this.disabled) bulk('exc', '안 함'); };
+    card.querySelector('#_pcm-clear').onclick = function () { pick = {}; render(); };
 
     card.querySelector('#_pcm-exc-open').onclick = function () {
       try { if (typeof window.openExcludedContactsModal === 'function') window.openExcludedContactsModal(); } catch (e) {}
@@ -15125,17 +15222,20 @@ function copyContact(el) {
       close(); if (onResult) onResult({ cancelled: true });
     };
     card.querySelector('#_pcm-ok').onclick = function () {
-      var toAdd = [], toExc = [];
+      var toAdd = [], toExc = [], toPush = [];
       for (var i = 0; i < candidates.length; i++) {
-        if (pick[i] === 'add') toAdd.push(candidates[i]);
-        else if (pick[i] === 'exc') toExc.push(candidates[i]);
+        if (pick['p' + i] === 'add') toAdd.push(candidates[i]);
+        else if (pick['p' + i] === 'exc') toExc.push(candidates[i]);
       }
-      if (!toAdd.length && !toExc.length) {
+      for (var j = 0; j < pushCandidates.length; j++) {
+        if (pick['s' + j] === 'push') toPush.push(pushCandidates[j]);
+      }
+      if (!toAdd.length && !toExc.length && !toPush.length) {
         if (typeof showToast === 'function') showToast('아직 고른 사람이 없습니다', 'orange');
         return;
       }
       close();
-      if (onResult) onResult({ cancelled: false, toAdd: toAdd, toExclude: toExc });
+      if (onResult) onResult({ cancelled: false, toAdd: toAdd, toExclude: toExc, toPush: toPush });
     };
 
     render();
@@ -15215,6 +15315,14 @@ function copyContact(el) {
     /* ★ 2026-09-11: 후보가 없어도 창을 띄운다.
        그래야 '표시 글자 설정'과 '제외한 사람'에 이 창에서 갈 수 있다. */
     if (true) {
+      /* ★ 2026-09-11: 살구 → 폰 후보도 같이 만들어 한 창에서 다룬다.
+         (폰에 아직 보내지 않은 = _resourceName 이 없는 고객) */
+      var _pushCands = [];
+      try {
+        _pushCands = customers.filter(function (c) {
+          return c && c.name && c.phone && !c._resourceName && !c._personal;
+        });
+      } catch (ePc) { _pushCands = []; }
       _showPullCandidatesModal(candidates, excluded, function(result) {
         if (result && !result.cancelled) {
           (result.toAdd || []).forEach(function(c){
@@ -15241,8 +15349,20 @@ function copyContact(el) {
             });
           }
         }
+        /* ★ 고른 사람만 폰으로 보낸다 (2026-09-11) */
+        var _tp = (result && result.toPush) || [];
+        if (_tp.length) {
+          _pullFinish();
+          setTimeout(function () {
+            if (typeof showToast === 'function') showToast('📤 폰으로 보내는 중... (' + _tp.length + '명)', 'amber');
+            _pushPendingContacts(function (d, f) {
+              if (typeof showToast === 'function') showToast('✅ 폰 전송 완료 — 성공 ' + d + '명 / 실패 ' + f + '명', 'green');
+            }, _tp);
+          }, 600);
+          return;
+        }
         _pullFinish();
-      });
+      }, _pushCands);
     } else {
       _pullFinish();
     }
@@ -15302,15 +15422,18 @@ function copyContact(el) {
     fetchPage();
   }
 
-  function _pushPendingContacts(onDone) {
-    var pending = customers.filter(function(c) {
+  function _pushPendingContacts(onDone, only) {
+    /* ★ only 가 주어지면 그 사람들만 보낸다 (동기화 창에서 직접 고른 경우).
+       그때는 창에서 이미 고르셨으므로 다시 묻지 않는다. (2026-09-11) */
+    var picked = Array.isArray(only) && only.length > 0;
+    var pending = picked ? only : customers.filter(function(c) {
       return c && c.name && c.phone && !c._resourceName && !c._personal;
     });
     if (pending.length === 0) {
       if (onDone) onDone(0, 0);
       return;
     }
-    if (!confirm('CRM에서 폰으로 새로 보낼 사람: ' + pending.length + '명\n\n계속할까요? (1명당 약 0.2초)\n\n※ 폰에 같은 번호가 이미 있으면 자동으로 건너뜁니다.')) {
+    if (!picked && !confirm('CRM에서 폰으로 새로 보낼 사람: ' + pending.length + '명\n\n계속할까요? (1명당 약 0.2초)\n\n※ 폰에 같은 번호가 이미 있으면 자동으로 건너뜁니다.')) {
       if (onDone) onDone(0, 0);
       return;
     }
@@ -15351,7 +15474,7 @@ function copyContact(el) {
       var pushPreview = toPush.slice(0, 15).map(function(c){ return '• ' + c.name + ' (' + c.phone + ')'; }).join('\n');
       var pushMore = toPush.length > 15 ? '\n... 외 ' + (toPush.length - 15) + '명' : '';
       var matchNote = matched > 0 ? '\n\n(폰에 이미 있던 ' + matched + '명은 자동으로 연결만 갱신 — 건너뜀)' : '';
-      if (!confirm('📤 폰에 새로 추가할 ' + toPush.length + '명:\n\n' + pushPreview + pushMore + matchNote + '\n\n계속할까요?\n※ 의도와 다르면 [취소]')) {
+      if (!picked && !confirm('📤 폰에 새로 추가할 ' + toPush.length + '명:\n\n' + pushPreview + pushMore + matchNote + '\n\n계속할까요?\n※ 의도와 다르면 [취소]')) {
         if (matched > 0 && typeof autoSave === 'function') autoSave();
         if (typeof showToast === 'function') showToast('⏸ 폰 전송 취소 (연결 갱신 ' + matched + '명만 저장)', 'orange');
         if (onDone) onDone(0, 0);
@@ -15388,13 +15511,11 @@ function copyContact(el) {
       /* ★ 2026-09-11: 안내문을 현재 동작에 맞게. 표시 글자는 설정값을 그대로 보여준다. */
       var _pf = (typeof window.sgSyncPrefixOut === 'function') ? window.sgSyncPrefixOut() : '인카';
       var _pfTxt = _pf ? ('"' + _pf + ' ○○○" 로 보냅니다.') : '이름 그대로 보냅니다.';
-      if (!confirm('Google 연락처와 동기화합니다.\n\n'
-        + '[1] 폰 → 살구\n'
-        + '     가져올 사람을 찾아서 직접 고릅니다.\n'
-        + '     고르지 않으면 아무도 등록되지 않습니다.\n\n'
-        + '[2] 살구 → 폰\n'
-        + '     폰에 없는 고객을 ' + _pfTxt + '\n'
-        + '     몇 명인지 그때 다시 여쭤봅니다.\n\n'
+      if (!confirm('Google 연락처를 불러옵니다.\n\n'
+        + '불러온 뒤 창이 하나 열리고, 거기서 두 가지를 고르실 수 있습니다.\n\n'
+        + '  📥 폰 → 살구 : 데려올 사람\n'
+        + '  📤 살구 → 폰 : 폰에 저장할 고객 ' + (_pf ? ('(' + _pf + ' ○○○ 로)') : '(이름 그대로)') + '\n\n'
+        + '고르지 않은 사람은 아무 일도 일어나지 않습니다.\n'
         + '기존 데이터는 손대지 않습니다.')) return;
     }
     if (typeof showToast === 'function') showToast(_isRetry ? '🔄 토큰 갱신 후 재시도...' : '🔄 폰 → CRM 가져오는 중...', 'amber');
@@ -15419,13 +15540,9 @@ function copyContact(el) {
         if (typeof showToast === 'function') showToast('❌ 가져오기 실패: ' + msg, 'red');
         return;
       }
+      /* ★ 2026-09-11: 폰으로 보내는 것은 동기화 창의 [📤 살구 → 폰] 탭에서
+         직접 고른 사람만 보냅니다. 여기서 자동으로 보내지 않습니다. */
       if (typeof showToast === 'function') showToast('📥 가져옴: 신규 ' + added + '명 / 이미 등록 ' + skipped + '명', 'green');
-      setTimeout(function() {
-        if (typeof showToast === 'function') showToast('🔄 CRM → 폰 보내는 중...', 'amber');
-        _pushPendingContacts(function(d, f) {
-          if (typeof showToast === 'function') showToast('✅ 동기화 완료 — 폰 전송: 성공 ' + d + '명 / 실패 ' + f + '명', 'green');
-        });
-      }, 1500);
     });
   };
 
@@ -17480,7 +17597,8 @@ window.sgSyncSettings = function () {
   if (document.getElementById('sgsy-ov')) return;
   var ov = document.createElement('div');
   ov.id = 'sgsy-ov';
-  ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:99998;'
+  /* ★ 가져오기 창(99999) 위에 떠야 한다 — 뒤에 열려서 안 보이던 문제 (2026-09-11) */
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:100010;'
     + 'display:flex;align-items:center;justify-content:center;font-family:inherit;padding:20px;';
   function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
   ov.onclick = function (e) { if (e.target === ov) close(); };
