@@ -17755,7 +17755,7 @@ window.sgImportPrompt = function (withJumin) {
     ? '이름 / 전화번호 / 주민번호 / 주소 / 직업 / 운전여부 / 병력 / 메모'
     : '이름 / 전화번호 / 주소 / 직업 / 운전여부 / 병력 / 메모';
   var juminRule = withJumin
-    ? '· 주민번호는 앞 7자리까지만 적어줘 (예: 850312-1). 뒷자리는 쓰지 마.\n'
+    ? '· 주민번호는 내 자료에 있는 그대로 옮겨줘. 13자리면 13자리 그대로, 앞자리만 있으면 앞자리만.\n'
     : '· 주민번호는 넣지 마.\n';
   return '내가 올린 고객 명단을, 같이 올린 [살구 등록용 엑셀 샘플] 과 똑같은 양식의 엑셀로 만들어줘.\n'
     + '내 고객 명단은 사진, 손으로 적은 기록, 엑셀 등 형태가 제각각이야.\n'
@@ -17919,11 +17919,13 @@ window.sgNoticeAuto = function () {
   window.__sgNoticeAuto__ = true;
   if (window.sgNoticeSeen()) return;
   setTimeout(function () {
-    /* 사용법 가이드가 떠 있으면(=처음 오신 분) 건너뛴다. 어차피 다 새로 보시는 중이다. */
+    /* 사용법 가이드가 곧 뜨거나 이미 떠 있으면 건너뛴다 (처음 오신 분).
+       그 외에는 로그인 직후 바로 띄운다. */
+    if (window.__sgGuideWillRun__) return;
     var ce = document.getElementById('sgg-catch');
     if (ce && ce.style.display === 'block') return;
     try { window.sgNotice(); } catch (e) {}
-  }, 2000);
+  }, 250);
 };
 
 /* ── 안내 화면 ──────────────────────────────────────────────────── */
@@ -18042,7 +18044,7 @@ window.sgImportGuide = function () {
     if (t) t.value = window.sgImportPrompt(withJumin);
     var note = card.querySelector('#sgimp-jnote');
     if (note) note.textContent = withJumin
-      ? '앞 7자리만 나옵니다 (나이·상령일 계산용)'
+      ? '자료에 있는 그대로 들어갑니다 (나이·상령일 자동 계산)'
       : '살구에서 직접 채워 넣으시면 됩니다';
     var btns = card.querySelectorAll('.sgimp-j');
     for (var i = 0; i < btns.length; i++) {
@@ -18534,6 +18536,7 @@ window.sgSeedSamples = function () {
     if (window.__sgGuideAuto__) return;      /* 두 군데서 불러도 한 번만 */
     window.__sgGuideAuto__ = true;
     try { if (localStorage.getItem(SEEN)) return; } catch (e) {}
+    window.__sgGuideWillRun__ = true;   /* ★ 공지 팝업이 가이드를 덮지 않도록 (2026-09-11) */
     setTimeout(function () { try { window.sgGuideStart(); } catch (e) {} }, 900);
   };
 
