@@ -12318,6 +12318,10 @@ function copyContact(el) {
           renderMobile();
           // ★ 모바일 첫 진입 시 노란 배너가 안 사라지는 문제 — 1.5초 뒤 ok 처리해서 페이드아웃 (2026-06-20)
           setTimeout(function() { banner('✅ 환영합니다! 새 고객을 추가해보세요.', 'ok'); }, 1500);
+          /* ★ 2026-09-14: 휴대폰으로 처음 시작하신 분도 드라이브에 백업 파일이 생기게 한다.
+             예전에는 PC 에서만 만들어서, 폰으로 시작하면 파일이 없어 다음 로그인 때
+             다시 '신규'로 취급되고 저장도 되지 않았다. PC 와 같은 함수·같은 시점이다. */
+          setTimeout(function() { saveToDrive(); }, 800);
         } else {
           // PC는 기존 UI 그대로
           setTimeout(function() { saveToDrive(); }, 800);
@@ -12741,6 +12745,18 @@ function copyContact(el) {
       } catch(_e) {}
       if (!msg) msg = '알 수 없음 (Chrome 콘솔 확인 필요)';
       _sgSaveBad('⚠ 저장 실패 — 새로고침 필요');
+      /* ★ 2026-09-14: 드라이브가 가득 찬 경우는 따로 안내한다 (한 번만) */
+      try {
+        if (typeof window.sgIsQuotaError === 'function' && window.sgIsQuotaError(e)) {
+          _sgSaveBad('⚠ 드라이브 공간 부족 — 저장 안 됨');
+          banner('저장 실패: 구글 드라이브 공간이 가득 찼습니다', 'err');
+          if (!window.__sgQuotaShown__ && typeof window.sgQuotaNotice === 'function') {
+            window.__sgQuotaShown__ = true;
+            window.sgQuotaNotice();
+          }
+          return;
+        }
+      } catch (eQ) {}
       banner('저장 실패: ' + msg, 'err');
     }).then(function(){ _saveSettle(); }, function(){ _saveSettle(); });
   }
@@ -12771,6 +12787,26 @@ function copyContact(el) {
   }
   // 셔임에서 호출하는 트리거를 전역에 노출
   window.__driveSaveTrigger__ = function() { scheduleAutoSave(); };
+
+  /* ★ 지금 내용을 파일 하나로 내려받기 (2026-09-14)
+     드라이브가 가득 차서 새 계정으로 옮기셔야 할 때 씁니다.
+     내려받은 파일을 새 계정 드라이브에 올려두고 [백업 연결]로 고르시면 이어집니다. */
+  window.sgDownloadBackupNow = function () {
+    try {
+      var html = buildBackupHtml();
+      var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var d = new Date(), p2 = function (n) { return ('0' + n).slice(-2); };
+      a.href = url;
+      a.download = '고객관리_백업_' + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '.html';
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { try { document.body.removeChild(a); URL.revokeObjectURL(url); } catch (e) {} }, 1000);
+      if (typeof showToast === 'function') showToast('내려받았습니다 — 새 계정 드라이브에 올려두세요', 'green');
+    } catch (e) {
+      if (typeof showToast === 'function') showToast('내려받기 실패 — 담당자에게 말씀해주세요', 'red');
+    }
+  };
 
   // ★ 다른 기기 변경 감지 (2026-07-07) — 5초마다 + 화면 복귀 시 Drive 수정 시각만 확인 (초경량 통신).
   //   감지되면 자동 새로고침 대신 좌하단 파란 고정 배너로 알림 → 사용자가 눌러야 새로고침 (작업 중 방해 없음).
@@ -13378,20 +13414,27 @@ function copyContact(el) {
     if (c.proposalFileId && !Array.isArray(c.proposals)) {
       c.proposals = [{ fileId: c.proposalFileId, fileName: c.proposalFileName || '제안서.pdf', uploadedAt: c._updated || Date.now() }];
     }
-    if (Array.isArray(c.proposals) && c.proposals.length > 0) {
-      html += '<div class="mv-section"><div class="mv-section-title">고객 자료 (' + c.proposals.length + ')</div>';
-      for (var _pi = 0; _pi < c.proposals.length; _pi++) {
-        var _pp = c.proposals[_pi];
-        html += '<div style="display:flex;gap:8px;margin-bottom:8px;">'
-             +   '<button class="mv-add-btn" style="flex:1;padding:12px;font-size:13px;text-align:left;" '
-             +   'onclick="window.open(\'https://drive.google.com/file/d/' + _pp.fileId + '/view\', \'_blank\')">'
-             +   '📄 ' + escapeHtml(_pp.fileName || '파일 열기') + '</button>'
-             +   '<button style="padding:0 14px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;" '
-             +   'onclick="mvDelProposal(' + c.id + ',' + _pi + ')">🗑</button>'
-             + '</div>';
-      }
-      html += '</div>';
+    /* ★ 2026-09-14: 휴대폰에서도 자료를 넣을 수 있게 했다.
+       예전에는 올려둔 파일이 있을 때만 이 칸이 보이고, 넣을 방법이 없었다. */
+    var _props = Array.isArray(c.proposals) ? c.proposals : [];
+    html += '<div class="mv-section"><div class="mv-section-title">📎 고객 자료 (' + _props.length + ')'
+         +   '<button class="mv-add-btn" onclick="mvAddProposal(' + c.id + ')">+ 자료 넣기</button>'
+         + '</div>';
+    for (var _pi = 0; _pi < _props.length; _pi++) {
+      var _pp = _props[_pi];
+      html += '<div style="display:flex;gap:8px;margin-bottom:8px;">'
+           +   '<button class="mv-add-btn" style="flex:1;padding:12px;font-size:13px;text-align:left;" '
+           +   'onclick="window.open(\'https://drive.google.com/file/d/' + _pp.fileId + '/view\', \'_blank\')">'
+           +   '📄 ' + escapeHtml(_pp.fileName || '파일 열기') + '</button>'
+           +   '<button style="padding:0 14px;background:#fee2e2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;" '
+           +   'onclick="mvDelProposal(' + c.id + ',' + _pi + ')">🗑</button>'
+           + '</div>';
     }
+    if (!_props.length) {
+      html += '<div class="mv-empty" style="padding:16px 0;">사진 · PDF · 엑셀 · 한글 무엇이든 넣으실 수 있습니다</div>';
+    }
+    html += '<div id="mv-prop-status" style="font-size:12.5px;color:#8a6f5c;margin-top:4px;letter-spacing:-.3px;"></div>';
+    html += '</div>';
 
     // ─ 스케줄 (편집 가능) ─
     var scheds = c.schedules || [];
@@ -13863,6 +13906,51 @@ function copyContact(el) {
     _mvCopy('[설계요청]\n' + t, '📋 설계요청 복사됨!');
   };
 
+  /* ★ 휴대폰에서 고객 자료 넣기 (2026-09-14)
+     PC 는 '끌어다 놓기' 창을 쓰지만 휴대폰에서는 쓸 수 없어서,
+     파일 고르기만 바로 띄운다. 아이폰·안드로이드 모두 여기서
+     사진 보관함 · 사진 찍기 · 파일 을 고를 수 있다.
+     올리는 일 자체는 PC 와 똑같은 함수를 쓴다. */
+  window.mvAddProposal = function (id) {
+    var c = _mvFindCust(id);
+    if (!c) return;
+    if (typeof window.__pcUploadProposalPdf !== 'function') {
+      if (typeof showToast === 'function') showToast('구글 로그인 후 다시 시도해주세요', 'orange');
+      return;
+    }
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.multiple = true;
+    inp.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(inp);
+    function cleanup() { try { document.body.removeChild(inp); } catch (e) {} }
+    inp.onchange = function () {
+      var fs = Array.prototype.slice.call(inp.files || []).filter(Boolean).slice(0, 10);
+      cleanup();
+      if (!fs.length) return;
+      var st = document.getElementById('mv-prop-status') || document.createElement('div');
+      var box = document.createElement('div');   /* 올리기 함수가 쓰는 그릇 — 화면에는 안 보인다 */
+      var start = (c.proposals || []).length;
+      st.textContent = '⬆️ ' + fs.length + '개 올리는 중...';
+      fs.forEach(function (f, i) {
+        setTimeout(function () {
+          try { window.__pcUploadProposalPdf(c, f, box, st); } catch (e) {}
+        }, i * 600);
+      });
+      /* 다 올라가면 화면을 다시 그린다 (최대 72초까지 기다린다) */
+      var n = 0;
+      var t = setInterval(function () {
+        var now = (c.proposals || []).length;
+        if (now >= start + fs.length || ++n > 90) {
+          clearInterval(t);
+          try { if (window.mvOpenDetail) window.mvOpenDetail(id); } catch (e) {}
+        }
+      }, 800);
+    };
+    inp.click();
+    /* 고르지 않고 닫으신 경우에도 남지 않게 */
+    setTimeout(function () { if (inp.parentNode && !(inp.files && inp.files.length)) cleanup(); }, 120000);
+  };
+
   /* 개인정보 + 설계요청 함께 복사 */
   window.mvCopyInfoWithDr = function(id) {
     var c = _mvFindCust(id);
@@ -13870,6 +13958,8 @@ function copyContact(el) {
     var t = (typeof window.mvDrCopyText === 'function') ? window.mvDrCopyText() : '';
     var text = _mvInfoLines(c) + (t ? '\n\n────────────────────\n\n설계요청\n' + t : '');
     _mvCopy(text, '📋 정보 + 설계요청 복사됨!');
+    /* ★ 2026-09-14: 복사한 뒤 설계요청 자리로 내려가 준다 */
+    setTimeout(function () { try { if (window.mvDrGo) window.mvDrGo(); } catch (e) {} }, 250);
   };
 
   // ─ 인적사항 편집 ─ (PC 코드와 호환: resident_number/medical_history/notes 양쪽 저장)
@@ -17955,6 +18045,126 @@ window.sgNoticeAuto = function () {
   }, 250);
 };
 
+
+/* ═══ 💾 구글 드라이브 저장 공간이 가득 찼을 때 (2026-09-14) ═══════
+   살구는 고객 정보를 각자의 구글 드라이브에 저장합니다.
+   드라이브가 가득 차면 구글이 업로드를 거절하고, 그때부터 저장이 되지 않습니다.
+   예전에는 '저장 실패: ...' 라는 영문 섞인 한 줄만 떠서
+   무슨 일인지 알기 어려웠습니다. 그래서 따로 안내 창을 띄웁니다.
+   ──────────────────────────────────────────────────────────────── */
+window.sgQuotaNotice = function () {
+  if (document.getElementById('sgqt-ov')) return;
+
+  var ov = document.createElement('div');
+  ov.id = 'sgqt-ov';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.6);z-index:100040;'
+    + 'display:flex;align-items:center;justify-content:center;font-family:inherit;padding:18px;';
+  function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+  ov.onclick = function (e) { if (e.target === ov) close(); };
+
+  var card = document.createElement('div');
+  card.style.cssText = 'background:#fff;border-radius:18px;width:560px;max-width:96vw;max-height:92vh;'
+    + 'overflow:auto;box-shadow:0 24px 70px rgba(124,45,18,.45);text-align:left;';
+
+  card.innerHTML =
+    '<div style="background:linear-gradient(135deg,#991b1b,#dc2626);color:#fff;padding:20px 60px 17px 24px;'
+    + 'border-radius:18px 18px 0 0;position:relative;">'
+    + '<div style="font-size:20px;font-weight:900;letter-spacing:-.8px;">💾 구글 드라이브가 가득 찼습니다</div>'
+    + '<div style="font-size:13px;line-height:1.6;letter-spacing:-.35px;margin-top:7px;opacity:.95;">'
+    + '방금 하신 작업이 <b>아직 저장되지 않았습니다.</b> 창을 닫지 마시고 아래를 읽어주세요.</div>'
+    + '<button type="button" id="sgqt-x" style="position:absolute;top:16px;right:18px;border:none;'
+    + 'background:rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:8px;'
+    + 'font-size:16px;cursor:pointer;font-family:inherit;">✕</button></div>'
+
+    + '<div style="padding:18px 22px 6px;">'
+
+    + '<div style="font-size:13.5px;line-height:1.75;color:#5b4636;letter-spacing:-.35px;margin-bottom:16px;">'
+    + '살구는 고객 정보를 <b style="color:#9a3412;">회원님 구글 드라이브</b>에 저장합니다. '
+    + '드라이브 공간이 다 차면 구글이 저장을 받아주지 않아, 그때부터 살구도 저장을 못 합니다.</div>'
+
+    /* ① 권장 */
+    + '<div style="background:#f4fbf7;border:1.5px solid #cfe8db;border-radius:13px;padding:15px 17px;margin-bottom:11px;">'
+    + '<div style="font-size:15px;font-weight:900;color:#166534;letter-spacing:-.5px;margin-bottom:7px;">'
+    + '가장 권해드리는 방법 — 구글 계정을 새로 만드세요</div>'
+    + '<div style="font-size:13px;line-height:1.8;color:#40584a;letter-spacing:-.35px;">'
+    + '구글 계정은 무료이고, 새 계정에는 <b>15GB</b> 가 그대로 딸려옵니다. '
+    + '살구 백업 파일은 아무리 커도 몇 MB라 넉넉합니다.<br>'
+    + '<b>1.</b> 아래 <b>[구글 계정 만들기]</b> 로 새 계정을 만드세요.<br>'
+    + '<b>2.</b> 살구에서 <b>로그아웃</b> 한 뒤 새 계정으로 로그인하세요.<br>'
+    + '<b>3.</b> 이용 신청 화면이 뜨면 다시 신청해주세요. 확인 후 바로 열어드립니다.</div>'
+    + '<div style="margin-top:10px;background:#fff;border:1.5px dashed #cfe8db;border-radius:9px;'
+    + 'padding:9px 12px;font-size:12.4px;line-height:1.7;color:#4a5f52;letter-spacing:-.3px;">'
+    + '<b>지금 쓰시던 고객 정보는요?</b><br>'
+    + '아래 <b>[지금 내용 파일로 내려받기]</b> 를 누르시면 이 화면의 내용이 파일 하나로 저장됩니다. '
+    + '새 계정으로 들어가신 뒤 그 파일을 살구에 올리시면 그대로 이어서 쓰실 수 있습니다.</div>'
+    + '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;">'
+    + '<a href="https://accounts.google.com/signup" target="_blank" rel="noopener" '
+    + 'style="background:#166534;color:#fff;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:800;'
+    + 'text-decoration:none;font-family:inherit;">구글 계정 만들기</a>'
+    + '<button type="button" id="sgqt-dl" style="background:#fff;border:1.5px solid #cfe8db;color:#166534;'
+    + 'border-radius:9px;padding:9px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">'
+    + '지금 내용 파일로 내려받기</button>'
+    + '</div></div>'
+
+    /* ② 그 밖의 방법 */
+    + '<div style="background:#fffaf5;border:1.5px solid #f0dcc6;border-radius:13px;padding:14px 17px;margin-bottom:14px;">'
+    + '<div style="font-size:13.5px;font-weight:800;color:#9a3412;letter-spacing:-.4px;margin-bottom:6px;">'
+    + '그 밖의 방법</div>'
+    + '<div style="font-size:12.8px;line-height:1.8;color:#6b5240;letter-spacing:-.35px;">'
+    + '· 드라이브에서 <b>큰 파일을 지우고 휴지통을 비우시면</b> 공간이 돌아옵니다. '
+    + '다만 금방 다시 찰 수 있습니다.<br>'
+    + '· 구글 드라이브 공간을 <b>유료로 늘리는 방법</b>도 있습니다(구글 원). '
+    + '다만 매달 나가는 비용이라, 새 계정을 만드시는 편을 더 권해드립니다.</div>'
+    + '</div>'
+
+    + '</div>'
+
+    + '<div style="padding:0 22px 20px;display:flex;align-items:center;gap:9px;">'
+    + '<span style="font-size:12px;color:#a68b73;letter-spacing:-.3px;margin-right:auto;">'
+    + '궁금하신 점은 담당자에게 말씀해 주세요</span>'
+    + '<button type="button" id="sgqt-ok" style="background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;'
+    + 'border:none;border-radius:9px;padding:9px 22px;font-size:13.5px;font-weight:800;cursor:pointer;'
+    + 'font-family:inherit;">닫기</button></div>';
+
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+
+  card.addEventListener('click', function (ev) {
+    var b = ev.target.closest ? ev.target.closest('button') : null;
+    if (!b) return;
+    if (b.id === 'sgqt-x' || b.id === 'sgqt-ok') { close(); return; }
+    if (b.id === 'sgqt-dl') {
+      try {
+        if (typeof window.sgDownloadBackupNow === 'function') window.sgDownloadBackupNow();
+        else if (typeof showToast === 'function') showToast('내려받기를 쓸 수 없습니다 — 담당자에게 말씀해주세요', 'orange');
+      } catch (e) {}
+      return;
+    }
+  });
+
+  var esc = function (ev) {
+    if (ev.key !== 'Escape') return;
+    if (!document.getElementById('sgqt-ov')) { document.removeEventListener('keydown', esc, true); return; }
+    ev.stopPropagation(); close();
+  };
+  document.addEventListener('keydown', esc, true);
+};
+
+/* 저장 실패 메시지가 '공간 부족' 인지 알아본다 */
+window.sgIsQuotaError = function (e) {
+  try {
+    var r = e && e.result && e.result.error;
+    var errs = (r && r.errors) || [];
+    for (var i = 0; i < errs.length; i++) {
+      var rs = String(errs[i].reason || '');
+      if (rs === 'storageQuotaExceeded' || rs === 'quotaExceeded') return true;
+    }
+    var m = String((r && r.message) || (e && e.message) || '');
+    if (/storage quota|quota (has been )?exceeded|storageQuotaExceeded/i.test(m)) return true;
+  } catch (_e) {}
+  return false;
+};
+
 /* ── 안내 화면 ──────────────────────────────────────────────────── */
 window.sgImportGuide = function () {
   if (window.__IS_MOBILE__) return;
@@ -19848,7 +20058,7 @@ window.sgSeedSamples = function () {
     var h = '<div class="mv-section"><div class="mv-section-title">📋 설계요청'
           + (savedN ? ' (' + savedN + ')' : '')
           + '<div class="mv-btns">'
-          + '<button class="mv-edit-btn" onclick="mvCopyDr(' + c.id + ')" style="margin-right:6px;">📋 복사</button>'
+          + '<button class="mv-edit-btn" onclick="mvCopyInfoWithDr(' + c.id + ')" style="margin-right:6px;">📋 정보+설계요청</button>'
           + '<button class="mv-add-btn" onclick="mvDrSave()">💾 저장</button></div></div>';
     h += '<div class="mv-dr-tabs">'
        + '<button class="mv-dr-tab' + (mvTab === 'basic' ? ' on' : '') + '" data-t="basic" onclick="mvDrTab(\'basic\')">간단플랜<span class="mv-tn">' + _drPlans.length + '</span></button>'
