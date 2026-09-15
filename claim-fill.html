@@ -89,7 +89,7 @@
     padding:11px 15px;margin-bottom:16px;font-size:14px;color:#065f46;"></div>
   <!-- ★ 살구로 돌아가기 (2026-09-02) — 같은 창에서 열리므로 돌아갈 길을 준다 -->
   <div id="backbar" style="display:none;margin-bottom:14px;">
-    <button type="button" onclick="history.length>1?history.back():location.href='index.html'"
+    <button type="button" onclick="sgBackToSalgu()"
       style="background:#fff;border:1.5px solid #e7d3bd;color:#7c2d12;border-radius:9px;
       padding:9px 15px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">← 살구로 돌아가기</button>
   </div>
@@ -212,6 +212,20 @@ var CAN_SHARE = (function(){
 
 /* ★ 살구에서 넘어온 고객 정보 (2026-09-02)
    읽자마자 지운다. 주소창·서버 어디에도 남지 않는다. */
+/* ★ 2026-09-15: 살구로 돌아갈 때 살구 창이 새로 생기지 않게 한다.
+   살구가 새 탭으로 이 화면을 열었으면(window.opener 가 있으면)
+   이 탭을 닫고 원래 살구 탭으로 돌아간다 — 로그인도 그대로 유지된다.
+   모바일은 같은 창에서 열리므로 예전처럼 뒤로 간다. */
+function sgBackToSalgu() {
+  try {
+    if (window.opener && !window.opener.closed) {
+      try { window.opener.focus(); } catch (e1) {}
+      window.close();
+      return;
+    }
+  } catch (e) {}
+  if (history.length > 1) history.back(); else location.href = 'index.html';
+}
 var FROM = null;
 (function(){
   try {

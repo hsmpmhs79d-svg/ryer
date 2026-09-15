@@ -11516,7 +11516,7 @@ function copyContact(el) {
     } catch (eNt0) {}
     /* ★ 2026-09-15: 청구서 화면에서 적고 오신 내용이 있으면 고객 카드에 기록한다 */
     try {
-      if (typeof window._sgCollectClaim === 'function') setTimeout(window._sgCollectClaim, 700);
+      if (typeof window._sgCollectClaim === 'function') setTimeout(function () { window._sgCollectClaim(); }, 700);
     } catch (eCl0) {}
   }
 
@@ -14550,16 +14550,24 @@ function copyContact(el) {
        · 이름 · 주민번호 · 연락처 · 계좌 — 살구가 이미 갖고 있어 매번 최신 것을 씁니다
        · 첨부한 병원 서류 — 용량이 커서 장수만 적어둡니다
      ──────────────────────────────────────────────────────────────── */
-  window._sgCollectClaim = function () {
+  window._sgCollectClaim = function (tryN) {
     var raw = null;
     try { raw = localStorage.getItem('__salguClaimDone__'); } catch (e) { return; }
     if (!raw) return;
-    try { localStorage.removeItem('__salguClaimDone__'); } catch (e) {}
+    var _drop = function () { try { localStorage.removeItem('__salguClaimDone__'); } catch (e) {} };
     var o = null;
-    try { o = JSON.parse(raw); } catch (e) { return; }
-    if (!o || !o.cid) return;
+    try { o = JSON.parse(raw); } catch (e) { _drop(); return; }
+    if (!o || !o.cid) { _drop(); return; }
     var c = (window.customers || []).find(function (x) { return x.id === o.cid; });
-    if (!c) return;
+    if (!c) {
+      /* ★ 2026-09-15: 고객 목록이 아직 드라이브에서 안 올라왔을 수 있다.
+         여기서 기록을 지워버리면 청구 내용이 영영 사라진다 — 지우지 말고 잠시 뒤 다시 본다. */
+      tryN = (tryN || 0) + 1;
+      if (tryN <= 25) { setTimeout(function () { window._sgCollectClaim(tryN); }, 800); }
+      else _drop();
+      return;
+    }
+    _drop();
     if (!Array.isArray(c.claims)) c.claims = [];
     /* 같은 보험사로 1분 안에 다시 만든 것은 한 건으로 본다 */
     var last = c.claims[0];
@@ -14588,7 +14596,7 @@ function copyContact(el) {
   try {
     window.addEventListener('storage', function (ev) {
       if (ev && ev.key === '__salguClaimDone__' && ev.newValue) {
-        setTimeout(window._sgCollectClaim, 120);
+        setTimeout(function () { window._sgCollectClaim(); }, 120);
       }
     });
   } catch (e) {}
