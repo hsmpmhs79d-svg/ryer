@@ -741,7 +741,7 @@ async function run() {
      이름·주민번호·계좌처럼 살구가 이미 가진 값도 담지 않습니다. */
   try {
     if (CID) {
-      var SKIPK = { pName:1, pRrn:1, pTel:1, pAddr:1, pJob:1, bank:1, holder:1, acct:1, signName:1 };
+      var SKIPK = { pName:1, pRrn:1, pTel:1, pAddr:1, pJob:1, bank:1, holder:1, acct:1, signName:1, bRrn:1 };
       var keep = {};
       for (var kk in VAL) {
         if (SKIPK[kk]) continue;
