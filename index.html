@@ -3037,6 +3037,8 @@ function selectCustomer(id) {
     +'<div class="btn-group">'
     /* ★ 보험금 청구 — 버튼줄 맨 앞 (2026-09-02) */
     +(window._canClaim && window._canClaim() ? '<button class="btn-quick-msg" title="이 고객 정보로 보험금 청구서 작성" onclick="openClaim('+id+')">보험금 청구</button>' : '')
+    /* ★ 지난 청구 (2026-09-15) — 예전에 적은 내용을 그대로 다시 쓰기 */
+    +((c.claims && c.claims.length) ? '<button class="btn-quick-msg" style="background:#15803d;" title="예전에 작성한 청구서 내용 불러오기" onclick="openClaimHistory('+id+')">지난 청구 ('+c.claims.length+')</button>' : '')
     +'<button class="btn-quick-msg" style="background:#7c3aed;" title="태그 달기/수정 — 이미 만든 태그를 눌러 고를 수 있어요" onclick="editCustomerTags('+id+')">🏷 태그</button>'   /* ★ 태그 (2026-08-15) */
     +'<button class="btn-quick-msg" title="자주 보내는 메시지 템플릿 (퀵메시지)" onclick="openDmTemplates(' + JSON.stringify(c.name||'').replace(/"/g,'&quot;') + ')">퀵메시지</button>'
     /* ★ 추가가입 알림 등록 — 가입완료 고객만 표시 (2026-07-30) */
@@ -11512,6 +11514,10 @@ function copyContact(el) {
     try {
       if (!window.__salguBlocked__ && typeof window.sgNoticeAuto === 'function') window.sgNoticeAuto();
     } catch (eNt0) {}
+    /* ★ 2026-09-15: 청구서 화면에서 적고 오신 내용이 있으면 고객 카드에 기록한다 */
+    try {
+      if (typeof window._sgCollectClaim === 'function') setTimeout(window._sgCollectClaim, 700);
+    } catch (eCl0) {}
   }
 
   function showLoginErr(msg) {
@@ -13373,6 +13379,8 @@ function copyContact(el) {
          +     (c.cardPay ? '<button class="mv-edit-btn" onclick="cancelCardPay(' + c.id + ')" style="background:#ffedd5;color:#9a3412;border:1px solid #fb923c;margin-right:6px;">카드납 해제</button>' : '')
          /* ★ 보험금 청구 (2026-09-02) */
          +     ((window._canClaim && window._canClaim()) ? '<button class="mv-edit-btn" onclick="openClaim(' + c.id + ')" style="background:#dbeafe;color:#1e40af;border:1px solid #60a5fa;margin-right:6px;">보험금 청구</button>' : '')
+         /* ★ 지난 청구 (2026-09-15) */
+         +     ((c.claims && c.claims.length) ? '<button class="mv-edit-btn" onclick="openClaimHistory(' + c.id + ')" style="background:#dcfce7;color:#15803d;border:1px solid #4ade80;margin-right:6px;">지난 청구 (' + c.claims.length + ')</button>' : '')
          +     '<button class="mv-edit-btn" onclick="mvCopyCustomerInfo(' + c.id + ')" style="background:#fdeadd;color:#1e40af;border:1px solid #93c5fd;margin-right:6px;">개인정보복사</button>'
          +     '<button class="mv-edit-btn" onclick="mvEditCustomer(' + c.id + ')">수정</button>'
          +     '</div>'
@@ -14502,7 +14510,7 @@ function copyContact(el) {
       return me === 'wmmryer@gmail.com' || me === 'ryersang@gmail.com';
     } catch (e) { return false; }
   };
-  window.openClaim = function(cid) {
+  window.openClaim = function(cid, pre) {
     var c = (window.customers || []).find(function(x){ return x.id === cid; });
     if (!c) return;
     var rrn = String(c.resident_number || c.jumin || '');
@@ -14513,8 +14521,10 @@ function copyContact(el) {
          수익자가 다른 사람인 경우를 위해 자동으로 겹쳐 쓰지 않는다. */
       pName: c.name || '', pRrn: rrn, pTel: c.phone || '', pAddr: c.address || '', pJob: c.job || '',
       bank: c.bank || '', holder: c.holder || c.name || '', acct: c.account || '',
-      signName: c.name || ''
+      signName: c.name || '',
+      cid: cid                      /* ★ 2026-09-15: 돌아올 때 이 고객에 기록하려고 */
     };
+    if (pre) pack.pre = pre;        /* ★ 지난 청구 내용 그대로 다시 채우기 */
     try { localStorage.setItem('__salguClaim__', JSON.stringify(pack)); } catch (e) {
       alert('고객 정보를 넘기지 못했습니다. 청구서 화면에서 직접 입력해주세요.');
     }
@@ -14526,6 +14536,186 @@ function copyContact(el) {
     var w = null;
     try { w = window.open(url, '_blank'); } catch (e) {}
     if (!w) location.href = url;
+  };
+
+
+  /* ═══ 📄 지난 청구 (2026-09-15) ═══════════════════════════════════
+     청구서 화면에서 [청구서 만들기] 를 누르면 그때 적으신 내용이
+     브라우저에 잠깐 남습니다. 살구가 그것을 읽어 고객 카드에 쌓아둡니다.
+     드라이브 백업에 함께 저장되므로 PC 를 바꾸셔도 따라옵니다.
+
+     담는 것   — 보험사 · 사고일자 · 병명 · 병원 · 증권번호 등 그때 적은 글자
+     담지 않는 것
+       · 서명 — 그 건에 하신 서명이라 다음 건에 다시 쓰면 안 됩니다
+       · 이름 · 주민번호 · 연락처 · 계좌 — 살구가 이미 갖고 있어 매번 최신 것을 씁니다
+       · 첨부한 병원 서류 — 용량이 커서 장수만 적어둡니다
+     ──────────────────────────────────────────────────────────────── */
+  window._sgCollectClaim = function () {
+    var raw = null;
+    try { raw = localStorage.getItem('__salguClaimDone__'); } catch (e) { return; }
+    if (!raw) return;
+    try { localStorage.removeItem('__salguClaimDone__'); } catch (e) {}
+    var o = null;
+    try { o = JSON.parse(raw); } catch (e) { return; }
+    if (!o || !o.cid) return;
+    var c = (window.customers || []).find(function (x) { return x.id === o.cid; });
+    if (!c) return;
+    if (!Array.isArray(c.claims)) c.claims = [];
+    /* 같은 보험사로 1분 안에 다시 만든 것은 한 건으로 본다 */
+    var last = c.claims[0];
+    if (last && last.ins === o.ins && Math.abs((last.t || 0) - (o.t || 0)) < 60000) return;
+    c.claims.unshift({
+      t: o.t || Date.now(), ins: o.ins || '', insName: o.insName || '',
+      val: o.val || {}, attN: o.attN || 0
+    });
+    if (c.claims.length > 20) c.claims.length = 20;   /* 최근 20건까지 */
+    c._updated = Date.now();
+    try {
+      if (window.__IS_MOBILE__) {
+        if (typeof mvCommit === 'function') mvCommit();
+        if (typeof renderMobile === 'function') renderMobile();
+      } else {
+        if (typeof autoSave === 'function') autoSave();
+        if (typeof renderList === 'function') renderList();
+        if (typeof selectCustomer === 'function') selectCustomer(c.id);
+      }
+    } catch (e) {}
+    if (typeof showToast === 'function') {
+      showToast('📄 ' + (c.name || '') + ' 님 청구 내용을 기록했습니다', 'green');
+    }
+  };
+  /* PC 는 청구서가 새 탭에서 열리므로, 그 탭이 다 쓰는 순간 이 탭이 알아챈다 */
+  try {
+    window.addEventListener('storage', function (ev) {
+      if (ev && ev.key === '__salguClaimDone__' && ev.newValue) {
+        setTimeout(window._sgCollectClaim, 120);
+      }
+    });
+  } catch (e) {}
+
+  function _sgchEsc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function _sgchWhen(t) {
+    var d = new Date(t || Date.now()), p = function (n) { return ('0' + n).slice(-2); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  /* 한 줄 요약 — 사고일자 · 병명 · 병원 순으로 있는 것만 */
+  function _sgchBrief(v) {
+    v = v || {};
+    var out = [];
+    if (v.accDate) out.push('사고 ' + v.accDate);
+    if (v.dxName) out.push(String(v.dxName));
+    if (v.hospital) out.push(String(v.hospital));
+    if (!out.length && v.policyNo) out.push('증권 ' + v.policyNo);
+    return out.join(' · ');
+  }
+
+  window.openClaimHistory = function (cid) {
+    var c = (window.customers || []).find(function (x) { return x.id === cid; });
+    if (!c || !Array.isArray(c.claims) || !c.claims.length) {
+      if (typeof showToast === 'function') showToast('지난 청구 기록이 없습니다', 'amber');
+      return;
+    }
+    if (document.getElementById('sgch-ov')) return;
+
+    var ov = document.createElement('div');
+    ov.id = 'sgch-ov';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:100035;'
+      + 'display:flex;align-items:center;justify-content:center;font-family:inherit;padding:18px;';
+    function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.onclick = function (e) { if (e.target === ov) close(); };
+
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border-radius:18px;width:560px;max-width:96vw;max-height:88vh;'
+      + 'overflow:auto;box-shadow:0 24px 70px rgba(124,45,18,.42);text-align:left;';
+
+    function paint() {
+      var list = c.claims || [];
+      var body = '';
+      for (var i = 0; i < list.length; i++) {
+        var it = list[i], br = _sgchBrief(it.val);
+        body += '<div style="border:1.5px solid #f0dcc6;border-radius:13px;background:#fffaf5;'
+          + 'padding:13px 15px;margin-bottom:10px;">'
+          + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px;">'
+          + '<span style="font-size:14.5px;font-weight:900;color:#7c2d12;letter-spacing:-.4px;">'
+          + _sgchEsc(it.insName || it.ins || '보험사') + '</span>'
+          + '<span style="font-size:12.5px;color:#a68b73;">' + _sgchWhen(it.t) + '</span>'
+          + (it.attN ? '<span style="font-size:11.5px;color:#8a6f5c;background:#fff;border:1.5px dashed #e8cfb4;'
+              + 'border-radius:7px;padding:2px 8px;">서류 ' + it.attN + '장</span>' : '')
+          + '</div>'
+          + (br ? '<div style="font-size:12.8px;line-height:1.65;color:#5b4636;letter-spacing:-.35px;">'
+                  + _sgchEsc(br) + '</div>' : '')
+          + '<div style="display:flex;gap:7px;margin-top:10px;">'
+          + '<button type="button" class="sgch-use" data-i="' + i + '" style="border:none;'
+          + 'background:linear-gradient(135deg,#15803d,#16a34a);color:#fff;border-radius:8px;padding:7px 14px;'
+          + 'font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;">이 내용으로 다시 청구</button>'
+          + '<button type="button" class="sgch-del" data-i="' + i + '" style="border:1.5px solid #e7d4bd;'
+          + 'background:#fff;color:#8a6f5c;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:700;'
+          + 'cursor:pointer;font-family:inherit;margin-left:auto;">지우기</button>'
+          + '</div></div>';
+      }
+      if (!list.length) {
+        body = '<div style="text-align:center;padding:34px 10px;font-size:13.5px;color:#b09880;">'
+             + '남아 있는 기록이 없습니다.</div>';
+      }
+      card.innerHTML =
+        '<div style="background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;padding:18px 22px 15px;'
+        + 'border-radius:18px 18px 0 0;position:relative;">'
+        + '<div style="font-size:18px;font-weight:900;letter-spacing:-.7px;">📄 ' + _sgchEsc(c.name || '') + ' 님 지난 청구</div>'
+        + '<div style="font-size:12.5px;line-height:1.6;margin-top:6px;opacity:.95;letter-spacing:-.3px;">'
+        + '그때 적으신 내용이 그대로 채워집니다. 서명과 병원 서류는 새로 받으셔야 합니다.</div>'
+        + '<button type="button" id="sgch-x" style="position:absolute;top:14px;right:16px;border:none;'
+        + 'background:rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:8px;'
+        + 'font-size:16px;cursor:pointer;font-family:inherit;">✕</button></div>'
+        + '<div style="padding:16px 20px 8px;">' + body + '</div>'
+        + '<div style="padding:0 20px 18px;display:flex;justify-content:flex-end;">'
+        + '<button type="button" id="sgch-ok" style="background:#fff;border:1.5px solid #e7d4bd;color:#8a6f5c;'
+        + 'border-radius:9px;padding:9px 20px;font-size:13.5px;font-weight:700;cursor:pointer;'
+        + 'font-family:inherit;">닫기</button></div>';
+    }
+    paint();
+
+    ov.appendChild(card);
+    document.body.appendChild(ov);
+
+    card.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('button') : null;
+      if (!b) return;
+      if (b.id === 'sgch-x' || b.id === 'sgch-ok') { close(); return; }
+      var i = parseInt(b.getAttribute('data-i'), 10);
+      if (b.classList.contains('sgch-use')) {
+        var it = (c.claims || [])[i];
+        if (!it) return;
+        close();
+        try { window.openClaim(c.id, { ins: it.ins, val: it.val }); } catch (e) {}
+        return;
+      }
+      if (b.classList.contains('sgch-del')) {
+        if (!confirm('이 기록을 지울까요?\n청구서 파일은 그대로 남습니다.')) return;
+        c.claims.splice(i, 1);
+        c._updated = Date.now();
+        try {
+          if (window.__IS_MOBILE__) { if (typeof mvCommit === 'function') mvCommit(); }
+          else if (typeof autoSave === 'function') autoSave();
+        } catch (e) {}
+        if (!c.claims.length) { close(); }
+        else paint();
+        try {
+          if (window.__IS_MOBILE__) { if (typeof renderMobile === 'function') renderMobile(); }
+          else if (typeof selectCustomer === 'function') selectCustomer(c.id);
+        } catch (e) {}
+        return;
+      }
+    });
+
+    var esc = function (ev) {
+      if (ev.key !== 'Escape') return;
+      if (!document.getElementById('sgch-ov')) { document.removeEventListener('keydown', esc, true); return; }
+      ev.stopPropagation(); close();
+    };
+    document.addEventListener('keydown', esc, true);
   };
 
   /* ★ 카드납 해제 (2026-09-02) — 가입완료 때 체크한 카드납을 되돌린다.

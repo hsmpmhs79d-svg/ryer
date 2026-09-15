@@ -225,6 +225,24 @@ var FROM = null;
   } catch (e) {}
 })();
 
+/* ★ 지난 청구 불러오기 (2026-09-15)
+   살구 고객 카드에서 [이 내용으로 다시 청구] 를 누르면
+   그때 적으신 내용이 FROM.pre 에 실려 옵니다.
+   이름·주민번호처럼 살구가 가진 값은 늘 살구 것이 우선이고,
+   사고일자·병명·병원처럼 그때 적으신 값만 여기서 채워집니다. */
+var CID = null, PAST = null, PASTK = {};
+if (FROM) {
+  if (FROM.cid) { CID = FROM.cid; delete FROM.cid; }
+  if (FROM.pre) {
+    PAST = FROM.pre; delete FROM.pre;
+    var _pv = (PAST && PAST.val) || {};
+    for (var _pk in _pv) {
+      if (typeof _pv[_pk] === 'boolean') continue;      /* 체크 항목은 따로 되살린다 */
+      if (FROM[_pk] === undefined || FROM[_pk] === '') { FROM[_pk] = _pv[_pk]; PASTK[_pk] = 1; }
+    }
+  }
+}
+
 var DATA = { marks:{}, custom:{}, skip:{} };   /* claim-data.json */
 var LABELS = {};                               /* claim-fields.json 라벨 */
 var curIns = null, VAL = {}, SIG = {}, ATT = [];
@@ -236,7 +254,8 @@ function msg(t){ $('msg').textContent = t || ''; }
 if (FROM && FROM.pName) {
   var wb = document.getElementById('whobar');
   wb.innerHTML = '👤 <b>' + String(FROM.pName).replace(/</g,'&lt;') + '</b> 님의 정보를 살구에서 가져왔습니다. '
-    + '비어 있는 칸만 채우시면 됩니다.';
+    + (PAST ? '<b>지난 청구에 적으셨던 내용</b>도 함께 채워 뒀습니다. 사고일자·병명만 확인해주세요.'
+            : '비어 있는 칸만 채우시면 됩니다.');
   wb.style.display = 'block';
   var bb = document.getElementById('backbar'); if (bb) bb.style.display = 'block';
   var fn = document.getElementById('fname');
@@ -261,7 +280,16 @@ Promise.all([
     $('ins').appendChild(o);
   });
   $('ins').onchange = function(){ hideFaxCard(); openIns(this.value); };
-  if ($('ins').options.length) openIns($('ins').options[0].value);
+  /* ★ 지난 청구와 같은 보험사를 골라둔다 (2026-09-15) */
+  var _want = (PAST && PAST.ins) ? PAST.ins : '';
+  var _use = '';
+  if (_want) {
+    for (var _oi = 0; _oi < $('ins').options.length; _oi++) {
+      if ($('ins').options[_oi].value === _want) { _use = _want; break; }
+    }
+  }
+  if (!_use && $('ins').options.length) _use = $('ins').options[0].value;
+  if (_use) { $('ins').value = _use; openIns(_use); }
 });
 
 function labelOf(k) {
@@ -372,6 +400,10 @@ function openIns(key) {
     };
     /* '무조건 체크'는 기본으로 켜둔다 */
     if (k === 'agree') { l.querySelector('input').checked = true; VAL[k] = true; l.classList.add('on'); }
+    /* ★ 지난 청구에서 켜두셨던 체크도 되살린다 (2026-09-15) — 같은 보험사일 때만 */
+    if (PAST && PAST.ins === key && PAST.val && PAST.val[k] === true) {
+      l.querySelector('input').checked = true; VAL[k] = true; l.classList.add('on');
+    }
     cb.appendChild(l);
   });
   $('card-chk').style.display = chks.length ? '' : 'none';
@@ -392,7 +424,10 @@ function openIns(key) {
     /* ★ 살구에서 넘어온 값은 미리 채워둔다 (2026-09-02) */
     var pre = (FROM && FROM[k]) ? FROM[k] : '';
     var ex = exOf(k);
-    d.innerHTML = '<label>' + labelOf(k) + (pre ? ' <span style="color:#0f766e;font-size:11.5px;font-weight:700">· 살구에서 가져옴</span>' : '')
+    var _src = !pre ? ''
+      : (PASTK[k] ? ' <span style="color:#7c3aed;font-size:11.5px;font-weight:700">· 지난 청구에서 가져옴</span>'
+                  : ' <span style="color:#0f766e;font-size:11.5px;font-weight:700">· 살구에서 가져옴</span>');
+    d.innerHTML = '<label>' + labelOf(k) + _src
       + '</label><input type="text" id="' + id + '" value="' + String(pre).replace(/"/g, '&quot;') + '"'
       + (ex ? ' placeholder="예) ' + ex.replace(/"/g, '&quot;') + '"' : '') + '>';
     tb.appendChild(d);
@@ -699,6 +734,28 @@ async function run() {
   var tot = MADE.reduce(function(a, m){ return a + m.blob.size; }, 0);
   msg('완료 — 모두 ' + ITEMS.length + '쪽 · ' + sizeText(tot)
       + (MADE.length > 1 ? ' · 8MB를 넘어 ' + MADE.length + '개로 나눴습니다' : ''));
+
+  /* ★ 이번에 적으신 내용을 살구로 돌려보낸다 (2026-09-15)
+     살구가 이것을 읽어 고객 카드의 '지난 청구' 에 쌓아둡니다.
+     서명은 담지 않습니다 — 그 건에 하신 서명이라 다음 건에 다시 쓰면 안 됩니다.
+     이름·주민번호·계좌처럼 살구가 이미 가진 값도 담지 않습니다. */
+  try {
+    if (CID) {
+      var SKIPK = { pName:1, pRrn:1, pTel:1, pAddr:1, pJob:1, bank:1, holder:1, acct:1, signName:1 };
+      var keep = {};
+      for (var kk in VAL) {
+        if (SKIPK[kk]) continue;
+        var vv = VAL[kk];
+        if (vv === '' || vv === null || vv === undefined || vv === false) continue;
+        keep[kk] = vv;
+      }
+      var insNm = curIns;
+      for (var ii = 0; ii < INS.length; ii++) { if (INS[ii][0] === curIns) { insNm = INS[ii][1]; break; } }
+      localStorage.setItem('__salguClaimDone__', JSON.stringify({
+        t: Date.now(), cid: CID, ins: curIns, insName: insNm, val: keep, attN: ATT.length
+      }));
+    }
+  } catch (eSv) {}
 }
 
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
