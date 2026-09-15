@@ -93,6 +93,9 @@
       style="background:#fff;border:1.5px solid #e7d3bd;color:#7c2d12;border-radius:9px;
       padding:9px 15px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">← 살구로 돌아가기</button>
   </div>
+  <!-- ★ 지난 청구 불러오기 (2026-09-15) — 살구가 보내준 이 고객의 지난 기록 -->
+  <div id="histbar" style="display:none;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:11px;
+    padding:12px 15px;margin-bottom:16px;"></div>
 
   <div class="card">
     <h2>1. 보험사</h2>
@@ -244,9 +247,11 @@ var FROM = null;
    그때 적으신 내용이 FROM.pre 에 실려 옵니다.
    이름·주민번호처럼 살구가 가진 값은 늘 살구 것이 우선이고,
    사고일자·병명·병원처럼 그때 적으신 값만 여기서 채워집니다. */
-var CID = null, PAST = null, PASTK = {};
+var CID = null, PAST = null, PASTK = {}, HIST = [], FROM0 = null;
 if (FROM) {
   if (FROM.cid) { CID = FROM.cid; delete FROM.cid; }
+  /* ★ 2026-09-15: 살구가 이 고객의 지난 청구 목록을 함께 보내줍니다 */
+  if (FROM.hist) { HIST = FROM.hist || []; delete FROM.hist; }
   if (FROM.pre) {
     PAST = FROM.pre; delete FROM.pre;
     var _pv = (PAST && PAST.val) || {};
@@ -255,6 +260,9 @@ if (FROM) {
       if (FROM[_pk] === undefined || FROM[_pk] === '') { FROM[_pk] = _pv[_pk]; PASTK[_pk] = 1; }
     }
   }
+  /* 살구에서 온 '고객 본래 정보' 를 따로 보관한다 —
+     화면에서 지난 청구를 바꿔 고를 때마다 여기서 다시 시작한다. */
+  try { FROM0 = JSON.parse(JSON.stringify(FROM)); } catch (e) { FROM0 = null; }
 }
 
 var DATA = { marks:{}, custom:{}, skip:{} };   /* claim-data.json */
@@ -274,6 +282,73 @@ if (FROM && FROM.pName) {
   var bb = document.getElementById('backbar'); if (bb) bb.style.display = 'block';
   var fn = document.getElementById('fname');
   if (fn) fn.value = String(FROM.pName).replace(/[\\/:*?"<>|]/g, '') + '_보험금청구';
+  sgPaintHist();
+}
+
+/* ★ 지난 청구 불러오기 (2026-09-15) ────────────────────────────
+   살구 고객 카드에 쌓인 지난 청구를 이 화면에서 바로 고르실 수 있게 합니다.
+   고르시면 그때 적으신 사고일자·병명·병원 등이 빈 칸에 채워집니다.
+   서명과 병원 서류는 담기지 않으므로 새로 하셔야 합니다. */
+function _sgEsc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _sgDay(t){ var d=new Date(t||Date.now()),p=function(n){return ('0'+n).slice(-2);};
+  return (d.getMonth()+1)+'/'+p(d.getDate()); }
+function _sgBrief(v){ v=v||{}; var o=[];
+  if (v.accDate) o.push(v.accDate);
+  if (v.dxName) o.push(String(v.dxName));
+  if (!o.length && v.hospital) o.push(String(v.hospital));
+  if (!o.length && v.policyNo) o.push('증권 '+v.policyNo);
+  return o.join(' · '); }
+
+function sgPaintHist() {
+  var bar = document.getElementById('histbar');
+  if (!bar || !CID) return;
+  if (!HIST || !HIST.length) {
+    bar.innerHTML = '<div style="font-size:13px;color:#6d5f8c;letter-spacing:-.3px;line-height:1.7;">'
+      + '📄 <b>지난 청구</b> — 이 고객은 아직 살구에 남은 청구 기록이 없습니다.<br>'
+      + '<span style="color:#8a7fa8;">지금 청구서를 만드시면 그 내용이 기록되어, 다음에 여기서 바로 불러오실 수 있습니다.</span></div>';
+    bar.style.display = 'block';
+    return;
+  }
+  var h = '<div style="font-size:13.5px;font-weight:800;color:#5b21b6;letter-spacing:-.4px;margin-bottom:8px;">'
+        + '📄 지난 청구 불러오기</div>'
+        + '<div style="display:flex;gap:7px;flex-wrap:wrap;">';
+  for (var i = 0; i < HIST.length; i++) {
+    var it = HIST[i], br = _sgBrief(it.val);
+    h += '<button type="button" onclick="sgUseHist(' + i + ')" style="background:#fff;'
+      + 'border:1.5px solid #ddd6fe;color:#5b21b6;border-radius:9px;padding:8px 13px;font-size:12.5px;'
+      + 'font-weight:700;cursor:pointer;font-family:inherit;text-align:left;line-height:1.5;">'
+      + _sgEsc(it.insName || it.ins || '보험사') + ' <span style="color:#9d8fc4;">' + _sgDay(it.t) + '</span>'
+      + (br ? '<br><span style="font-weight:500;color:#7b6ba3;font-size:11.5px;">' + _sgEsc(br) + '</span>' : '')
+      + '</button>';
+  }
+  h += '</div><div style="font-size:11.5px;color:#8a7fa8;margin-top:8px;letter-spacing:-.3px;">'
+     + '서명과 병원 서류는 담기지 않습니다 — 새로 하셔야 합니다.</div>';
+  bar.innerHTML = h;
+  bar.style.display = 'block';
+}
+
+function sgUseHist(i) {
+  var it = (HIST || [])[i];
+  if (!it) return;
+  /* 고객 본래 정보에서 다시 시작한다 */
+  if (FROM0) { try { FROM = JSON.parse(JSON.stringify(FROM0)); } catch (e) {} }
+  PAST = { ins: it.ins, val: it.val || {} };
+  PASTK = {};
+  var v = PAST.val || {};
+  for (var k in v) {
+    if (typeof v[k] === 'boolean') continue;
+    if (FROM[k] === undefined || FROM[k] === '') { FROM[k] = v[k]; PASTK[k] = 1; }
+  }
+  var sel = document.getElementById('ins');
+  if (sel && it.ins) {
+    var ok = false;
+    for (var j = 0; j < sel.options.length; j++) if (sel.options[j].value === it.ins) ok = true;
+    if (ok) { sel.value = it.ins; openIns(it.ins); }
+    else { msg('그 보험사의 청구서 양식이 아직 없습니다 — 보험사를 직접 골라주세요'); return; }
+  }
+  hideFaxCard();
+  msg('지난 청구 내용을 채웠습니다 — 사고일자·병명을 확인하시고, 서명과 서류는 새로 해주세요');
+  try { document.getElementById('card-chk').scrollIntoView({ behavior:'smooth', block:'start' }); } catch (e) {}
 }
 
 Promise.all([
@@ -768,6 +843,10 @@ async function run() {
       localStorage.setItem('__salguClaimDone__', JSON.stringify({
         t: Date.now(), cid: CID, ins: curIns, insName: insNm, val: keep, attN: ATT.length
       }));
+      /* ★ 2026-09-15: 기록됐는지 눈으로 보이게 한다 */
+      msg($('msg').textContent + ' · 살구에 이 내용을 기록했습니다');
+    } else {
+      msg($('msg').textContent + ' · (살구를 거치지 않고 여신 화면이라 기록은 남지 않습니다)');
     }
   } catch (eSv) {}
 }

@@ -14525,6 +14525,14 @@ function copyContact(el) {
       cid: cid                      /* ★ 2026-09-15: 돌아올 때 이 고객에 기록하려고 */
     };
     if (pre) pack.pre = pre;        /* ★ 지난 청구 내용 그대로 다시 채우기 */
+    /* ★ 2026-09-15: 청구서 화면에서도 지난 청구를 바로 고르실 수 있게 최근 5건을 함께 보낸다 */
+    try {
+      if (Array.isArray(c.claims) && c.claims.length) {
+        pack.hist = c.claims.slice(0, 5).map(function (x) {
+          return { t: x.t, ins: x.ins, insName: x.insName, val: x.val || {}, attN: x.attN || 0 };
+        });
+      }
+    } catch (eH) {}
     try { localStorage.setItem('__salguClaim__', JSON.stringify(pack)); } catch (e) {
       alert('고객 정보를 넘기지 못했습니다. 청구서 화면에서 직접 입력해주세요.');
     }
@@ -14598,6 +14606,17 @@ function copyContact(el) {
       if (ev && ev.key === '__salguClaimDone__' && ev.newValue) {
         setTimeout(function () { window._sgCollectClaim(); }, 120);
       }
+    });
+  } catch (e) {}
+  /* ★ 2026-09-15: 청구서 창에서 살구 창으로 돌아오실 때도 한 번 더 살핀다.
+     (창이 따로 떠 있으면 위 storage 신호를 못 받는 경우가 있다) */
+  try {
+    window.addEventListener('focus', function () {
+      setTimeout(function () { try { window._sgCollectClaim(); } catch (e) {} }, 250);
+    });
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) return;
+      setTimeout(function () { try { window._sgCollectClaim(); } catch (e) {} }, 250);
     });
   } catch (e) {}
 
