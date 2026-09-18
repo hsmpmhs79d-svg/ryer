@@ -149,6 +149,11 @@
   .info-item .label .sg-ie-btn { margin-left: 6px; border: 1px solid #eadcc9; background: #fff; color: #b07a5a; border-radius: 6px; font-size: 11px; line-height: 1; padding: 2px 6px; cursor: pointer; font-family: inherit; vertical-align: middle; opacity: .55; transition: opacity .15s, background .15s; }
   .info-item:hover .label .sg-ie-btn { opacity: 1; }
   .info-item .label .sg-ie-btn:hover { background: #fdeadd; color: #9a3412; border-color: #e46a25; }
+  .card-header .sg-ie-name { margin: 0 8px 0 4px; border: 1px solid #eadcc9; background: #fff; color: #b07a5a; border-radius: 6px; font-size: 12px; line-height: 1; padding: 3px 7px; cursor: pointer; font-family: inherit; vertical-align: middle; opacity: .6; }
+  .card-header .sg-ie-name:hover { opacity: 1; background: #fdeadd; color: #9a3412; border-color: #e46a25; }
+  .card-header .sg-ie-namebox { display: inline-flex; align-items: center; gap: 6px; vertical-align: middle; margin-right: 8px; }
+  .card-header .sg-ie-namebox input { width: 150px; padding: 5px 9px; font-size: 18px; font-weight: 800; border: 1.5px solid #e46a25; border-radius: 8px; outline: none; font-family: inherit; background: #fffaf5; }
+  .card-header .sg-ie-namebox button { border: none; border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .info-item .sg-ie { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
   .info-item .sg-ie input, .info-item .sg-ie textarea { flex: 1 1 160px; min-width: 0; padding: 7px 9px; font-size: 14px; border: 1.5px solid #e46a25; border-radius: 7px; outline: none; font-family: inherit; background: #fffaf5; }
   .info-item .sg-ie textarea { flex-basis: 100%; min-height: 70px; resize: vertical; line-height: 1.45; }
@@ -3120,6 +3125,8 @@ function selectCustomer(id) {
     +'<div class="card-header">'
     /* ★ 1줄 순서: 이름 → 성별 → 만나이 → 보험나이 → 상령일 (2026-07-15) */
     +'<div><span class="cname" onclick="copyField(this,\'이름\')">'+(c.name||'(이름없음)')+'</span>'
+    /* ★ 이름 바로 수정 연필 (2026-09-18) */
+    +'<button type="button" class="sg-ie-btn sg-ie-name" title="이름 바로 수정" onclick="sgInlineEditName('+id+',this)">✎</button>'
     +'<span class="cbadge" style="background:'+bg+';color:'+tc+'">'+(c.gender||'?')+'</span>'
     +getAgeTag(c,14)+getInsAgeTag(c,14)+' '+_tagChipsHtml(c)+'</div>'  /* ★ 카드 헤더는 나이 글자 14px (2026-07-15) · 태그 칩 (2026-08-15) */
     +'<div class="btn-group">'
@@ -9177,6 +9184,31 @@ function sgInlineEdit(id, key, btn) {
   ins[0].focus();
 }
 window.sgInlineEdit = sgInlineEdit;
+/* ★ 이름 바로 수정 (2026-09-18) — 카드 헤더의 연필. 빈 이름은 저장 안 함 */
+function sgInlineEditName(id, btn) {
+  var c = customers.find(function (x) { return x.id === id; }); if (!c) return;
+  var nameEl = btn.previousElementSibling; if (!nameEl || !nameEl.classList.contains('cname')) return;
+  if (nameEl.parentNode.querySelector('.sg-ie-namebox')) return;
+  var box = document.createElement('span'); box.className = 'sg-ie-namebox';
+  var inp = document.createElement('input'); inp.type = 'text'; inp.value = c.name || ''; inp.placeholder = '이름';
+  var bs = document.createElement('button'); bs.type = 'button'; bs.textContent = '저장'; bs.style.cssText = 'background:#e46a25;color:#fff;';
+  var bc = document.createElement('button'); bc.type = 'button'; bc.textContent = '취소'; bc.style.cssText = 'background:#f8efe4;color:#6b5a4c;border:1px solid #eee0cf;';
+  box.appendChild(inp); box.appendChild(bs); box.appendChild(bc);
+  function cancel() { if (box.parentNode) box.parentNode.removeChild(box); nameEl.style.display = ''; btn.style.display = ''; }
+  function save() {
+    var v = inp.value.trim();
+    if (!v) { showToast('이름을 입력해주세요.', 'orange'); inp.focus(); return; }
+    var idx = customers.findIndex(function (x) { return x.id === id; }); if (idx === -1) return;
+    customers[idx] = Object.assign({}, customers[idx], { name: v });
+    touchCustomer(id); showToast('수정됨', 'green'); autoSave(); renderList(); selectCustomer(id);
+  }
+  bs.onclick = save; bc.onclick = cancel;
+  inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); save(); } else if (ev.key === 'Escape') { ev.preventDefault(); cancel(); } });
+  nameEl.style.display = 'none'; btn.style.display = 'none';
+  nameEl.parentNode.insertBefore(box, nameEl);
+  inp.focus(); inp.select();
+}
+window.sgInlineEditName = sgInlineEditName;
 
 /* ★ 고객 관계 (2026-09-18) — c.relations = [{id, rel}] 양쪽에 저장. 자녀↔부모는 서로 뒤집어서 */
 var SG_REL_TYPES = ['배우자', '자녀', '부모', '형제/자매', '기타'];
