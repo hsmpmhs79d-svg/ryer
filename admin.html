@@ -107,6 +107,8 @@
 var API = 'https://salgu-api.wmmryer.workers.dev';
 var CLIENT_ID = '491677189712-agtga4sn5ed3gje4n0lk02veoj3ttl2c.apps.googleusercontent.com';
 var _token = null, _users = [], _tab = 'pending', _tc = null;
+var ADMIN_FIXED = ['wmmryer@gmail.com', 'ryersang@gmail.com'];   /* 워커 코드에 박힌 기본 관리자 — 해제 불가 */
+function isAdminU(u) { var e = String(u.email || '').toLowerCase(); return ADMIN_FIXED.indexOf(e) >= 0 || Number(u.is_admin) === 1; }
 var _sel = {};   /* ★ 일괄 적용용 체크 상태 (이메일 → true) (2026-09-18) */
 /* ★ 걸러보기·정렬 상태 (2026-09-02) */
 var _q = '', _grp = 'all', _mon = 'all', _sort = 'seen', _view = 'all', _fbuilt = false;
@@ -236,6 +238,11 @@ function render() {
              + '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
       }
       /* 초대 멤버 표시를 손으로 켜고 끄기 — 잘못 잡힌 사람 바로잡을 때 */
+      /* ★ 관리자 지정/해제 (2026-09-18) — 기본 관리자는 버튼 없음 */
+      if (ADMIN_FIXED.indexOf(String(u.email || '').toLowerCase()) < 0) {
+        acts += '<button class="btn btn-g btn-sm" title="관리자 페이지 접근 권한 주기/뺏기" onclick="setAdmin(\'' + esc(u.email) + '\',' + (isAdminU(u) ? 'false' : 'true') + ')">'
+             + (isAdminU(u) ? '👑 관리자 해제' : '👑 관리자 지정') + '</button>';
+      }
       acts += '<button class="btn btn-g btn-sm" title="초대 멤버 표시 켜기/끄기" onclick="setTier(\'' + esc(u.email) + '\',' + (isInvited(u) ? 'false' : 'true') + ')">'
            + (isInvited(u) ? '🌱 해제' : '🌱 초대') + '</button>';
     }
@@ -243,7 +250,7 @@ function render() {
       + (_tab !== 'all' ? '<input type="checkbox" class="sg-ck" title="일괄 적용 대상으로 선택" value="' + esc(u.email) + '"' + (_sel[String(u.email).toLowerCase()] ? ' checked' : '') + ' onchange="bulkTick(this)">' : '')
       + '<div class="info">'
       +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span>'
-      +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + planHtml(u) + '</div>'
+      +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + (isAdminU(u) ? ' <span class="badge" style="background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d">👑 관리자</span>' : '') + planHtml(u) + '</div>'
       +   '<div class="sub">' + esc(u.email) + (u.phone ? ' · ' + esc(u.phone) : '') + '</div>'
       +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : (st === 'approved' ? ' · <b style="color:#15803d">♾ 무기한</b>' : '')) + '</div>'
       +   '<div class="usage">' + usageHtml(u) + '</div>'
@@ -543,6 +550,12 @@ function setUnlimited(email) {
   var sel = document.getElementById('plan-' + email);
   if (!confirm(email + ' 님을 기한 제한 없는 사용자(무기한)로 바꿀까요?')) return;
   _planPost(email, sel ? sel.value : '', null, '♾ 무기한으로 변경됨');
+}
+/* ★ 관리자 지정/해제 (2026-09-18) — 지정된 사람은 살구 본체 상단에 [가입 관리] 버튼이 보이고 이 페이지에 들어올 수 있음 */
+function setAdmin(email, on) {
+  if (!confirm(email + (on ? ' 님을 관리자로 지정할까요?\n(이 가입 관리 페이지에 들어와 승인·중지·요금제를 바꿀 수 있게 됩니다)' : ' 님의 관리자 권한을 해제할까요?'))) return;
+  api('/admin/setadmin', { method:'POST', body: JSON.stringify({ email: email, on: !!on }) })
+    .then(function(r){ if (r && r.ok) { toast(on ? '👑 관리자로 지정됨' : '관리자 해제됨'); load(); } else toast('실패: ' + ((r && r.error) || '워커에 /admin/setadmin 이 아직 없습니다')); });
 }
 function setTier(email, on) {
   if (!confirm(email + (on ? ' 님을 초대 멤버로 표시할까요?' : ' 님의 초대 멤버 표시를 해제할까요?'))) return;
