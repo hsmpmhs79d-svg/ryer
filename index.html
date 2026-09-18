@@ -5450,12 +5450,13 @@ function xlsxImport() {
 /* 실제로 파일을 고르는 부분 — 안내 화면의 [엑셀 파일 고르기] 에서도 부른다 */
 function sgXlsxPick() {
   if (window.__IS_MOBILE__) return;
-  var _ov = _showFileDropModal('.xlsx,.xls', '엑셀 파일에서 고객 일괄 등록', function(f) {
+  var _ov = _showFileDropModal('.xlsx,.xls,.csv,.txt,.pdf', '엑셀 · 메모장 · PDF에서 고객 일괄 등록', function(f) {
     /* ★ 일괄 태그 (2026-08-15) — 이 파일의 고객 전체에 같은 태그를 붙여 나중에 통째로 검색 */
     var _t = prompt('이 파일의 고객 전체에 붙일 태그를 입력하세요.\n(쉼표로 여러 개 · 비워두고 확인하면 태그 없이 등록)\n예: 8월흥생DB', '');
     if (_t === null) { showToast('엑셀 등록 취소됨', 'orange'); return; }
     window.__xlsxBatchTags = _parseTagStr(_t);
-    _xlsxHandleFile(f);
+    /* ★ 스마트 옮겨오기 (2026-09-18) — 양식이 달라도 칸을 맞춰 미리 보여준 뒤 등록. 메모장·PDF도 같은 길 */
+    sgSmartImport(f);
   });
   /* ★ 안내 다시 보기 (2026-09-18) — '다음부터 건너뛰기'를 켠 뒤에도 옮겨오기 안내를 다시 볼 수 있게 */
   try {
@@ -5484,6 +5485,230 @@ function sgXlsxPick() {
 }
 window.sgXlsxPick = sgXlsxPick;
 window.xlsxImport = xlsxImport;
+
+/* ═══════ ★ 스마트 옮겨오기 (2026-09-18) ═══════
+   엑셀(양식 무관)·CSV·메모장(txt)·글자 있는 PDF → 칸 자동 맞춤 → 미리보기 → [등록] 눌러야 실제 반영.
+   전부 브라우저 안에서만 처리(서버·외부 AI로 나가지 않음). 등록 로직은 기존 _xlsxProcessRows 그대로. */
+function sgSmartImport(file) {
+  var name = (file && file.name || '').toLowerCase();
+  var ext = name.split('.').pop();
+  if (ext === 'txt' || ext === 'text') {
+    var r1 = new FileReader();
+    r1.onload = function (e) { sgMapPreview(sgTextToRows(String(e.target.result || '')), file.name); };
+    r1.readAsText(file, 'utf-8');
+    return;
+  }
+  if (ext === 'pdf') {
+    showToast('PDF에서 글자를 읽는 중…', 'orange');
+    sgPdfText(file).then(function (txt) {
+      if (!txt || txt.replace(/\s/g, '').length < 10) {
+        alert('이 PDF에는 읽을 수 있는 글자가 없습니다 (스캔·사진 PDF).\n사진이나 스캔본은 옮겨오기 안내의 AI 방법을 이용해 주세요.');
+        return;
+      }
+      sgMapPreview(sgTextToRows(txt), file.name);
+    }).catch(function (err) { console.error(err); showToast('PDF 읽기 실패: ' + (err && err.message || ''), 'red'); });
+    return;
+  }
+  if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중... 3초 뒤 다시 시도해주세요', 'orange'); return; }
+  var r2 = new FileReader();
+  r2.onload = function (e) {
+    try {
+      var data = new Uint8Array(e.target.result);
+      var wb = XLSX.read(data, { type: 'array' });
+      var sheet = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      sgMapPreview(rows, file.name);
+    } catch (err) { console.error('xlsx err:', err); showToast('엑셀 파싱 실패: ' + (err.message || ''), 'red'); }
+  };
+  r2.readAsArrayBuffer(file);
+}
+window.sgSmartImport = sgSmartImport;
+
+/* 메모장·PDF 글자 → 표. 한 줄에 한 명이 기본. 전화번호·주민번호·이름·주소를 규칙으로 찾는다 */
+function sgTextToRows(text) {
+  var head = ['이름', '전화번호', '주민번호', '주소', '메모'];
+  var out = [head];
+  var lines = String(text || '').replace(/\r/g, '').split('\n');
+  var RE_PHONE = /01[016789][\s.\-]?\d{3,4}[\s.\-]?\d{4}/;
+  var RE_JUMIN = /\d{6}\s*-\s*\d{1,7}(?![\d])/;
+  var RE_REGION = /^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주|[가-힣]{1,5}(특별시|광역시|특별자치시|특별자치도))$/;
+  var RE_ADDRTOK = /(^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주)$|[가-힣]{1,8}(시|도|군|구|로|길|동|읍|면|리|가|마을|단지)$|^\d+(-\d+)?$|^\d+(-\d+)?(번지|번길|호|층|동|가)$|아파트|빌라|오피스텔|타워|맨션|주공|자이|푸르지오|래미안|힐스테이트|e편한|더샵|아이파크|캐슬|센트럴|파크|빌|하이츠)/;
+  var STOP = /^(이름|성명|고객명|전화|전화번호|연락처|휴대폰|핸드폰|주민|주민번호|생년월일|주소|메모|비고|특이사항|직업|운전여부|병력|고지사항|성별|나이|고객|명단|목록|번호|순번|합계|계|남|여|만|세|년|월|일|외|등|및|없음|미상|기타|재연락|가망|가입|거절|부재|상담|미팅|약속|보험|보험사|상품|월납|자녀|배우자|부모|남편|아내|아들|딸|어머니|아버지)$/;
+  var prev = null;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    var rest = line;
+    var phone = '', jumin = '', nm = '', addr = '';
+    var mp = rest.match(RE_PHONE);
+    if (mp) { phone = mp[0].replace(/[\s.]/g, '-'); rest = rest.replace(mp[0], ' '); }
+    var mj = rest.match(RE_JUMIN);
+    if (mj) { jumin = mj[0].replace(/\s/g, ''); rest = rest.replace(mj[0], ' '); }
+    var toks = rest.replace(/[|,;:\/·•▪\-–—()\[\]{}"'“”‘’]/g, ' ').split(/\s+/).filter(Boolean);
+    if (toks.length && /^\d{1,3}\.?$/.test(toks[0])) toks.shift();   /* 맨 앞 순번(1, 2, 3.) 제거 */
+    /* 주소 시작: 시·도 이름이나 '○○시 ○○구' 같은 토큰. 그 뒤로 주소처럼 생긴 토큰이 이어지는 동안만 주소 */
+    var addrIdx = -1, addrEnd = -1;
+    for (var t = 0; t < toks.length; t++) { if (RE_REGION.test(toks[t]) || /[가-힣]{1,6}(시|군|구)$/.test(toks[t])) { addrIdx = t; break; } }
+    if (addrIdx >= 0) { addrEnd = addrIdx + 1; while (addrEnd < toks.length && RE_ADDRTOK.test(toks[addrEnd])) addrEnd++; }
+    /* 이름: 2~4글자 순한글 토큰 중 첫 번째(라벨·상태어 제외). 주소 안에 있는 건 제외 */
+    for (var t2 = 0; t2 < toks.length; t2++) {
+      if (addrIdx >= 0 && t2 >= addrIdx && t2 < addrEnd) continue;
+      var tk = toks[t2].replace(/(님|씨|고객님|고객|원장님|사장님|대표님|팀장님)$/, '');
+      if (/^[가-힣]{2,4}$/.test(tk) && !STOP.test(tk)) { nm = tk; toks.splice(t2, 1); if (addrIdx > t2) { addrIdx--; addrEnd--; } break; }
+    }
+    if (addrIdx >= 0) { addr = toks.slice(addrIdx, addrEnd).join(' '); toks = toks.slice(0, addrIdx).concat(toks.slice(addrEnd)); }
+    var memo = toks.join(' ').replace(/\s+/g, ' ').trim();
+    /* 번호도 주민번호도 없는 줄: 이름 한 단어만 있으면 새 사람, 아니면 앞사람 메모에 이어 붙임(메모가 두 줄로 넘어간 경우) */
+    var lone = (!phone && !jumin && nm && !addr && !memo);
+    if (!phone && !jumin && !lone) {
+      if (prev) { prev[4] = (prev[4] ? prev[4] + ' / ' : '') + line; }
+      continue;
+    }
+    if (!phone && !nm) { if (prev) { prev[4] = (prev[4] ? prev[4] + ' / ' : '') + line; } continue; }
+    var row = [nm, phone, jumin, addr, memo];
+    out.push(row); prev = row;
+  }
+  return out;
+}
+
+/* PDF 글자 뽑기 — pdf.js를 처음 쓸 때만 내려받는다 (cdnjs). 같은 줄(y)끼리 묶어 한 줄로 */
+function sgPdfText(file) {
+  function load() {
+    if (window.pdfjsLib) return Promise.resolve();
+    return new Promise(function (res, rej) {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      sc.onload = function () {
+        try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; } catch (e) {}
+        res();
+      };
+      sc.onerror = function () { rej(new Error('pdf.js 불러오기 실패')); };
+      document.head.appendChild(sc);
+    });
+  }
+  return load().then(function () {
+    return file.arrayBuffer();
+  }).then(function (buf) {
+    return window.pdfjsLib.getDocument({ data: buf }).promise;
+  }).then(function (pdf) {
+    var pages = [];
+    for (var p = 1; p <= pdf.numPages; p++) pages.push(pdf.getPage(p).then(function (pg) { return pg.getTextContent(); }));
+    return Promise.all(pages);
+  }).then(function (contents) {
+    var out = [];
+    contents.forEach(function (tc) {
+      var lines = {};
+      tc.items.forEach(function (it) {
+        if (!it.str || !it.str.trim()) return;
+        var y = Math.round(it.transform[5] / 3) * 3, x = it.transform[4];
+        (lines[y] = lines[y] || []).push({ x: x, s: it.str });
+      });
+      Object.keys(lines).map(Number).sort(function (a, b) { return b - a; }).forEach(function (y) {
+        out.push(lines[y].sort(function (a, b) { return a.x - b.x; }).map(function (o) { return o.s; }).join(' '));
+      });
+    });
+    return out.join('\n');
+  });
+}
+
+/* 칸 맞춤 미리보기 — 여기서 [등록]을 눌러야만 실제로 들어간다 */
+function sgMapPreview(rows, srcName) {
+  if (!rows || !rows.length) { showToast('읽을 내용이 없습니다', 'orange'); return; }
+  rows = rows.filter(function (r) { return r && r.some(function (v) { return String(v === null || v === undefined ? '' : v).trim(); }); });
+  if (!rows.length) { showToast('읽을 내용이 없습니다', 'orange'); return; }
+  var FIELDS = [['name', '이름'], ['phone', '전화번호'], ['jumin', '주민번호'], ['address', '주소'], ['job', '직업'], ['driving', '운전여부'], ['medical', '병력 / 고지'], ['memo', '메모']];
+  var detected = _xlsxDetectHeaders(rows[0]);
+  var hasHeader = (detected.name !== undefined || detected.phone !== undefined);
+  if (!hasHeader) {
+    /* 첫 줄이 제목줄이 아니면 가짜 제목줄을 붙이고, 내용으로 짐작 (전화번호 모양 → 전화, 6자리-숫자 → 주민, 한글 2~4자 → 이름) */
+    var width = Math.max.apply(null, rows.map(function (r) { return r.length; }));
+    var fake = []; for (var w = 0; w < width; w++) fake.push('열' + (w + 1));
+    rows = [fake].concat(rows);
+    detected = {};
+    var sample = rows.slice(1, 6);
+    for (var c = 0; c < width; c++) {
+      var vals = sample.map(function (r) { return String(r[c] === undefined ? '' : r[c]).trim(); }).filter(Boolean);
+      if (!vals.length) continue;
+      if (detected.phone === undefined && vals.every(function (v) { return /01[016789][\s.\-]?\d{3,4}[\s.\-]?\d{4}/.test(v); })) detected.phone = c;
+      else if (detected.jumin === undefined && vals.every(function (v) { return /^\d{6}\s*-?\s*\d{0,7}$/.test(v); })) detected.jumin = c;
+      else if (detected.name === undefined && vals.every(function (v) { return /^[가-힣]{2,4}$/.test(v); })) detected.name = c;
+      else if (detected.address === undefined && vals.some(function (v) { return /(시|도|군|구|로|길|동)\s?/.test(v) && v.length > 6; })) detected.address = c;
+    }
+  }
+  var hdr = rows[0].map(function (h, i) { return String(h === undefined || h === null ? '' : h).trim() || ('열' + (i + 1)); });
+  function esc(v) { return String(v === undefined || v === null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:16px;';
+  var card = document.createElement('div');
+  card.style.cssText = 'background:#fff;border-radius:16px;width:900px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+  var selHtml = FIELDS.map(function (f) {
+    var opts = '<option value="">(없음)</option>' + hdr.map(function (h, i) { return '<option value="' + i + '"' + (detected[f[0]] === i ? ' selected' : '') + '>' + esc(h) + '</option>'; }).join('');
+    return '<label style="display:flex;flex-direction:column;gap:3px;font-size:12px;color:#8a6f5c;font-weight:700;min-width:110px;flex:1;">' + f[1]
+      + '<select data-f="' + f[0] + '" style="padding:6px 8px;font-size:13px;border:1.5px solid #e7d9c8;border-radius:7px;font-family:inherit;background:#fff;color:#1a202c;font-weight:500;">' + opts + '</select></label>';
+  }).join('');
+  card.innerHTML =
+      '<div style="padding:16px 22px 10px;"><div style="font-size:18px;font-weight:800;color:#9a3412;">📥 옮겨오기 미리보기</div>'
+    + '<div style="font-size:12.5px;color:#8a6f5c;margin-top:4px;">' + esc(srcName || '') + ' · 살구가 칸을 짐작해 두었습니다. 틀린 칸은 아래에서 바꿔 주세요. <b>[등록]</b>을 누르기 전엔 아무것도 저장되지 않습니다.</div></div>'
+    + '<div style="padding:8px 22px;display:flex;flex-wrap:wrap;gap:8px;background:#fffaf5;border-top:1px solid #f2e2d2;border-bottom:1px solid #f2e2d2;">' + selHtml + '</div>'
+    + '<div class="sg-si-prev" style="overflow:auto;flex:1;padding:10px 22px;"></div>'
+    + '<div style="padding:12px 22px;border-top:1px solid #eee0cf;display:flex;align-items:center;gap:10px;background:#fdf8f3;">'
+    + '<span class="sg-si-cnt" style="font-size:13px;color:#6b5a4c;margin-right:auto;"></span>'
+    + '<button type="button" class="sg-si-cancel" style="background:#fff;border:1px solid #e6cdb0;color:#8a5a37;padding:9px 18px;border-radius:9px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;">취소</button>'
+    + '<button type="button" class="sg-si-go" style="background:#e46a25;border:none;color:#fff;padding:9px 22px;border-radius:9px;font-weight:800;cursor:pointer;font-family:inherit;font-size:14px;">등록</button>'
+    + '</div>';
+  ov.appendChild(card); document.body.appendChild(ov);
+  function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+  function curMap() {
+    var m = {};
+    /* 자동 감지된 보험 칸(보험사·상품·계약일 등)은 그대로 살리고, 기본 8칸만 사용자가 고른 대로 */
+    Object.keys(detected).forEach(function (k) { if (!FIELDS.some(function (f) { return f[0] === k; })) m[k] = detected[k]; });
+    card.querySelectorAll('select[data-f]').forEach(function (se) { if (se.value !== '') m[se.getAttribute('data-f')] = parseInt(se.value, 10); });
+    return m;
+  }
+  function paint() {
+    var m = curMap();
+    var n = 0;
+    for (var i = 1; i < rows.length; i++) {
+      var r = rows[i] || [];
+      var nm = m.name !== undefined ? String(r[m.name] || '').trim() : '';
+      var ph = m.phone !== undefined ? String(r[m.phone] || '').trim() : '';
+      if (nm || ph) n++;
+    }
+    var show = rows.slice(1, 9);
+    var th = FIELDS.map(function (f) { return '<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #f0e2d2;color:#9a3412;font-size:12px;white-space:nowrap;">' + f[1] + '</th>'; }).join('');
+    var tb = show.map(function (r) {
+      return '<tr>' + FIELDS.map(function (f) {
+        var v = m[f[0]] !== undefined ? r[m[f[0]]] : '';
+        return '<td style="padding:6px 8px;border-bottom:1px solid #f6ede2;font-size:13px;color:#1a202c;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + esc(v) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    card.querySelector('.sg-si-prev').innerHTML = '<table style="border-collapse:collapse;width:100%;"><thead><tr>' + th + '</tr></thead><tbody>' + tb + '</tbody></table>'
+      + (rows.length - 1 > show.length ? '<div style="font-size:12px;color:#94a3b8;padding:8px 2px;">… 외 ' + (rows.length - 1 - show.length) + '줄</div>' : '');
+    card.querySelector('.sg-si-cnt').textContent = '등록될 고객 약 ' + n + '명 (이름이나 전화번호가 있는 줄) · 이미 있는 번호는 빈 칸만 채우고 덮어쓰지 않습니다';
+    card.querySelector('.sg-si-go').textContent = n ? n + '명 등록' : '등록';
+    card.querySelector('.sg-si-go').disabled = !n;
+    card.querySelector('.sg-si-go').style.opacity = n ? '1' : '.5';
+  }
+  card.addEventListener('change', function (e) { if (e.target && e.target.matches('select[data-f]')) paint(); });
+  card.querySelector('.sg-si-cancel').onclick = close;
+  ov.onclick = function (e) { if (e.target === ov) close(); };
+  card.querySelector('.sg-si-go').onclick = function () {
+    var m = curMap();
+    if (m.name === undefined && m.phone === undefined) { showToast('이름이나 전화번호 칸은 정해야 합니다', 'orange'); return; }
+    /* 전화번호 모양 통일 — 엑셀이 앞의 0을 떼어 1023334444 로 준 것도 010-2333-4444 로. 기존 고객과 번호가 같은지 비교하려면 필요 */
+    if (m.phone !== undefined) rows.forEach(function (r, i) {
+      if (!i || !r) return;
+      var d = String(r[m.phone] === undefined || r[m.phone] === null ? '' : r[m.phone]).replace(/[^0-9]/g, '');
+      if (d.length === 10 && d.charAt(0) === '1') d = '0' + d;
+      if (d.length >= 10 && typeof _formatPhone === 'function') r[m.phone] = _formatPhone(d);
+    });
+    close();
+    _xlsxProcessRows(rows, m);
+  };
+  paint();
+}
+window.sgMapPreview = sgMapPreview;
 
 // 상태(가입완료/가망고객) 정렬 토글 (2026-06-19)
 window._statusSortTop = '';
@@ -5727,12 +5952,12 @@ function _xlsxDetectHeaders(headerRow) {
   return map;
 }
 
-function _xlsxProcessRows(rows) {
+function _xlsxProcessRows(rows, colOverride) {   /* ★ colOverride: 스마트 옮겨오기 미리보기에서 확정한 칸 배치 (2026-09-18) */
   if (!rows || rows.length < 2) { showToast('데이터가 없습니다', 'orange'); return; }
 
   // 1) 헤더 자동 감지
-  var detected = _xlsxDetectHeaders(rows[0]);
-  var hasHeader = (detected.name !== undefined || detected.phone !== undefined);
+  var detected = colOverride ? colOverride : _xlsxDetectHeaders(rows[0]);
+  var hasHeader = !!colOverride || (detected.name !== undefined || detected.phone !== undefined);
 
   // 2) 컬럼 맵 결정
   var COL;
