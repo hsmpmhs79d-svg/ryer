@@ -218,7 +218,16 @@ function render() {
         acts += '<button class="btn btn-red btn-sm" onclick="reject(\'' + esc(u.email) + '\')">거절</button>';
       }
       if (st === 'approved') {
-        acts += '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
+        /* ★ 2026-09-18: 이미 승인된 사람의 기간 바꾸기 — 날짜 고쳐서 [기간 변경], 또는 [무기한] */
+        var pk0 = planOf(u);
+        acts += '<select id="plan-' + esc(u.email) + '" title="요금제 변경" onchange="planPick(\'' + esc(u.email) + '\')">'
+             +   '<option value=""' + (pk0 ? '' : ' selected') + '>요금제 없음</option>'
+             +   Object.keys(PLAN).map(function(k){ return '<option value="' + k + '"' + (k === pk0 ? ' selected' : '') + '>' + PLAN[k].label + ' · ' + PLAN[k].price.toLocaleString() + '원</option>'; }).join('')
+             + '</select>'
+             + '<input type="date" id="exp-' + esc(u.email) + '" value="' + esc(u.expires_at || '') + '" title="만료일 (비우면 무기한)">'
+             + '<button class="btn btn-green btn-sm" onclick="setPlan(\'' + esc(u.email) + '\')">적용</button>'
+             + '<button class="btn btn-sm" style="background:#ecfdf5;color:#15803d;border:1.5px solid #86efac" onclick="setUnlimited(\'' + esc(u.email) + '\')">♾ 무기한</button>'
+             + '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">이용 중지</button>';
       }
       /* 초대 멤버 표시를 손으로 켜고 끄기 — 잘못 잡힌 사람 바로잡을 때 */
       acts += '<button class="btn btn-g btn-sm" title="초대 멤버 표시 켜기/끄기" onclick="setTier(\'' + esc(u.email) + '\',' + (isInvited(u) ? 'false' : 'true') + ')">'
@@ -229,7 +238,7 @@ function render() {
       +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span>'
       +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + planHtml(u) + '</div>'
       +   '<div class="sub">' + esc(u.email) + (u.phone ? ' · ' + esc(u.phone) : '') + '</div>'
-      +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : '') + '</div>'
+      +   '<div class="sub">신청 ' + esc((u.created_at||'').slice(0,16)) + (u.approved_at ? ' · 승인 ' + esc(u.approved_at.slice(0,16)) : '') + (u.expires_at ? ' · <b style="color:#b45309">만료 ' + esc(u.expires_at) + '</b>' : (st === 'approved' ? ' · <b style="color:#15803d">♾ 무기한</b>' : '')) + '</div>'
       +   '<div class="usage">' + usageHtml(u) + '</div>'
       +   (u.memo ? '<div class="memo">📝 ' + esc(u.memo) + '</div>' : '')
       + '</div>'
@@ -429,6 +438,29 @@ function approve(email) {
   if (!confirm(email + ' 님을 승인할까요?' + pTxt + (exp ? '\n만료일: ' + exp : '\n(만료일 없음 — 무기한)'))) return;
   api('/admin/approve', { method:'POST', body: JSON.stringify({ email: email, expires_at: exp }) })
     .then(function(r){ if (r.ok) { toast('✅ 승인됨'); load(); } else toast('실패: ' + (r.error||'')); });
+}
+/* ★ 2026-09-18: 승인된 사람의 요금제·만료일 변경 — 워커 /admin/plan (승인 상태·승인 시각은 그대로) */
+function _planPost(email, plan, exp, okMsg) {
+  api('/admin/plan', { method:'POST', body: JSON.stringify({ email: email, plan: plan, expires_at: exp }) })
+    .then(function(r){ if (r && r.ok) { toast(okMsg); load(); } else toast('실패: ' + ((r && r.error) || '워커에 /admin/plan 이 아직 없습니다')); });
+}
+/* 요금제를 고르면 만료일을 오늘 + 기간으로 미리 채움 (없음 → 비움) */
+function planPick(email) {
+  var sel = document.getElementById('plan-' + email), expEl = document.getElementById('exp-' + email);
+  if (!sel || !expEl) return;
+  expEl.value = sel.value ? planExpiry({ plan: sel.value }) : '';
+}
+function setPlan(email) {
+  var sel = document.getElementById('plan-' + email), expEl = document.getElementById('exp-' + email);
+  var plan = sel ? sel.value : '', exp = expEl && expEl.value ? expEl.value : null;
+  var pTxt = plan ? (PLAN[plan].label + ' · ' + PLAN[plan].price.toLocaleString() + '원') : '요금제 없음';
+  if (!confirm(email + ' 님을 이렇게 바꿀까요?\n요금제: ' + pTxt + '\n만료일: ' + (exp || '없음(무기한)'))) return;
+  _planPost(email, plan, exp, '✅ 변경됨');
+}
+function setUnlimited(email) {
+  var sel = document.getElementById('plan-' + email);
+  if (!confirm(email + ' 님을 기한 제한 없는 사용자(무기한)로 바꿀까요?')) return;
+  _planPost(email, sel ? sel.value : '', null, '♾ 무기한으로 변경됨');
 }
 function setTier(email, on) {
   if (!confirm(email + (on ? ' 님을 초대 멤버로 표시할까요?' : ' 님의 초대 멤버 표시를 해제할까요?'))) return;
