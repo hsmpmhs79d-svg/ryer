@@ -13957,18 +13957,114 @@
   ],
   "axa": [
    {
+    "k": "pName",
+    "page": 0,
+    "x": 0.2369,
+    "y": 0.1748,
+    "size": 11,
+    "type": "text"
+   },
+   {
     "k": "pRrn",
     "page": 0,
-    "x": 0.4921,
+    "x": 0.492,
     "y": 0.1741,
     "size": 11,
     "type": "text"
    },
    {
+    "k": "pJob",
+    "page": 0,
+    "x": 0.7432,
+    "y": 0.1748,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "x_cName",
+    "page": 0,
+    "x": 0.2432,
+    "y": 0.1912,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "x_cRrn",
+    "page": 0,
+    "x": 0.4942,
+    "y": 0.1904,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "agree",
+    "page": 0,
+    "x": 0.2721,
+    "y": 0.2082,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "pTel",
+    "page": 0,
+    "x": 0.4974,
+    "y": 0.2082,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "agree",
+    "page": 0,
+    "x": 0.2097,
+    "y": 0.2669,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "x_mtcsgusw",
+    "page": 0,
+    "x": 0.2169,
+    "y": 0.2861,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "cDisease",
+    "page": 0,
+    "x": 0.615,
+    "y": 0.2874,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "x_mtcsh0fg",
+    "page": 0,
+    "x": 0.2211,
+    "y": 0.304,
+    "size": 11,
+    "type": "chk"
+   },
+   {
     "k": "cDeath",
     "page": 0,
-    "x": 0.2176,
+    "x": 0.2175,
     "y": 0.3213,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "cVisit",
+    "page": 0,
+    "x": 0.2737,
+    "y": 0.3211,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "x_mtcsl3wm",
+    "page": 0,
+    "x": 0.3335,
+    "y": 0.3204,
     "size": 11,
     "type": "chk"
    },
@@ -13984,231 +14080,15 @@
     "k": "cOper",
     "page": 0,
     "x": 0.5058,
-    "y": 0.3203,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "cVisit",
-    "page": 0,
-    "x": 0.2736,
-    "y": 0.3211,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "dxName",
-    "page": 0,
-    "x": 0.2978,
-    "y": 0.4332,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "accPlace",
-    "page": 0,
-    "x": 0.3126,
-    "y": 0.3717,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "bank",
-    "page": 0,
-    "x": 0.2079,
-    "y": 0.634,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "holder",
-    "page": 0,
-    "x": 0.7392,
-    "y": 0.634,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "acct",
-    "page": 0,
-    "x": 0.4564,
-    "y": 0.634,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "signB",
-    "page": 0,
-    "x": 0.802,
-    "y": 0.8051,
-    "size": 11,
-    "type": "sig"
-   },
-   {
-    "k": "agree",
-    "page": 1,
-    "x": 0.8787,
-    "y": 0.428,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 1,
-    "x": 0.8818,
-    "y": 0.4852,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 1,
-    "x": 0.8808,
-    "y": 0.5557,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8818,
-    "y": 0.1451,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8808,
-    "y": 0.2045,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8808,
-    "y": 0.278,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8808,
-    "y": 0.4592,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8818,
-    "y": 0.6915,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8808,
-    "y": 0.7405,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "agree",
-    "page": 2,
-    "x": 0.8787,
-    "y": 0.7925,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "pName",
-    "page": 0,
-    "x": 0.2369,
-    "y": 0.1748,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "bName",
-    "page": 0,
-    "x": 0.2432,
-    "y": 0.1912,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "bRrn",
-    "page": 0,
-    "x": 0.4942,
-    "y": 0.1904,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "pJob",
-    "page": 0,
-    "x": 0.7432,
-    "y": 0.1748,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "agree",
-    "page": 0,
-    "x": 0.3629,
-    "y": 0.2068,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "bTel",
-    "page": 0,
-    "x": 0.4974,
-    "y": 0.2082,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "agree",
-    "page": 0,
-    "x": 0.2096,
-    "y": 0.2669,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "x_mtcsgusw",
-    "page": 0,
-    "x": 0.2169,
-    "y": 0.2862,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "x_mtcsh0fg",
-    "page": 0,
-    "x": 0.2211,
-    "y": 0.304,
-    "size": 11,
-    "type": "chk"
-   },
-   {
-    "k": "x_mtcsl3wm",
-    "page": 0,
-    "x": 0.3335,
-    "y": 0.3203,
+    "y": 0.3204,
     "size": 11,
     "type": "chk"
    },
    {
     "k": "x_mtcslhvd",
     "page": 0,
-    "x": 0.5657,
-    "y": 0.3203,
+    "x": 0.5656,
+    "y": 0.3204,
     "size": 11,
     "type": "chk"
    },
@@ -14245,10 +14125,58 @@
     "type": "text"
    },
    {
+    "k": "accPlace",
+    "page": 0,
+    "x": 0.3126,
+    "y": 0.3717,
+    "size": 11,
+    "type": "text"
+   },
+   {
     "k": "accDesc",
     "page": 0,
-    "x": 0.2946,
+    "x": 0.2947,
     "y": 0.3983,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "dxName",
+    "page": 0,
+    "x": 0.2978,
+    "y": 0.4332,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "bank",
+    "page": 0,
+    "x": 0.208,
+    "y": 0.6202,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "acct",
+    "page": 0,
+    "x": 0.4564,
+    "y": 0.6202,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "holder",
+    "page": 0,
+    "x": 0.7392,
+    "y": 0.6202,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "todayY",
+    "page": 0,
+    "x": 0.1981,
+    "y": 0.7971,
     "size": 11,
     "type": "text"
    },
@@ -14256,7 +14184,7 @@
     "k": "todayM",
     "page": 0,
     "x": 0.2516,
-    "y": 0.8051,
+    "y": 0.7978,
     "size": 11,
     "type": "text"
    },
@@ -14264,81 +14192,217 @@
     "k": "todayD",
     "page": 0,
     "x": 0.3167,
-    "y": 0.8036,
+    "y": 0.7963,
     "size": 11,
     "type": "text"
    },
    {
-    "k": "todayY",
+    "k": "pName",
     "page": 0,
-    "x": 0.198,
-    "y": 0.8044,
+    "x": 0.719,
+    "y": 0.7971,
     "size": 11,
     "type": "text"
    },
    {
-    "k": "bName",
+    "k": "signP",
     "page": 0,
-    "x": 0.7453,
-    "y": 0.8044,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "todayY4",
-    "page": 2,
-    "x": 0.3923,
-    "y": 0.8333,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "todayM",
-    "page": 2,
-    "x": 0.4984,
-    "y": 0.8341,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "todayD",
-    "page": 2,
-    "x": 0.5657,
-    "y": 0.8341,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "bName",
-    "page": 2,
-    "x": 0.7694,
-    "y": 0.8318,
-    "size": 11,
-    "type": "text"
-   },
-   {
-    "k": "signB",
-    "page": 2,
-    "x": 0.8241,
-    "y": 0.8289,
+    "x": 0.8032,
+    "y": 0.7978,
     "size": 11,
     "type": "sig"
    },
    {
     "k": "x_mtcsoyvs",
-    "page": 2,
-    "x": 0.7673,
-    "y": 0.8526,
+    "page": 0,
+    "x": 0.719,
+    "y": 0.8173,
     "size": 11,
     "type": "text"
    },
    {
-    "k": "x_mtcsoyvs",
-    "page": 2,
-    "x": 0.8598,
-    "y": 0.8534,
+    "k": "x_cgSign",
+    "page": 0,
+    "x": 0.8032,
+    "y": 0.818,
+    "size": 11,
+    "type": "sig"
+   },
+   {
+    "k": "bName",
+    "page": 0,
+    "x": 0.719,
+    "y": 0.8375,
     "size": 11,
     "type": "text"
+   },
+   {
+    "k": "signB",
+    "page": 0,
+    "x": 0.8032,
+    "y": 0.8382,
+    "size": 11,
+    "type": "sig"
+   },
+   {
+    "k": "agree",
+    "page": 1,
+    "x": 0.8794,
+    "y": 0.4284,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 1,
+    "x": 0.8794,
+    "y": 0.4873,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 1,
+    "x": 0.8794,
+    "y": 0.5598,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 2,
+    "x": 0.8794,
+    "y": 0.1452,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 2,
+    "x": 0.8794,
+    "y": 0.2074,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 2,
+    "x": 0.8794,
+    "y": 0.2816,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 2,
+    "x": 0.8794,
+    "y": 0.6454,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 2,
+    "x": 0.8794,
+    "y": 0.6983,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 3,
+    "x": 0.8794,
+    "y": 0.1401,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 3,
+    "x": 0.8794,
+    "y": 0.1907,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "agree",
+    "page": 3,
+    "x": 0.8794,
+    "y": 0.2445,
+    "size": 11,
+    "type": "chk"
+   },
+   {
+    "k": "todayY4",
+    "page": 3,
+    "x": 0.2973,
+    "y": 0.2812,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "todayM",
+    "page": 3,
+    "x": 0.4027,
+    "y": 0.282,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "todayD",
+    "page": 3,
+    "x": 0.4694,
+    "y": 0.282,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "pName",
+    "page": 3,
+    "x": 0.7064,
+    "y": 0.2817,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "signP",
+    "page": 3,
+    "x": 0.8235,
+    "y": 0.2825,
+    "size": 11,
+    "type": "sig"
+   },
+   {
+    "k": "x_mtcsoyvs",
+    "page": 3,
+    "x": 0.7059,
+    "y": 0.3019,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "x_cgSign",
+    "page": 3,
+    "x": 0.8235,
+    "y": 0.3027,
+    "size": 11,
+    "type": "sig"
+   },
+   {
+    "k": "bName",
+    "page": 3,
+    "x": 0.7064,
+    "y": 0.3221,
+    "size": 11,
+    "type": "text"
+   },
+   {
+    "k": "signB",
+    "page": 3,
+    "x": 0.8235,
+    "y": 0.3228,
+    "size": 11,
+    "type": "sig"
    }
   ],
   "hana-insurance": [
@@ -16196,8 +16260,23 @@
    },
    {
     "k": "x_mtcsoyvs",
-    "label": "법정대리인",
+    "label": "법정대리인 성명",
     "type": "text"
+   },
+   {
+    "k": "x_cName",
+    "label": "보험계약자 성명",
+    "type": "text"
+   },
+   {
+    "k": "x_cRrn",
+    "label": "보험계약자 주민번호",
+    "type": "text"
+   },
+   {
+    "k": "x_cgSign",
+    "label": "✍️ 법정대리인 서명",
+    "type": "sig"
    }
   ],
   "hana-insurance": [
@@ -16526,11 +16605,11 @@
    6
   ],
   "axa": [
-   3,
    4,
    5,
    6,
-   7
+   7,
+   8
   ],
   "hana-insurance": [
    5

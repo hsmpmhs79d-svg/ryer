@@ -464,7 +464,8 @@ var GROUPS = [
   { t:'7. 그 밖에 적을 것',            keys:null }
 ];
 /* 피보험자 → 수익자로 옮겨 적을 짝 */
-var PAIRS = [['pName','bName'],['pRrn','bRrn'],['pTel','bTel'],['pAddr','bAddr'],['pJob','bJob']];
+var PAIRS = [['pName','bName'],['pRrn','bRrn'],['pTel','bTel'],['pAddr','bAddr'],['pJob','bJob'],
+             ['pName','x_cName'],['pRrn','x_cRrn']];   /* ★ 2026-09-19: 계약자 칸도 '같은 사람' 체크를 따라간다 (그 서식에 계약자 칸이 있을 때만) */
 var SAME = true;   /* 대부분 본인이 청구하므로 기본은 '같은 사람' */
 
 function openIns(key) {
@@ -535,7 +536,7 @@ function openIns(key) {
     var w = document.createElement('label');
     w.className = 'samebox' + (SAME ? ' on' : '');
     w.innerHTML = '<input type="checkbox" id="samechk"' + (SAME ? ' checked' : '') + '>'
-      + '<span>수익자(청구인)가 <b>피보험자와 같은 사람</b>입니다 — 체크하면 위 내용이 그대로 들어갑니다</span>';
+      + '<span>계약자·수익자(청구인)가 <b>피보험자와 같은 사람</b>입니다 — 체크하면 위 내용이 그대로 들어갑니다</span>';
     tb.appendChild(w);
     w.querySelector('input').onchange = function(){
       SAME = this.checked; w.classList.toggle('on', SAME); applySame();
