@@ -1698,7 +1698,7 @@ try {
     <!-- ★ 청구서·약관·동기화 3종은 헤더 둘째 줄로 이동 — 사이드바엔 5개만, 크기·간격 통일 (2026-07-10) -->
     <div class="add-btns-row">
       <button class="add-btn-mini" onclick="openAddModal()" title="새 고객 등록">+ 새고객</button>
-      <button class="add-btn-mini green" onclick="xlsxImport()" title="수기 명단·엑셀·휴대폰 주소록에 있는 고객을 살구로 옮겨옵니다">엑셀로 고객등록</button>
+      <button class="add-btn-mini green" onclick="xlsxImport()" title="엑셀 · 메모장 · PDF · 휴대폰 주소록의 고객을 한 번에 옮겨옵니다">📥 고객 일괄 등록</button>
       <button class="add-btn-mini" style="background:#d97706;border:none;" onclick="openConsultLib()" title="상담용 인포그래픽 자료 — 카테고리별 보기 (2026-07-15)">📚 상담자료</button>
     </div>
     <div class="status-sort-row">
@@ -5444,7 +5444,7 @@ function xlsxImport() {
      '다음부터 건너뛰기'를 체크한 분은 바로 파일 고르기로. */
   var _skip = false;
   try { _skip = !!localStorage.getItem('sgImportGuideSkip'); } catch (e) {}
-  if (!_skip && typeof window.sgImportGuide === 'function') { window.sgImportGuide(); return; }
+  if (!_skip && typeof window.sgImportIntro === 'function') { window.sgImportIntro(); return; }   /* ★ 2026-09-18: 파일 안내가 먼저, AI 방법은 그 안에서 */
   sgXlsxPick();
 }
 /* 실제로 파일을 고르는 부분 — 안내 화면의 [엑셀 파일 고르기] 에서도 부른다 */
@@ -5467,7 +5467,7 @@ function sgXlsxPick() {
       _again.type = 'button';
       _again.textContent = '📖 안내 다시 보기';
       _again.style.cssText = 'background:#fff;border:1px solid #e7d4bd;color:#9a3412;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;';
-      _again.onclick = function() { if (_ov.parentNode) _ov.parentNode.removeChild(_ov); window.sgImportGuide(); };
+      _again.onclick = function() { if (_ov.parentNode) _ov.parentNode.removeChild(_ov); (window.sgImportIntro || window.sgImportGuide)(); };
       _act.insertBefore(_again, _act.firstChild);
       /* ★ 엑셀 샘플 받기 (2026-09-18) — 안내를 건너뛴 분도 여기서 바로 양식을 받을 수 있게 */
       if (typeof window.sgDownloadTemplate === 'function') {
@@ -5485,6 +5485,66 @@ function sgXlsxPick() {
 }
 window.sgXlsxPick = sgXlsxPick;
 window.xlsxImport = xlsxImport;
+
+/* ═══════ ★ 고객 일괄 등록 첫 안내 (2026-09-18) ═══════
+   파일(엑셀·CSV·메모장·PDF)이 있으면 바로 올리게, 사진·스캔·손글씨는 AI 안내(①~⑤)로 보낸다 */
+window.sgImportIntro = function () {
+  var old = document.getElementById('sgimp-intro'); if (old) old.remove();
+  var ov = document.createElement('div');
+  ov.id = 'sgimp-intro';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:99998;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:20px;';
+  function close() {
+    try { var sk = ov.querySelector('#sgimp-intro-skip'); if (sk && sk.checked) localStorage.setItem('sgImportGuideSkip', '1'); } catch (e) {}
+    if (ov.parentNode) ov.parentNode.removeChild(ov);
+  }
+  ov.onclick = function (e) { if (e.target === ov) close(); };
+  var B = 'border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;';
+  var card = document.createElement('div');
+  card.style.cssText = 'background:#fff;border-radius:18px;width:720px;max-width:96vw;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(124,45,18,.42);';
+  card.innerHTML =
+      '<div style="background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;padding:18px 24px;position:relative;">'
+    + '<div style="font-size:20px;font-weight:900;">📥 고객 일괄 등록</div>'
+    + '<div style="font-size:13px;opacity:.92;margin-top:4px;">쓰시던 명단 파일을 그대로 올리면 살구가 칸을 맞춰 보여주고, 확인 후 한 번에 등록합니다.</div>'
+    + '<button type="button" id="sgimp-intro-x" style="position:absolute;top:14px;right:16px;border:none;background:rgba(255,255,255,.18);color:#fff;width:32px;height:32px;border-radius:9px;font-size:18px;cursor:pointer;font-family:inherit;">✕</button>'
+    + '</div>'
+    + '<div style="padding:18px 24px;overflow-y:auto;flex:1;">'
+    /* 1. 파일이 있는 경우 */
+    + '<div style="border:1.5px solid #f0c9a8;border-radius:14px;padding:16px 18px;background:#fffaf5;">'
+    + '<div style="font-size:15.5px;font-weight:800;color:#9a3412;">📂 파일이 있으면 바로 올리세요</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;">'
+    + ['엑셀 (양식 상관없음)', 'CSV', '메모장 (.txt)', '글자가 있는 PDF'].map(function (t) { return '<span style="background:#fff;border:1px solid #eadcc9;border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:700;color:#7c2d12;">' + t + '</span>'; }).join('')
+    + '</div>'
+    + '<div style="font-size:13px;color:#6b5a4c;line-height:1.7;margin-top:10px;">'
+    + '<b>한 줄에 한 사람</b>이면 됩니다. 이름 · 전화번호 · 주민번호 · 주소 · 메모가 한 줄에 있으면 순서는 상관없고, 띄어쓰기나 쉼표로 나뉘어 있으면 됩니다. 엑셀은 첫 줄이 제목(이름, 연락처, 주소…)이면 살구가 알아서 맞춥니다.'
+    + '</div>'
+    + '<div style="margin-top:8px;background:#fff;border:1px dashed #e7d4bd;border-radius:9px;padding:8px 12px;font-size:12.5px;color:#8a6f5c;font-family:ui-monospace,Menlo,monospace;line-height:1.6;">'
+    + '홍길동 010-1234-5678 850312-1 서울 강남구 테헤란로 12 암보험 관심<br>김영희, 010-2345-6789, 경기 성남시 분당구 판교로 45, 9월 재연락'
+    + '</div>'
+    + '<div style="font-size:12.5px;color:#8a6f5c;margin-top:8px;">올리면 <b>미리보기</b>가 먼저 뜹니다. 칸이 잘못 맞으면 거기서 고칠 수 있고, [등록]을 누르기 전엔 아무것도 저장되지 않습니다. 이미 있는 번호는 빈 칸만 채우고 덮어쓰지 않습니다.</div>'
+    + '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">'
+    + '<button type="button" id="sgimp-intro-go" style="' + B + 'background:#e46a25;color:#fff;">📂 파일 올리기</button>'
+    + '<button type="button" id="sgimp-intro-tpl" style="' + B + 'background:#fff;color:#9a3412;border:1.5px solid #e7d4bd;">📄 엑셀 샘플 받기</button>'
+    + '</div></div>'
+    /* 2. 사진·스캔 */
+    + '<div style="border:1.5px solid #e7e0d6;border-radius:14px;padding:14px 18px;background:#fafaf7;margin-top:12px;">'
+    + '<div style="font-size:14.5px;font-weight:800;color:#5b4636;">📷 사진 · 스캔 · 손으로 적은 명단이면</div>'
+    + '<div style="font-size:13px;color:#6b5a4c;line-height:1.7;margin-top:6px;">글자가 아니라 그림이라 살구가 바로 읽지 못합니다. AI(클로드 · 챗지피티 · 제미나이)에게 살구 엑셀 샘플을 같이 주고 엑셀로 만들어 달라고 하면 됩니다. 순서대로 안내해 드립니다.</div>'
+    + '<button type="button" id="sgimp-intro-ai" style="' + B + 'background:#fff;color:#5b4636;border:1.5px solid #d9cfc2;margin-top:10px;">🤖 AI로 엑셀 만드는 방법 보기 (①~⑤)</button>'
+    + '</div>'
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:10px;padding:12px 24px 16px;border-top:1.5px solid #f2e2d2;background:#fffaf5;">'
+    + '<label style="display:flex;align-items:center;gap:6px;font-size:12.4px;color:#8a6f5c;cursor:pointer;margin-right:auto;"><input type="checkbox" id="sgimp-intro-skip" style="width:15px;height:15px;cursor:pointer;">다음부터 이 안내 건너뛰기</label>'
+    + '<button type="button" id="sgimp-intro-close" style="border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;">닫기</button>'
+    + '</div>';
+  ov.appendChild(card); document.body.appendChild(ov);
+  card.querySelector('#sgimp-intro-x').onclick = close;
+  card.querySelector('#sgimp-intro-close').onclick = close;
+  card.querySelector('#sgimp-intro-go').onclick = function () { close(); try { window.sgXlsxPick(); } catch (e) {} };
+  card.querySelector('#sgimp-intro-tpl').onclick = function () { if (typeof window.sgDownloadTemplate === 'function') { window.sgDownloadTemplate(); this.textContent = '✅ 받았습니다'; } };
+  card.querySelector('#sgimp-intro-ai').onclick = function () { if (ov.parentNode) ov.parentNode.removeChild(ov); if (typeof window.sgImportGuide === 'function') window.sgImportGuide(); };
+  function esc(ev) { if (ev.key === 'Escape') { close(); document.removeEventListener('keydown', esc); } }
+  document.addEventListener('keydown', esc);
+};
 
 /* ═══════ ★ 스마트 옮겨오기 (2026-09-18) ═══════
    엑셀(양식 무관)·CSV·메모장(txt)·글자 있는 PDF → 칸 자동 맞춤 → 미리보기 → [등록] 눌러야 실제 반영.
@@ -18631,7 +18691,7 @@ window.SG_NOTICE_ITEMS = [
   { ic: '🧪', t: '연습용 샘플 고객 5명',
     d: '김샘플 · 박샘플 · 이샘플 · 김살구 · 이살구 — 상령일 임박, 가입 완료, 유병자, 어린이보험, 재연락까지 다섯 가지 상황으로 넣어 뒀습니다. 마음껏 눌러보시고 익숙해지시면 지우셔도 됩니다.' },
   { ic: '📥', t: '고객 명단 옮겨오기',
-    d: '손으로 적어두신 명단도, 사진으로 찍어두신 명단도, 양식이 제각각인 엑셀도 옮기실 수 있습니다. <b>[엑셀로 고객등록]</b> 안에 <b>살구 등록용 엑셀 샘플</b>과 <b>AI 에게 시킬 프롬프트</b>를 함께 넣어 뒀습니다.',
+    d: '손으로 적어두신 명단도, 사진으로 찍어두신 명단도, 양식이 제각각인 엑셀도 옮기실 수 있습니다. <b>[고객 일괄 등록]</b> 안에 <b>살구 등록용 엑셀 샘플</b>과 <b>AI 에게 시킬 프롬프트</b>를 함께 넣어 뒀습니다.',
     b: '열어보기', fn: 'import' },
   { ic: '🔄', t: '연락처 동기화가 하나로', mint: true,
     d: '동기화 · 제외 · 설정으로 나뉘어 있던 것을 <b>[🔄 연락처 동기화]</b> 하나로 모았습니다. 폰 → 살구 / 살구 → 폰 을 탭으로 고르시고, 전체 목록에서 원하시는 분만 골라 담으시면 됩니다. 이름 앞 표시(기본 \'인카\')도 직접 정하실 수 있습니다.',
@@ -20118,7 +20178,7 @@ window.sgSeedSamples = function () {
     'openClaimDocsModal':      '입원·통원·수술을 고르면 뗄 서류를 정리해 줍니다',
     'openConsultLib':          '상담에 쓰는 인포그래픽 자료를 카테고리별로 봅니다',
     'openAddModal':            '고객을 새로 등록합니다',
-    'xlsxImport':              '엑셀 파일로 고객을 한 번에 등록합니다',
+    'xlsxImport':              '엑셀 · 메모장 · PDF 파일의 고객을 한 번에 등록합니다',
     'toggleBulkMode':          '여러 명을 골라 태그를 달거나 한 번에 지웁니다',
     'sgFilterToggle':          '성별·등록월·상령일·생일로 목록을 걸러봅니다',
     /* 고객 카드 위쪽 버튼 (2026-09-04 추가) */
