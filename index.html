@@ -5553,9 +5553,15 @@ function sgSmartImport(file) {
   var name = (file && file.name || '').toLowerCase();
   var ext = name.split('.').pop();
   if (ext === 'txt' || ext === 'text') {
+    /* 글자 인코딩 자동 판별 — 윈도우 메모장(ANSI/CP949)으로 저장한 파일은 UTF-8로 읽으면 깨진다 */
     var r1 = new FileReader();
-    r1.onload = function (e) { sgMapPreview(sgTextToRows(String(e.target.result || '')), file.name); };
-    r1.readAsText(file, 'utf-8');
+    r1.onload = function (e) {
+      var buf = e.target.result, txt = '';
+      try { txt = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+      catch (err) { try { txt = new TextDecoder('euc-kr').decode(buf); } catch (err2) { txt = new TextDecoder('utf-8').decode(buf); } }
+      sgMapPreview(sgTextToRows(txt), file.name);
+    };
+    r1.readAsArrayBuffer(file);
     return;
   }
   if (ext === 'pdf') {
