@@ -145,6 +145,27 @@
   .info-item .value:active { background: #f5d9bd; }
   .info-item .value.copied-flash { background: #bbf7d0 !important; color: #15803d !important; transition: background 0s; }
   .info-item .value .empty { color: #94a3b8; font-style: italic; font-size: 14px; cursor: default; }
+  /* ★ 고객정보 바로 수정 연필 (2026-09-18) */
+  .info-item .label .sg-ie-btn { margin-left: 6px; border: 1px solid #eadcc9; background: #fff; color: #b07a5a; border-radius: 6px; font-size: 11px; line-height: 1; padding: 2px 6px; cursor: pointer; font-family: inherit; vertical-align: middle; opacity: .55; transition: opacity .15s, background .15s; }
+  .info-item:hover .label .sg-ie-btn { opacity: 1; }
+  .info-item .label .sg-ie-btn:hover { background: #fdeadd; color: #9a3412; border-color: #e46a25; }
+  .info-item .sg-ie { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
+  .info-item .sg-ie input, .info-item .sg-ie textarea { flex: 1 1 160px; min-width: 0; padding: 7px 9px; font-size: 14px; border: 1.5px solid #e46a25; border-radius: 7px; outline: none; font-family: inherit; background: #fffaf5; }
+  .info-item .sg-ie textarea { flex-basis: 100%; min-height: 70px; resize: vertical; line-height: 1.45; }
+  .info-item .sg-ie button { border: none; border-radius: 7px; padding: 7px 12px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .info-item .sg-ie .sg-ie-save { background: #e46a25; color: #fff; }
+  .info-item .sg-ie .sg-ie-cancel { background: #f8efe4; color: #6b5a4c; border: 1px solid #eee0cf; }
+  .info-item .sg-ie .sg-ie-hint { flex-basis: 100%; font-size: 11px; color: #94a3b8; }
+  /* ★ 고객 관계 (2026-09-18) */
+  .info-item .label .sg-rel-add { margin-left: 8px; border: 1px solid #e46a25; background: #fff; color: #c2410c; border-radius: 6px; font-size: 11.5px; line-height: 1; padding: 3px 8px; cursor: pointer; font-family: inherit; font-weight: 700; vertical-align: middle; }
+  .info-item .label .sg-rel-add:hover { background: #fdeadd; }
+  .info-item .sg-rel-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .info-item .sg-rel-chip { display: inline-flex; align-items: stretch; border: 1.5px solid #f0c9a8; border-radius: 999px; overflow: hidden; background: #fff7f0; }
+  .info-item .sg-rel-chip .sg-rel-go { border: none; background: transparent; color: #9a3412; font-weight: 700; font-size: 13.5px; padding: 5px 4px 5px 12px; cursor: pointer; font-family: inherit; }
+  .info-item .sg-rel-chip .sg-rel-go small { font-weight: 600; color: #b07a5a; font-size: 12px; margin-left: 2px; }
+  .info-item .sg-rel-chip .sg-rel-go:hover { background: #fdeadd; }
+  .info-item .sg-rel-chip .sg-rel-x { border: none; background: transparent; color: #c4a58f; font-size: 12px; padding: 0 9px 0 5px; cursor: pointer; font-family: inherit; }
+  .info-item .sg-rel-chip .sg-rel-x:hover { color: #dc2626; }
   .card-header .cname { font-size: 21px; font-weight: 700; cursor: pointer; transition: background .15s; border-radius: 4px; padding: 1px 6px; margin: -1px -6px; }
   .card-header .cname:hover { background: #fdeadd; }
   .card-header .cname.copied-flash { background: #bbf7d0 !important; transition: background 0s; }
@@ -1656,6 +1677,21 @@ try {
             <option value="">🎂 생일 월</option>
           </select>
         </div>
+        <!-- ★ 연령대 필터 (2026-09-18) — 주민번호로 만 나이 계산 -->
+        <div class="filter-row">
+          <select id="filter-age" onchange="renderList()">
+            <option value="">👥 연령대 전체</option>
+            <option value="lt20">20대 미만</option>
+            <option value="20">20대</option>
+            <option value="30">30대</option>
+            <option value="40">40대</option>
+            <option value="50">50대</option>
+            <option value="60">60대</option>
+            <option value="70">70대</option>
+            <option value="ge80">80대 이상</option>
+            <option value="__none__">주민번호 없음</option>
+          </select>
+        </div>
       </div>
       <div class="filter-chips" id="sg-filter-chips"></div>
     </div>
@@ -2620,6 +2656,15 @@ function _getSangDaysLeft(c) {        /* 상령일까지 남은 일수 — 임�
   var info = _sangInfo(c);
   return (info && typeof info.daysLeft === 'number') ? info.daysLeft : null;
 }
+/* ★ 연령대 필터 (2026-09-18) — 만 나이 기준. 'lt20' 20대 미만, '20'~'70', 'ge80' 80대 이상, '__none__' 주민번호 없음 */
+function _matchAgeBand(c, v) {
+  var a = calcAge(c.resident_number || c.jumin || '');
+  if (a === '' || a === null || isNaN(a)) return v === '__none__';
+  if (v === '__none__') return false;
+  if (v === 'lt20') return a < 20;
+  if (v === 'ge80') return a >= 80;
+  var b = parseInt(v, 10); return a >= b && a < b + 10;
+}
 function _getBirthMonth(c) {          /* 생일이 몇 월인지 (1~12), 없으면 null */
   try {
     var rn = String(c.resident_number || c.jumin || '').replace(/[^0-9]/g, '');
@@ -2695,7 +2740,7 @@ function sgFilterToggle() {
 }
 var _sgChipCache = '';
 function _sgFilterSync() {
-  var defs = [['filter-gender','성별'], ['filter-regmonth','등록월'], ['filter-sangmonth','상령일'], ['filter-birthmonth','생일']];
+  var defs = [['filter-gender','성별'], ['filter-regmonth','등록월'], ['filter-sangmonth','상령일'], ['filter-birthmonth','생일'], ['filter-age','연령대']];
   var n = 0, h = '';
   for (var i = 0; i < defs.length; i++) {
     var s = document.getElementById(defs[i][0]);
@@ -2718,7 +2763,7 @@ function _sgFilterSync() {
   if (t) t.classList.toggle('on', n > 0);
 }
 function _sgFilterClear(id) {
-  var ids = id ? [id] : ['filter-gender','filter-regmonth','filter-sangmonth','filter-birthmonth'];
+  var ids = id ? [id] : ['filter-gender','filter-regmonth','filter-sangmonth','filter-birthmonth','filter-age'];
   for (var i = 0; i < ids.length; i++) { var s = document.getElementById(ids[i]); if (s) s.value = ''; }
   if (typeof renderList === 'function') renderList();
 }
@@ -2763,7 +2808,9 @@ function _openTagDialog(o){
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:inherit;';
   var chipHtml=(o.tags||[]).map(function(x,i){
     var e=String(x.t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return '<button type="button" data-tg="'+i+'" style="'+_tgChipStyle(!!sel[x.t])+'">'+e+' <span style="opacity:.65;font-size:11px;">'+x.n+'</span></button>';
+    /* ★ 태그 삭제 (2026-09-18) — allowDelete면 칩 옆에 작은 ✕. 모든 고객에서 그 태그를 지운다 */
+    var del=o.allowDelete?'<button type="button" data-del="'+i+'" title="이 태그를 모든 고객에서 삭제" style="border:none;background:transparent;color:#b79bd6;font-size:11px;padding:0 6px 0 3px;cursor:pointer;font-family:inherit;line-height:1;">✕</button>':'';
+    return '<span data-tgw="'+i+'" style="display:inline-flex;align-items:center;"><button type="button" data-tg="'+i+'" style="'+_tgChipStyle(!!sel[x.t])+'">'+e+' <span style="opacity:.65;font-size:11px;">'+x.n+'</span></button>'+del+'</span>';
   }).join('');
   ov.innerHTML='<div style="background:#fff;border-radius:14px;width:420px;max-width:92vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">'
     +'<div style="background:linear-gradient(135deg,#6b21a8,#a855f7);color:#fff;padding:12px 18px;font-weight:800;font-size:15px;">🏷 '+o.title+'</div>'
@@ -2780,6 +2827,25 @@ function _openTagDialog(o){
   ov.addEventListener('click',function(e){ if(e.target===ov) ov.remove(); });
   var chips=ov.querySelector('#sg-tg-chips');
   if(chips) chips.addEventListener('click',function(e){
+    /* ★ 태그 삭제 (2026-09-18) */
+    var d=e.target.closest('button[data-del]');
+    if(d){
+      var xi=parseInt(d.getAttribute('data-del'),10), xd=o.tags[xi];
+      if(!xd) return;
+      if(!confirm('"'+xd.t+'" 태그를 삭제할까요?\n이 태그가 붙은 고객 '+xd.n+'명 모두에서 지워집니다.')) return;
+      var _n=0;
+      customers.forEach(function(c){
+        var t=_tagsOf(c); if(t.indexOf(xd.t)<0) return;
+        c.tags=t.filter(function(v){return v!==xd.t;}); c._updated=Date.now(); _n++;
+      });
+      delete sel[xd.t];
+      var w=chips.querySelector('span[data-tgw="'+xi+'"]'); if(w) w.remove();
+      if (typeof autoSave === 'function') autoSave();
+      if (typeof renderList === 'function') renderList();
+      if (typeof showToast === 'function') showToast('🏷 "'+xd.t+'" 태그 삭제됨 ('+_n+'명)','orange');
+      if (o.onDelete) o.onDelete(xd.t);
+      return;
+    }
     var b=e.target.closest('button[data-tg]'); if(!b) return;
     var x=o.tags[parseInt(b.getAttribute('data-tg'),10)];
     sel[x.t]=!sel[x.t];
@@ -2800,7 +2866,8 @@ function editCustomerTags(cid){
   _openTagDialog({
     title: (c.name||'고객') + '님 태그',
     sub: '보라색으로 켜진 태그가 이 고객에게 붙습니다. 눌러서 켜고 끄고, 새 태그는 아래에 입력하세요.',
-    tags: _allTags(), preset: _tagsOf(c), allowNew: true,
+    tags: _allTags(), preset: _tagsOf(c), allowNew: true, allowDelete: true,   /* ★ 삭제 허용 (2026-09-18) */
+    onDelete: function(){ if (typeof selectCustomer === 'function') selectCustomer(cid); },
     onSave: function(tags){
       c.tags = tags;
       c._updated = Date.now();
@@ -2849,6 +2916,21 @@ function renderList() {
     var m = basic || inNotes || inMedical || inConsult || inSched || inTags;
     return m && (!gf || c.gender===gf);
   });
+  /* ★ 관계 고객 같이 검색 (2026-09-18) — 검색에 걸린 고객의 배우자·자녀·부모 등도 함께 보여준다 */
+  if (q && !_genQ) {
+    var _have = {}; filtered.forEach(function(c){ _have[c.id] = true; });
+    var _add = [];
+    filtered.forEach(function(c){
+      (c.relations || []).forEach(function(r){
+        if (_have[r.id]) return;
+        var o = customers.find(function(x){ return x.id === r.id; });
+        if (!o || o._personal) return;
+        if (gf && o.gender !== gf) return;
+        _have[r.id] = true; _add.push(o);
+      });
+    });
+    filtered = filtered.concat(_add);
+  }
   /* ★ 등록월 필터 적용 (2026-08-05) */
   if (_rm) {
     filtered = filtered.filter(function(c){
@@ -2873,6 +2955,10 @@ function renderList() {
       return _bm === '__none__' ? m === null : m === parseInt(_bm, 10);
     });
   }
+  /* ★ 연령대 필터 적용 (2026-09-18) */
+  var _agSel = document.getElementById('filter-age');
+  var _ag = _agSel ? _agSel.value : '';
+  if (_ag) filtered = filtered.filter(function(c){ return _matchAgeBand(c, _ag); });
   if (sort==='name') filtered.sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ko');});
   else if (sort==='id') filtered.sort(function(a,b){return a.id-b.id;});
   /* ★ 상령일 임박순 (2026-08-14) — 남은 일수가 적은 순, 주민번호 없는 고객은 맨 뒤 */
@@ -3026,6 +3112,8 @@ function selectCustomer(id) {
       }).join('')
     : '<div class="no-results" style="padding:12px 0">상담 이력 없음</div>';
   function v(val){ return val?val:'<span class="empty">미입력</span>'; }
+  /* ★ 바로 수정 연필 (2026-09-18) */
+  function pen(k){ return '<button type="button" class="sg-ie-btn" title="바로 수정" onclick="sgInlineEdit('+id+',\''+k+'\',this)">✎</button>'; }
   document.getElementById('right-panel').innerHTML =
     '<div class="customer-card">'
     +'<div class="card-sticky">'
@@ -3064,21 +3152,26 @@ function selectCustomer(id) {
     +'</div>'
     +'<div class="card-body">'
     +'<div class="info-grid">'
-    +'<div class="info-item"><div class="label">전화번호</div><div class="value" onclick="copyField(this,\'전화번호\')">'+v(c.phone)+'</div></div>'
-    +'<div class="info-item"><div class="label">주민번호</div><div class="value" onclick="copyField(this,\'주민번호\')">'+v(c.resident_number || c.jumin)+'</div></div>'
-    +'<div class="info-item full-width"><div class="label">주소 (현주소)</div><div class="value" onclick="copyField(this,\'주소\')">'+v(c.address)+'</div>'
+    +'<div class="info-item"><div class="label">전화번호'+pen('phone')+'</div><div class="value" onclick="copyField(this,\'전화번호\')">'+v(c.phone)+'</div></div>'
+    +'<div class="info-item"><div class="label">주민번호'+pen('jumin')+'</div><div class="value" onclick="copyField(this,\'주민번호\')">'+v(c.resident_number || c.jumin)+'</div></div>'
+    +'<div class="info-item full-width"><div class="label">주소 (현주소)'+pen('address')+'</div><div class="value" onclick="copyField(this,\'주소\')">'+v(c.address)+'</div>'
     +(c.address?'<div class="nav-btns"><button type="button" class="nav-btn naver" onclick="_navOpenByCid(\'naver\','+id+')">네이버지도로 열기</button></div>':'')
     +'</div>'
-    +'<div class="info-item full-width"><div class="label">미팅장소 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(copy 제외)</span></div><div class="value" onclick="copyField(this,\'미팅장소\')">'+v(c.meetingAddress)+'</div>'
+    +'<div class="info-item full-width"><div class="label">미팅장소 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(copy 제외)</span>'+pen('meetingAddress')+'</div><div class="value" onclick="copyField(this,\'미팅장소\')">'+v(c.meetingAddress)+'</div>'
     +(c.meetingAddress?'<div class="nav-btns"><button type="button" class="nav-btn naver" onclick="_navOpenByCid(\'naver\','+id+',\'meeting\')">네이버지도로 열기</button></div>':'')
     +'</div>'
-    +'<div class="info-item"><div class="label">직업</div><div class="value" onclick="copyField(this,\'직업\')">'+v(c.job)+'</div></div>'
-    +'<div class="info-item"><div class="label">운전 여부</div><div class="value" onclick="copyField(this,\'운전 여부\')">'+v(c.driving)+'</div></div>'
+    +'<div class="info-item"><div class="label">직업'+pen('job')+'</div><div class="value" onclick="copyField(this,\'직업\')">'+v(c.job)+'</div></div>'
+    +'<div class="info-item"><div class="label">운전 여부'+pen('driving')+'</div><div class="value" onclick="copyField(this,\'운전 여부\')">'+v(c.driving)+'</div></div>'
     /* ★ 보험금 받을 계좌 (2026-09-02) — 비어 있어도 칸은 보이게 */
-    +'<div class="info-item full-width"><div class="label">보험금 받을 계좌 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(청구서에 들어감)</span></div>'
+    +'<div class="info-item full-width"><div class="label">보험금 받을 계좌 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(청구서에 들어감)</span>'+pen('account')+'</div>'
     +'<div class="value" onclick="copyField(this,\'계좌\')">'+v(((c.bank||'')+' '+(c.account||'')).trim()+((c.holder&&c.holder!==c.name)?' ('+c.holder+')':''))+'</div></div>'
-    +'<div class="info-item full-width"><div class="label">병력 / 고지사항</div><div class="value" onclick="copyField(this,\'병력/고지사항\')">'+(c.medical_history?c.medical_history:'<span class="empty">미입력</span>')+'</div></div>'
-    +(c.notes?'<div class="info-item full-width"><div class="label">메모</div><div class="value" onclick="copyField(this,\'메모\')">'+c.notes+'</div></div>':'')
+    +'<div class="info-item full-width"><div class="label">병력 / 고지사항'+pen('medical_history')+'</div><div class="value" onclick="copyField(this,\'병력/고지사항\')">'+(c.medical_history?c.medical_history:'<span class="empty">미입력</span>')+'</div></div>'
+    /* ★ 메모는 비어 있어도 칸을 보여 바로 적을 수 있게 (2026-09-18) */
+    +'<div class="info-item full-width"><div class="label">메모'+pen('notes')+'</div><div class="value" onclick="copyField(this,\'메모\')">'+(c.notes?c.notes:'<span class="empty">미입력</span>')+'</div></div>'
+    /* ★ 관계 (2026-09-18) — 배우자·자녀·부모·형제/자매·기타. 칩을 누르면 그 고객으로 이동 */
+    +'<div class="info-item full-width"><div class="label">관계 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(가족 등 연결된 고객)</span>'
+    +'<button type="button" class="sg-rel-add" onclick="sgRelOpen('+id+')">+ 관계 추가</button></div>'
+    +'<div class="sg-rel-list">'+sgRelChips(c)+'</div></div>'
     +'</div>'
     +'<div class="sched-add-form">'
     +'<div class="sched-add-title">스케줄 등록</div>'
@@ -5283,6 +5376,8 @@ function bulkSelectAll() {
     var m = _getBirthMonth(c);
     return _bBm === '__none__' ? m === null : m === parseInt(_bBm, 10);
   });
+  var _bAg = (document.getElementById('filter-age') || {}).value || '';   /* ★ 연령대 (2026-09-18) */
+  if (_bAg) filtered = filtered.filter(function(c){ return _matchAgeBand(c, _bAg); });
   if (window._statusSortTop) {
     var _sst = window._statusSortTop;
     filtered = filtered.filter(function(c){ return c.status === _sst; });
@@ -5355,13 +5450,26 @@ function xlsxImport() {
 /* 실제로 파일을 고르는 부분 — 안내 화면의 [엑셀 파일 고르기] 에서도 부른다 */
 function sgXlsxPick() {
   if (window.__IS_MOBILE__) return;
-  _showFileDropModal('.xlsx,.xls', '엑셀 파일에서 고객 일괄 등록', function(f) {
+  var _ov = _showFileDropModal('.xlsx,.xls', '엑셀 파일에서 고객 일괄 등록', function(f) {
     /* ★ 일괄 태그 (2026-08-15) — 이 파일의 고객 전체에 같은 태그를 붙여 나중에 통째로 검색 */
     var _t = prompt('이 파일의 고객 전체에 붙일 태그를 입력하세요.\n(쉼표로 여러 개 · 비워두고 확인하면 태그 없이 등록)\n예: 8월흥생DB', '');
     if (_t === null) { showToast('엑셀 등록 취소됨', 'orange'); return; }
     window.__xlsxBatchTags = _parseTagStr(_t);
     _xlsxHandleFile(f);
   });
+  /* ★ 안내 다시 보기 (2026-09-18) — '다음부터 건너뛰기'를 켠 뒤에도 옮겨오기 안내를 다시 볼 수 있게 */
+  try {
+    var _act = _ov && _ov.firstChild && _ov.firstChild.lastChild;
+    if (_act && typeof window.sgImportGuide === 'function') {
+      _act.style.justifyContent = 'space-between';
+      var _again = document.createElement('button');
+      _again.type = 'button';
+      _again.textContent = '📖 안내 다시 보기';
+      _again.style.cssText = 'background:#fff;border:1px solid #e7d4bd;color:#9a3412;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;';
+      _again.onclick = function() { if (_ov.parentNode) _ov.parentNode.removeChild(_ov); window.sgImportGuide(); };
+      _act.insertBefore(_again, _act.firstChild);
+    }
+  } catch (e) {}
 }
 window.sgXlsxPick = sgXlsxPick;
 window.xlsxImport = xlsxImport;
@@ -5859,6 +5967,7 @@ function _showFileDropModal(accept, label, onFile, multi) {   /* ★ multi=true�
   // ESC로 닫기
   function escHandler(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escHandler); } }
   document.addEventListener('keydown', escHandler);
+  return ov;   /* ★ 호출한 쪽에서 버튼을 덧붙일 수 있게 (2026-09-18) */
 }
 
 /* ★ 신규/수정 고객 창: 바깥 클릭으로 닫히지 않게 제거 (2026-08-12) — 입력 중 실수 방지, ✕ 버튼으로만 닫기 */
@@ -8716,6 +8825,156 @@ function cancelScriptEdit(){
 
 
 // ── 고객정보 복사 ──────────────────────────────────────────────
+/* ★ 고객정보 바로 수정 (2026-09-18) — 연필을 누르면 그 칸이 입력창으로 바뀌고, 저장하면 수정창 저장과 같은 경로로 반영 */
+function sgInlineEdit(id, key, btn) {
+  var c = customers.find(function (x) { return x.id === id; }); if (!c) return;
+  var item = btn.closest ? btn.closest('.info-item') : null; if (!item) return;
+  var val = item.querySelector('.value'); if (!val || item.querySelector('.sg-ie')) return;
+  var box = document.createElement('div'); box.className = 'sg-ie';
+  var ins = [];
+  function mk(ph, v, multi) {
+    var e = document.createElement(multi ? 'textarea' : 'input');
+    if (!multi) e.type = 'text';
+    e.placeholder = ph; e.value = v || '';
+    box.appendChild(e); ins.push(e); return e;
+  }
+  if (key === 'account') { mk('은행', c.bank); mk('계좌번호', c.account); mk('예금주 (본인이면 비워도 됨)', c.holder); }
+  else if (key === 'jumin') mk('주민번호', c.resident_number || c.jumin);
+  else if (key === 'medical_history' || key === 'notes') mk(key === 'notes' ? '메모' : '병력 / 고지사항', c[key], true);
+  else mk('', c[key]);
+  var bs = document.createElement('button'); bs.type = 'button'; bs.className = 'sg-ie-save'; bs.textContent = '저장';
+  var bc = document.createElement('button'); bc.type = 'button'; bc.className = 'sg-ie-cancel'; bc.textContent = '취소';
+  box.appendChild(bs); box.appendChild(bc);
+  var hint = document.createElement('div'); hint.className = 'sg-ie-hint';
+  hint.textContent = (key === 'medical_history' || key === 'notes') ? 'Esc 취소' : 'Enter 저장 · Esc 취소';
+  box.appendChild(hint);
+  function cancel() { if (box.parentNode) box.parentNode.removeChild(box); val.style.display = ''; }
+  function save() {
+    var d = {};
+    if (key === 'account') { d.bank = ins[0].value.trim(); d.account = ins[1].value.trim(); d.holder = ins[2].value.trim(); }
+    else if (key === 'jumin') {
+      var j = _formatJumin(ins[0].value.trim()); d.resident_number = j; d.jumin = j;
+      if (!c.gender && j) { var g = _inferGenderFromJumin(j); if (g) d.gender = g; }
+    }
+    else if (key === 'phone') d.phone = _formatPhone(ins[0].value.trim());
+    else d[key] = ins[0].value.trim();
+    var idx = customers.findIndex(function (x) { return x.id === id; }); if (idx === -1) return;
+    customers[idx] = Object.assign({}, customers[idx], d);
+    touchCustomer(id); showToast('수정됨', 'green'); autoSave();
+    renderList(); selectCustomer(id);
+  }
+  bs.onclick = save; bc.onclick = cancel;
+  ins.forEach(function (e) {
+    e.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
+      else if (ev.key === 'Enter' && e.tagName !== 'TEXTAREA') { ev.preventDefault(); save(); }
+    });
+  });
+  val.style.display = 'none';
+  val.parentNode.insertBefore(box, val.nextSibling);
+  ins[0].focus();
+}
+window.sgInlineEdit = sgInlineEdit;
+
+/* ★ 고객 관계 (2026-09-18) — c.relations = [{id, rel}] 양쪽에 저장. 자녀↔부모는 서로 뒤집어서 */
+var SG_REL_TYPES = ['배우자', '자녀', '부모', '형제/자매', '기타'];
+var SG_REL_INV = { '배우자': '배우자', '자녀': '부모', '부모': '자녀', '형제/자매': '형제/자매', '기타': '기타' };
+function sgRelChips(c) {
+  var rs = (c.relations || []).filter(function (r) { return customers.some(function (x) { return x.id === r.id; }); });
+  if (!rs.length) return '<span class="empty" style="color:#94a3b8;font-style:italic;font-size:14px;">등록된 관계 없음</span>';
+  return rs.map(function (r) {
+    var o = customers.find(function (x) { return x.id === r.id; });
+    var nm = (o.name || '').replace(/</g, '&lt;');
+    return '<span class="sg-rel-chip">'
+      + '<button type="button" class="sg-rel-go" onclick="sgRelGo(' + o.id + ')" title="이 고객으로 이동">' + nm + ' <small>· ' + r.rel + '</small></button>'
+      + '<button type="button" class="sg-rel-x" onclick="sgRelRemove(' + c.id + ',' + o.id + ')" title="관계 삭제">✕</button></span>';
+  }).join('');
+}
+function sgRelGo(id) {
+  var c = customers.find(function (x) { return x.id === id; }); if (!c) return;
+  selectCustomer(id);
+  try { var rp = document.getElementById('right-panel'); if (rp) rp.scrollTop = 0; } catch (e) {}
+}
+function _sgRelSet(a, bId, rel) {
+  a.relations = (a.relations || []).filter(function (r) { return r.id !== bId; });
+  a.relations.push({ id: bId, rel: rel });
+}
+function sgRelRemove(id, otherId) {
+  var a = customers.find(function (x) { return x.id === id; });
+  var b = customers.find(function (x) { return x.id === otherId; });
+  if (!a) return;
+  if (!confirm('"' + ((b && b.name) || '') + '" 와의 관계를 지울까요? (양쪽 모두에서 지워집니다)')) return;
+  a.relations = (a.relations || []).filter(function (r) { return r.id !== otherId; });
+  if (b) b.relations = (b.relations || []).filter(function (r) { return r.id !== id; });
+  touchCustomer(id); if (b) touchCustomer(otherId);
+  showToast('관계 삭제됨', 'orange'); autoSave(); renderList(); selectCustomer(id);
+}
+function sgRelOpen(id) {
+  var me = customers.find(function (x) { return x.id === id; }); if (!me) return;
+  var ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:inherit;';
+  function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); document.removeEventListener('keydown', esc); }
+  function esc(e) { if (e.key === 'Escape') close(); }
+  document.addEventListener('keydown', esc);
+  ov.onclick = function (e) { if (e.target === ov) close(); };
+  var picked = null;
+  var card = document.createElement('div');
+  card.style.cssText = 'background:#fff;border-radius:16px;padding:24px 26px;width:520px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,0.3);';
+  card.innerHTML =
+      '<div style="font-size:18px;font-weight:700;color:#9a3412;margin-bottom:4px;">관계 추가</div>'
+    + '<div style="font-size:13px;color:#8a6f5c;margin-bottom:14px;"><b>' + (me.name || '').replace(/</g, '&lt;') + '</b> 님과 연결할 고객을 찾아 고르세요.</div>'
+    + '<input type="text" class="sg-rel-q" placeholder="이름 · 전화번호로 검색" style="width:100%;padding:10px 12px;font-size:15px;border:1.5px solid #e46a25;border-radius:9px;outline:none;font-family:inherit;box-sizing:border-box;">'
+    + '<div class="sg-rel-res" style="max-height:220px;overflow:auto;margin-top:8px;border:1px solid #f0e2d2;border-radius:9px;"></div>'
+    + '<div class="sg-rel-picked" style="margin-top:12px;font-size:14px;color:#374151;min-height:20px;"></div>'
+    + '<div style="display:flex;align-items:center;gap:10px;margin-top:12px;">'
+    + '<span style="font-size:13.5px;color:#6b5a4c;font-weight:600;">이 분은 ' + (me.name || '').replace(/</g, '&lt;') + ' 님의</span>'
+    + '<select class="sg-rel-type" style="padding:8px 10px;font-size:14px;border:1.5px solid #e7d9c8;border-radius:8px;font-family:inherit;background:#fff;">'
+    + SG_REL_TYPES.map(function (t) { return '<option value="' + t + '">' + t + '</option>'; }).join('') + '</select>'
+    + '<span style="font-size:13.5px;color:#6b5a4c;font-weight:600;">입니다</span></div>'
+    + '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">'
+    + '<button type="button" class="sg-rel-cancel" style="background:#f8efe4;border:1px solid #eee0cf;color:#374151;padding:9px 18px;border-radius:8px;font-weight:600;cursor:pointer;font-family:inherit;font-size:14px;">취소</button>'
+    + '<button type="button" class="sg-rel-save" style="background:#e46a25;border:none;color:#fff;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;">저장</button>'
+    + '</div>';
+  ov.appendChild(card); document.body.appendChild(ov);
+  var qEl = card.querySelector('.sg-rel-q'), res = card.querySelector('.sg-rel-res'), pk = card.querySelector('.sg-rel-picked');
+  function esc_(t) { return String(t || '').replace(/</g, '&lt;'); }
+  function paint() {
+    var q = qEl.value.trim().toLowerCase();
+    var list = customers.filter(function (c) {
+      if (c._personal || c.id === id) return false;
+      if (!q) return false;
+      return (c.name || '').toLowerCase().indexOf(q) !== -1 || (c.phone || '').indexOf(q) !== -1;
+    }).slice(0, 30);
+    if (!q) { res.innerHTML = '<div style="padding:12px;font-size:13px;color:#94a3b8;">이름이나 전화번호를 입력하면 여기에 나옵니다</div>'; return; }
+    if (!list.length) { res.innerHTML = '<div style="padding:12px;font-size:13px;color:#94a3b8;">검색 결과 없음</div>'; return; }
+    res.innerHTML = list.map(function (c) {
+      var sel = picked && picked.id === c.id;
+      return '<div class="sg-rel-row" data-id="' + c.id + '" style="padding:9px 12px;cursor:pointer;border-bottom:1px solid #f6ede2;display:flex;justify-content:space-between;align-items:center;' + (sel ? 'background:#fdeadd;' : '') + '">'
+        + '<span><b style="color:#1a202c;">' + esc_(c.name) + '</b> <span style="font-size:12.5px;color:#64748b;margin-left:6px;">' + esc_(c.phone) + '</span></span>'
+        + '<span style="font-size:12px;color:#94a3b8;">' + esc_((c.address || '').slice(0, 14)) + '</span></div>';
+    }).join('');
+  }
+  paint();
+  qEl.addEventListener('input', paint);
+  res.addEventListener('click', function (e) {
+    var row = e.target.closest ? e.target.closest('.sg-rel-row') : null; if (!row) return;
+    var cid = parseInt(row.getAttribute('data-id'), 10);
+    picked = customers.find(function (x) { return x.id === cid; }) || null;
+    pk.innerHTML = picked ? '선택: <b style="color:#9a3412;">' + esc_(picked.name) + '</b> ' + esc_(picked.phone) : '';
+    paint();
+  });
+  card.querySelector('.sg-rel-cancel').onclick = close;
+  card.querySelector('.sg-rel-save').onclick = function () {
+    if (!picked) { showToast('연결할 고객을 먼저 고르세요', 'orange'); return; }
+    var rel = card.querySelector('.sg-rel-type').value;
+    _sgRelSet(me, picked.id, rel);
+    _sgRelSet(picked, me.id, SG_REL_INV[rel] || rel);
+    touchCustomer(me.id); touchCustomer(picked.id);
+    close(); showToast('관계 저장됨', 'green'); autoSave(); renderList(); selectCustomer(me.id);
+  };
+  setTimeout(function () { qEl.focus(); }, 30);
+}
+window.sgRelOpen = sgRelOpen; window.sgRelGo = sgRelGo; window.sgRelRemove = sgRelRemove;
 function copyField(el, label) {
   if (!el) return;
   var text = el.textContent.trim();
@@ -18499,6 +18758,9 @@ window.sgImportGuide = function () {
     + '<label style="display:flex;align-items:center;gap:6px;font-size:12.4px;color:#8a6f5c;cursor:pointer;margin-right:auto;">'
     + '<input type="checkbox" id="sgimp-skip" style="width:15px;height:15px;cursor:pointer;">'
     + '다음부터 이 안내 건너뛰기</label>'
+    /* ★ 단계 없이 바로 올리기 (2026-09-18) — 이미 엑셀이 준비된 분은 ①~⑤ 안 거치고 바로 파일 선택 */
+    + '<button type="button" id="sgimp-direct" style="border:1.5px solid #e46a25;background:#fff;color:#c2410c;'
+    + 'border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;">📂 엑셀 준비됐어요 · 바로 올리기</button>'
     + '<button type="button" id="sgimp-cancel" style="border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;'
     + 'border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;">닫기</button>'
     + '</div>';
@@ -18555,6 +18817,13 @@ window.sgImportGuide = function () {
     var id = el.id;
     if (el.classList.contains('sgimp-j')) { withJumin = (el.getAttribute('data-j') === '1'); paint(); return; }
     if (id === 'sgimp-x' || id === 'sgimp-cancel') { close(); return; }
+    if (id === 'sgimp-direct') {   /* ★ 바로 올리기 (2026-09-18) — 건너뛰기 체크는 그대로 존중 */
+      var sk2 = card.querySelector('#sgimp-skip');
+      if (sk2 && sk2.checked) { try { localStorage.setItem('sgImportGuideSkip', '1'); } catch (e) {} }
+      close();
+      try { window.sgXlsxPick(); } catch (e) {}
+      return;
+    }
     if (id === 'sgimp-tpl') {
       window.sgDownloadTemplate();
       el.textContent = '✅ 받았습니다';
