@@ -5468,6 +5468,17 @@ function sgXlsxPick() {
       _again.style.cssText = 'background:#fff;border:1px solid #e7d4bd;color:#9a3412;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;';
       _again.onclick = function() { if (_ov.parentNode) _ov.parentNode.removeChild(_ov); window.sgImportGuide(); };
       _act.insertBefore(_again, _act.firstChild);
+      /* ★ 엑셀 샘플 받기 (2026-09-18) — 안내를 건너뛴 분도 여기서 바로 양식을 받을 수 있게 */
+      if (typeof window.sgDownloadTemplate === 'function') {
+        var _tpl = document.createElement('button');
+        _tpl.type = 'button';
+        _tpl.textContent = '📄 엑셀 샘플 받기';
+        _tpl.style.cssText = 'background:#fff;border:1px solid #e7d4bd;color:#9a3412;padding:9px 16px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px;margin-left:8px;';
+        _tpl.onclick = function() { window.sgDownloadTemplate(); _tpl.textContent = '✅ 받았습니다'; };
+        var _left = document.createElement('div');
+        _left.style.cssText = 'display:flex;gap:0;align-items:center;';
+        _act.insertBefore(_left, _again); _left.appendChild(_again); _left.appendChild(_tpl);
+      }
     }
   } catch (e) {}
 }
@@ -18656,7 +18667,11 @@ window.sgImportGuide = function () {
   ov.id = 'sgimp-ov';
   ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:99998;'
     + 'display:flex;align-items:center;justify-content:center;font-family:inherit;padding:20px;';
-  function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+  /* ★ 어떤 경로로 닫혀도(닫기·✕·Esc·바깥 클릭) 건너뛰기 체크가 켜져 있으면 저장 (2026-09-18) */
+  function close() {
+    try { var _sk = ov.querySelector('#sgimp-skip'); if (_sk && _sk.checked) localStorage.setItem('sgImportGuideSkip', '1'); } catch (e) {}
+    if (ov.parentNode) ov.parentNode.removeChild(ov);
+  }
   ov.onclick = function (e) { if (e.target === ov) close(); };
 
   var card = document.createElement('div');
