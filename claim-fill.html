@@ -139,7 +139,7 @@
       📠 휴대폰 팩스앱으로 보내기</button>
     <button id="savebtn" onclick="saveFile()" style="width:100%;padding:14px;border:1.5px solid #0f766e;border-radius:10px;
       background:#fff;color:#0f766e;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;">
-      📁 파일로 저장 · 보험사 앱으로 보내기</button>
+      📁 파일로 저장</button>
     <div id="filelist"></div>
     <p id="faxhelp" class="sub" style="margin:10px 0 0;line-height:1.7"></p>
   </div>
@@ -208,6 +208,11 @@ var FAX_PX = 1240, FAX_Q = 0.62;
    휴대폰이면 대개 되고, PC 브라우저는 대개 안 된다. 안 되면 다운로드로 간다. */
 var CAN_SHARE = (function(){
   try {
+    /* ★ 2026-09-18: PC(맥·윈도우)는 공유창이 띄어도 팩스앱·보험사 앱이 없다 — 휴대폰에서만 넘기기 */
+    var _ua = navigator.userAgent || '';
+    var _phone = /iPhone|iPad|iPod|Android/i.test(_ua)
+              || (/Mac/.test(_ua) && Number(navigator.maxTouchPoints) > 1);   /* iPad 는 Mac 으로 보고한다 */
+    if (!_phone) return false;
     if (!navigator.share || !navigator.canShare) return false;
     return navigator.canShare({ files: [ new File([new Blob(['x'])], 'a.pdf', { type:'application/pdf' }) ] });
   } catch (e) { return false; }
@@ -880,16 +885,16 @@ function showFaxCard() {
   } else {
     $('faxno').innerHTML = '<b style="color:#b45309">' + nm + '</b> 은 고정 청구 팩스번호가 없습니다. '
       + (CAN_SHARE
-         ? ('아래 버튼으로 파일을 받아 <b>' + nm + ' 앱</b>에 직접 올리시거나, '
-            + '고객센터에서 <b>가상 팩스번호</b>를 받아 팩스앱으로 보내시면 됩니다.')
+         ? ('고객센터에서 <b>가상 팩스번호</b>를 받아 <b>모바일팩스 앱</b>으로 보내주세요. '
+            + '아래 버튼으로 파일을 휴대폰에 저장한 뒤, <b>' + nm + '</b> 앱을 직접 열어 올리셔도 됩니다.')
          : ('받아진 PDF를 <b>' + nm + '</b> 홈페이지에 올리시거나, '
             + '고객센터에서 <b>가상 팩스번호</b>를 받아 보내시면 됩니다.'));
     $('sharebtn').style.display = 'none';
     $('faxhelp').innerHTML = CAN_SHARE
-      ? '공유창이 열리면 <b>파일에 저장</b>을 고르시거나, 목록에 뜨는 <b>보험사 앱</b>을 바로 고르셔도 됩니다.'
-      : '청구서 PDF는 이미 <b>다운로드 폴더</b>에 받아져 있습니다.';
+      ? '공유창이 열리면 <b>파일에 저장</b>을 고르세요. 저장한 PDF를 <b>모바일팩스 앱</b>이나 보험사 앱에서 첨부해 보내시면 됩니다.'
+      : '청구서 PDF는 이미 <b>다운로드 폴더</b>에 받아져 있습니다. 그 파일을 웹팩스나 보험사 홈페이지에 올려 보내주세요.';
   }
-  $('savebtn').textContent = CAN_SHARE ? '📁 파일로 저장 · 보험사 앱으로 보내기' : '📥 PDF 다시 받기';
+  $('savebtn').textContent = CAN_SHARE ? '📁 휴대폰에 파일로 저장' : '📥 PDF 다시 받기';
   drawFileList();
   $('card-fax').style.display = 'block';
   $('card-fax').scrollIntoView({ behavior:'smooth', block:'center' });
@@ -947,15 +952,16 @@ async function sendOne(i) {
 async function saveFile() {
   if (!madeBlob) { msg('먼저 [청구서 만들기]를 눌러주세요.'); return; }
   var f = new File([madeBlob], madeName, { type:'application/pdf' });
-  if (navigator.canShare && navigator.canShare({ files:[f] })) {
+  /* ★ 2026-09-18: PC 는 공유창을 쓰지 않고 바로 내려받는다 */
+  if (CAN_SHARE && navigator.canShare && navigator.canShare({ files:[f] })) {
     try {
       await navigator.share({ files:[f], title:madeName });
-      msg('보냈습니다 — ' + madeName);
+      msg('저장했습니다 — ' + madeName);
       return;
     } catch (e) { if (e && e.name === 'AbortError') return; }
   }
   downloadMade();
-  msg('휴대폰에 저장했습니다 — ' + madeName);
+  msg((CAN_SHARE ? '휴대폰에 저장했습니다 — ' : '다운로드 폴더에 받았습니다 — ') + madeName);
 }
 
 function downloadMade() {
