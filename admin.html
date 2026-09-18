@@ -36,6 +36,11 @@
   .b-expired { background:#f1f5f9; color:#64748b; }
   .b-plan { background:#fffbeb; color:#b45309; border:1.5px solid #fcd34d; }
   .acts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  /* ★ 일괄 적용 (2026-09-18) */
+  .bulkbar { background:#fff; border:1.5px solid #f0e4d6; border-radius:12px; padding:10px 14px; margin-bottom:12px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13.5px; color:#475569; }
+  .bulkbar select, .bulkbar input[type=date] { padding:6px 8px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; }
+  .bulkbar .cnt { font-weight:800; color:#7c2d12; }
+  .card .sg-ck { width:18px; height:18px; cursor:pointer; flex-shrink:0; }
   .acts input[type=date] { padding:6px 8px; border:1.5px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; }
   .empty { text-align:center; color:#94a3b8; padding:40px 0; font-size:14.5px; }
   #login-box { text-align:center; padding:70px 20px; }
@@ -102,6 +107,7 @@
 var API = 'https://salgu-api.wmmryer.workers.dev';
 var CLIENT_ID = '491677189712-agtga4sn5ed3gje4n0lk02veoj3ttl2c.apps.googleusercontent.com';
 var _token = null, _users = [], _tab = 'pending', _tc = null;
+var _sel = {};   /* ★ 일괄 적용용 체크 상태 (이메일 → true) (2026-09-18) */
 /* ★ 걸러보기·정렬 상태 (2026-09-02) */
 var _q = '', _grp = 'all', _mon = 'all', _sort = 'seen', _view = 'all', _fbuilt = false;
 
@@ -204,7 +210,7 @@ function render() {
 
   var rows = sortRows(base.filter(function(u){ return inTab(u, _tab); }));
   if (!rows.length) { document.getElementById('list').innerHTML = '<div class="empty">해당하는 사람이 없습니다</div>'; return; }
-  document.getElementById('list').innerHTML = rows.map(function(u) {
+  document.getElementById('list').innerHTML = (_tab !== 'all' ? bulkBarHtml(rows) : '') + rows.map(function(u) {
     var st = statusOf(u);
     var acts = '';
     /* ★ 전체 탭은 '누가 어떻게 쓰나' 보는 곳 — 버튼 없이 명단만 (2026-09-02).
@@ -234,6 +240,7 @@ function render() {
            + (isInvited(u) ? '🌱 해제' : '🌱 초대') + '</button>';
     }
     return '<div class="card">'
+      + (_tab !== 'all' ? '<input type="checkbox" class="sg-ck" title="일괄 적용 대상으로 선택" value="' + esc(u.email) + '"' + (_sel[String(u.email).toLowerCase()] ? ' checked' : '') + ' onchange="bulkTick(this)">' : '')
       + '<div class="info">'
       +   '<div class="name">' + esc(u.name || '(이름 없음)') + ' <span class="badge ' + CLS[st] + '">' + LBL[st] + '</span>'
       +     (isInvited(u) ? ' <span class="badge b-invited">🌱 초대 멤버</span>' : '') + planHtml(u) + '</div>'
@@ -440,6 +447,81 @@ function approve(email) {
     .then(function(r){ if (r.ok) { toast('✅ 승인됨'); load(); } else toast('실패: ' + (r.error||'')); });
 }
 /* ★ 2026-09-18: 승인된 사람의 요금제·만료일 변경 — 워커 /admin/plan (승인 상태·승인 시각은 그대로) */
+/* ★ 일괄 적용 (2026-09-18) — 체크한 사람들의 요금제·만료일·초대 표시를 한 번에 바꿈.
+   워커 경로는 한 명씩 부르는 기존 것(/admin/plan, /admin/tier)을 순서대로 호출한다. */
+function bulkBarHtml(rows) {
+  var n = 0; rows.forEach(function(u){ if (_sel[String(u.email).toLowerCase()]) n++; });
+  return '<div class="bulkbar">'
+    + '<button class="btn btn-g btn-sm" onclick="bulkAll(true)">전체 선택</button>'
+    + '<button class="btn btn-g btn-sm" onclick="bulkAll(false)">선택 해제</button>'
+    + '<span>선택 <span class="cnt" id="bulk-cnt">' + n + '</span>명</span>'
+    + '<span style="color:#cbd5e1">|</span>'
+    + '<select id="bulk-plan" onchange="bulkPick()">'
+    +   '<option value="__keep">요금제 그대로</option><option value="">요금제 없음</option>'
+    +   Object.keys(PLAN).map(function(k){ return '<option value="' + k + '">' + PLAN[k].label + ' · ' + PLAN[k].price.toLocaleString() + '원</option>'; }).join('')
+    + '</select>'
+    + '<input type="date" id="bulk-exp" title="만료일 (비우면 무기한)">'
+    + '<button class="btn btn-green btn-sm" onclick="bulkApply()">선택한 사람 적용</button>'
+    + '<button class="btn btn-sm" style="background:#ecfdf5;color:#15803d;border:1.5px solid #86efac" onclick="bulkUnlimited()">♾ 무기한</button>'
+    + '<button class="btn btn-g btn-sm" onclick="bulkTier(true)">🌱 초대</button>'
+    + '<button class="btn btn-g btn-sm" onclick="bulkTier(false)">🌱 해제</button>'
+    + '</div>';
+}
+function bulkTick(el) {
+  var k = String(el.value).toLowerCase();
+  if (el.checked) _sel[k] = true; else delete _sel[k];
+  var c = document.getElementById('bulk-cnt'); if (c) c.textContent = document.querySelectorAll('.sg-ck:checked').length;
+}
+function bulkAll(on) {
+  document.querySelectorAll('.sg-ck').forEach(function(el){ el.checked = on; bulkTick(el); });
+}
+function bulkPick() {
+  var sel = document.getElementById('bulk-plan'), expEl = document.getElementById('bulk-exp');
+  if (!sel || !expEl) return;
+  if (sel.value === '__keep' || sel.value === '') expEl.value = '';
+  else expEl.value = planExpiry({ plan: sel.value });
+}
+function bulkTargets() {
+  var out = [];
+  document.querySelectorAll('.sg-ck:checked').forEach(function(el){ out.push(el.value); });
+  if (!out.length) toast('먼저 사람을 체크해 주세요');
+  return out;
+}
+function bulkRun(emails, fn, label) {
+  var ok = 0, bad = 0, i = 0;
+  function next() {
+    if (i >= emails.length) { _sel = {}; toast(label + ' 완료 · 성공 ' + ok + '명' + (bad ? ' · 실패 ' + bad + '명' : '')); load(); return; }
+    fn(emails[i++]).then(function(r){ if (r && r.ok) ok++; else bad++; }, function(){ bad++; }).then(next);
+  }
+  next();
+}
+function bulkApply() {
+  var emails = bulkTargets(); if (!emails.length) return;
+  var sel = document.getElementById('bulk-plan'), expEl = document.getElementById('bulk-exp');
+  var planSel = sel ? sel.value : '__keep', exp = expEl && expEl.value ? expEl.value : null;
+  var pTxt = planSel === '__keep' ? '그대로' : (planSel ? PLAN[planSel].label + ' · ' + PLAN[planSel].price.toLocaleString() + '원' : '없음');
+  if (!confirm(emails.length + '명을 한 번에 바꿀까요?\n요금제: ' + pTxt + '\n만료일: ' + (exp || '없음(무기한)'))) return;
+  bulkRun(emails, function(email){
+    var plan = planSel;
+    if (plan === '__keep') { var u = null; for (var i = 0; i < _users.length; i++) if (String(_users[i].email).toLowerCase() === email.toLowerCase()) { u = _users[i]; break; } plan = u ? planOf(u) : ''; }
+    return api('/admin/plan', { method:'POST', body: JSON.stringify({ email: email, plan: plan, expires_at: exp }) });
+  }, '적용');
+}
+function bulkUnlimited() {
+  var emails = bulkTargets(); if (!emails.length) return;
+  if (!confirm(emails.length + '명을 기한 제한 없는 사용자(무기한)로 바꿀까요? (요금제는 그대로)')) return;
+  bulkRun(emails, function(email){
+    var u = null; for (var i = 0; i < _users.length; i++) if (String(_users[i].email).toLowerCase() === email.toLowerCase()) { u = _users[i]; break; }
+    return api('/admin/plan', { method:'POST', body: JSON.stringify({ email: email, plan: u ? planOf(u) : '', expires_at: null }) });
+  }, '무기한');
+}
+function bulkTier(on) {
+  var emails = bulkTargets(); if (!emails.length) return;
+  if (!confirm(emails.length + '명의 초대 멤버 표시를 ' + (on ? '켤까요?' : '끌까요?'))) return;
+  bulkRun(emails, function(email){
+    return api('/admin/tier', { method:'POST', body: JSON.stringify({ email: email, tier: on ? 'invited' : '' }) });
+  }, on ? '초대 표시' : '초대 해제');
+}
 function _planPost(email, plan, exp, okMsg) {
   api('/admin/plan', { method:'POST', body: JSON.stringify({ email: email, plan: plan, expires_at: exp }) })
     .then(function(r){ if (r && r.ok) { toast(okMsg); load(); } else toast('실패: ' + ((r && r.error) || '워커에 /admin/plan 이 아직 없습니다')); });
