@@ -627,6 +627,31 @@ function initPad(k) {
   document.addEventListener('mouseup', end);
   cv.ontouchstart = start; cv.ontouchmove = move; cv.ontouchend = end;
 }
+/* ★ 서명에서 획이 있는 부분만 잘라낸다 (2026-09-19) — 악사 서식에서만 쓴다. */
+function sigInk(pad) {
+  var w = pad.width, h = pad.height, d;
+  try { d = pad.getContext('2d').getImageData(0, 0, w, h).data; } catch (e) { return pad; }
+  var x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      if (d[(y * w + x) * 4 + 3] > 24) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return null;
+  var gap = 5;
+  x0 = Math.max(0, x0 - gap); y0 = Math.max(0, y0 - gap);
+  x1 = Math.min(w - 1, x1 + gap); y1 = Math.min(h - 1, y1 + gap);
+  var cv = document.createElement('canvas');
+  cv.width = x1 - x0 + 1; cv.height = y1 - y0 + 1;
+  cv.getContext('2d').drawImage(pad, x0, y0, cv.width, cv.height, 0, 0, cv.width, cv.height);
+  return cv;
+}
+
 function clearPad(k) {
   var cv = $('p_' + k);
   cv.getContext('2d').clearRect(0, 0, cv.width, cv.height);
@@ -747,6 +772,18 @@ async function run() {
       if (m.type === 'sig') {
         var pad = $('p_' + m.k);
         if (!pad || !SIG[m.k]) return;
+        /* ★ 2026-09-19: 악사 새 양식만 — 서명판은 넓고 대부분 빈칸이라
+           판 전체를 넣으면 서명이 칸을 넘어가 잘리고 윗줄과 겹친다.
+           획이 그려진 부분만 잘라 서명칸 크기에 맞춘다.
+           다른 보험사는 지금까지 널 방식 그대로 둔다. */
+        if (curIns === 'axa') {
+          var im = sigInk(pad);
+          if (!im) return;
+          var mh = px * 1.5, mw = px * 5.2;   /* 줄 간격이 좁아 높이를 줄이고, 폭도 (서명) 글자 앞 빈칸에 맞춘다 */
+          var sc = Math.min(mh / im.height, mw / im.width);
+          cx.drawImage(im, X, Y - (im.height * sc) / 2, im.width * sc, im.height * sc);
+          return;
+        }
         var h = px * 3.2, w = h * (pad.width / pad.height);
         cx.drawImage(pad, X, Y - h / 2, w, h);
         return;
