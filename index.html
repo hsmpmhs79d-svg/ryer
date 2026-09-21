@@ -12798,11 +12798,30 @@ function copyContact(el) {
            백업이 안 보이면 = 손으로 올린 백업일 가능성 → 새로 시작 전에 '백업 연결' 제안 */
         try {
           if (!window.__pickerRetried__ && localStorage.getItem('__salgu_visited__')) {
-            if (confirm('Google Drive에서 백업 파일을 찾지 못했습니다.\n\n📌 예전부터 살구를 쓰시던 계정이라면 [확인]을 눌러\n백업 파일(고객관리_백업.html)을 직접 선택해 다시 연결하세요.\n\n처음 사용하시는 분은 [취소]를 누르면 새로 시작합니다.')) {
-              openBackupPicker();
-              return;
-            }
             window.__pickerRetried__ = true;
+            /* ★ 2026-09-21: 예전에는 confirm 으로 물어봤는데, 버튼이 [확인]/[취소] 뿐이라
+               "처음 쓰시는 분은 취소"가 많이 헷갈렸다. 버튼 두 개에 각각 무엇을 하는지 적어 둔다. */
+            var _ov = document.createElement('div');
+            _ov.style.cssText = 'position:fixed;inset:0;background:rgba(28,14,4,.55);z-index:100001;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:18px;';
+            _ov.innerHTML =
+              '<div style="background:#fff;border-radius:16px;width:450px;max-width:94vw;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);">'
+              + '<div style="background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;padding:14px 20px;font-weight:800;font-size:16px;">\uD83C\uDF51 살구를 처음 쓰시나요?</div>'
+              + '<div style="padding:17px 20px 4px;font-size:14px;color:#5b4636;line-height:1.75;">'
+              +   '지금 로그인하신 구글 계정의 드라이브에서 <b>살구 백업 파일을 찾지 못했습니다.</b><br>'
+              +   '아래에서 해당하는 쪽을 눌러주세요.'
+              + '</div>'
+              + '<div style="padding:16px 20px 20px;display:flex;flex-direction:column;gap:10px;">'
+              +   '<button type="button" id="sg-old-user" style="width:100%;background:#fff;color:#9a3412;border:1.5px solid #e6cdb0;border-radius:11px;padding:13px 15px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;">'
+              +     '\uD83D\uDCC2 예전부터 살구를 쓰던 분'
+              +     '<div style="font-weight:600;font-size:12.5px;color:#a08a76;margin-top:4px;line-height:1.6;">드라이브에서 백업 파일(고객관리_백업.html)을 직접 골라 다시 연결합니다</div></button>'
+              +   '<button type="button" id="sg-new-user" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:11px;padding:13px 15px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;text-align:left;">'
+              +     '\u2728 살구를 처음 쓰는 분'
+              +     '<div style="font-weight:600;font-size:12.5px;opacity:.92;margin-top:4px;line-height:1.6;">이용 신청 화면으로 넘어갑니다</div></button>'
+              + '</div></div>';
+            document.body.appendChild(_ov);
+            _ov.querySelector('#sg-old-user').onclick = function(){ _ov.remove(); openBackupPicker(); };
+            _ov.querySelector('#sg-new-user').onclick = function(){ _ov.remove(); afterLogin(); };
+            return;
           }
         } catch(e) {}
         /* ★ 신규 가입 승인 게이트 (2026-08-10)
