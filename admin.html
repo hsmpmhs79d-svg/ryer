@@ -34,6 +34,9 @@
   .b-approved { background:#dcfce7; color:#15803d; }
   .b-rejected { background:#fee2e2; color:#b91c1c; }
   .b-expired { background:#f1f5f9; color:#64748b; }
+  /* ★ 2026-09-23: 무료체험 */
+  .b-trialreq { background:#f0fdf4; color:#15803d; border:1.5px solid #86efac; }
+  .b-trial { background:#16a34a; color:#fff; }
   .b-plan { background:#fffbeb; color:#b45309; border:1.5px solid #fcd34d; }
   .acts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
   /* ★ 일괄 적용 (2026-09-18) */
@@ -156,6 +159,13 @@ function load() {
 }
 
 function statusOf(u) {
+  /* ★ 2026-09-23: 무료체험 — status='trial' 이면 체험 중, 기간이 지나면 만료로 본다 */
+  if (u.status === 'trial') {
+    var todayT = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+    if (!u.expires_at || u.expires_at < todayT) return 'expired';
+    return 'trial';
+  }
+  if (u.status === 'pending' && String(u.trial_state || '') === 'req') return 'trialreq';
   if (u.status === 'approved' && u.expires_at) {
     var today = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
     if (u.expires_at < today) return 'expired';
@@ -166,20 +176,22 @@ function statusOf(u) {
   if (u.status === 'pending' && /자동 수집/.test(u.memo || '')) return 'existing';
   return u.status;
 }
-var LBL = { all:'📋 전체', paid:'💰 입금확인 대기', pending:'⏳ 대기', existing:'👥 기존 사용자', approved:'✅ 승인', rejected:'🚫 거절', expired:'⌛ 만료' };
-var CLS = { all:'b-existing', paid:'b-paid', pending:'b-pending', existing:'b-existing', approved:'b-approved', rejected:'b-rejected', expired:'b-expired' };
+var LBL = { all:'📋 전체', trialreq:'🎁 체험 신청', trial:'🧪 체험 중', paid:'💰 입금확인 대기', pending:'⏳ 대기', existing:'👥 기존 사용자', approved:'✅ 승인', rejected:'🚫 거절', expired:'⌛ 만료' };
+var CLS = { all:'b-existing', trialreq:'b-trialreq', trial:'b-trial', paid:'b-paid', pending:'b-pending', existing:'b-existing', approved:'b-approved', rejected:'b-rejected', expired:'b-expired' };
 /* ★ 전체 탭 (2026-09-02) — 기존 사용자 + 승인, 즉 지금 살구를 쓰고 있는 사람 전부 */
 function inTab(u, t) {
   var s0 = statusOf(u);
-  if (t === 'all') return s0 === 'existing' || s0 === 'approved';
+  if (t === 'all') return s0 === 'existing' || s0 === 'approved' || s0 === 'trial';
   return s0 === t;
 }
 
 function renderSummary() {
-  var n = _users.length, inv = 0, appr = 0, hot = 0, idle = 0, never = 0, soon = 0;
+  var n = _users.length, inv = 0, appr = 0, hot = 0, idle = 0, never = 0, soon = 0, tri = 0;
   _users.forEach(function(u){
     if (isInvited(u)) inv++;
-    if (statusOf(u) === 'approved') appr++;
+    var _s = statusOf(u);
+    if (_s === 'approved') appr++;
+    if (_s === 'trial') tri++;                      /* ★ 2026-09-23 */
     var d = seenDays(u);
     if (d === null) never++; else if (d <= 7) hot++; else if (d >= 30) idle++;
     var x = daysToExpire(u); if (x !== null && x >= 0 && x <= 30) soon++;
@@ -187,6 +199,7 @@ function renderSummary() {
   document.getElementById('summary').innerHTML =
       '<span>전체 <b>' + n + '</b>명</span>'
     + '<span>✅ 승인 <b>' + appr + '</b></span>'
+    + '<span>🧪 체험 중 <b>' + tri + '</b></span>'
     + '<span>🌱 초대 멤버 <b>' + inv + '</b></span>'
     + '<span>🔥 이번 주 접속 <b>' + hot + '</b></span>'
     + '<span>😴 휴면 <b>' + idle + '</b></span>'
@@ -199,13 +212,13 @@ function render() {
   renderSummary();
   fillMonths();
   var base = _users.filter(passFilter);
-  var counts = { all:0, paid:0, pending:0, existing:0, approved:0, rejected:0, expired:0 };
+  var counts = { all:0, trialreq:0, trial:0, paid:0, pending:0, existing:0, approved:0, rejected:0, expired:0 };
   base.forEach(function(u){
     var s0 = statusOf(u);
     counts[s0] = (counts[s0]||0)+1;
-    if (s0 === 'existing' || s0 === 'approved') counts.all++;   /* ★ 전체 = 지금 쓰고 있는 사람 (2026-09-02) */
+    if (s0 === 'existing' || s0 === 'approved' || s0 === 'trial') counts.all++;   /* ★ 전체 = 지금 쓰고 있는 사람 (2026-09-02 / 체험 포함 2026-09-23) */
   });
-  var tabs = ['all','paid','pending','existing','approved','expired','rejected'];
+  var tabs = ['all','trialreq','trial','paid','pending','existing','approved','expired','rejected'];
   document.getElementById('tabs').innerHTML = tabs.map(function(t){
     return '<div class="tab' + (_tab===t?' on':'') + '" onclick="_tab=\'' + t + '\';render()">' + LBL[t] + '<span class="n">' + (counts[t]||0) + '</span></div>';
   }).join('');
@@ -218,7 +231,16 @@ function render() {
     /* ★ 전체 탭은 '누가 어떻게 쓰나' 보는 곳 — 버튼 없이 명단만 (2026-09-02).
        승인·이용중지는 각 상태 탭에서 한다. */
     if (_tab !== 'all') {
-      if (st === 'paid' || st === 'pending' || st === 'existing' || st === 'rejected' || st === 'expired') {
+      /* ★ 2026-09-23: 체험 신청 — 한 번 눌러 5일 열어주기 (일수는 고칠 수 있다) */
+      if (st === 'trialreq') {
+        acts += '<input type="number" id="td-' + esc(u.email) + '" value="5" min="1" max="60" style="width:56px" title="체험 일수">'
+             + '<button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none" onclick="approveTrial(\'' + esc(u.email) + '\')">🎁 체험 열기</button>';
+      }
+      /* ★ 체험 중 — 정식 전환은 아래 승인 버튼, 중단은 이용 중지 */
+      if (st === 'trial') {
+        acts += '<button class="btn btn-g btn-sm" onclick="reject(\'' + esc(u.email) + '\')">체험 중단</button>';
+      }
+      if (st === 'trial' || st === 'paid' || st === 'pending' || st === 'existing' || st === 'rejected' || st === 'expired') {
         acts += '<input type="date" id="exp-' + esc(u.email) + '" value="' + planExpiry(u) + '" title="만료일 — 고른 요금제대로 미리 채워둠 (비우면 무기한)">'
              + '<button class="btn btn-green btn-sm" onclick="approve(\'' + esc(u.email) + '\')">승인</button>';
       }
@@ -453,6 +475,16 @@ function approve(email) {
   api('/admin/approve', { method:'POST', body: JSON.stringify({ email: email, expires_at: exp }) })
     .then(function(r){ if (r.ok) { toast('✅ 승인됨'); load(); } else toast('실패: ' + (r.error||'')); });
 }
+/* ★ 2026-09-23: 무료체험 열어주기 — 오늘부터 N일 (기본 5일) */
+function approveTrial(email) {
+  var dEl = document.getElementById('td-' + email);
+  var days = dEl && dEl.value ? parseInt(dEl.value, 10) : 5;
+  if (isNaN(days) || days < 1 || days > 60) days = 5;
+  if (!confirm(email + ' 님에게 ' + days + '일 무료체험을 열어줄까요?\n\n체험 중에는 고객 10명까지 등록되고\n상담자료·퀵메시지 등 일부 기능이 잠깁니다.')) return;
+  api('/admin/trial', { method:'POST', body: JSON.stringify({ email: email, days: days }) })
+    .then(function(r){ if (r.ok) { toast('🎁 체험 열림 — ' + r.expires_at + ' 까지'); load(); } else toast('실패: ' + (r.error||'')); });
+}
+
 /* ★ 2026-09-18: 승인된 사람의 요금제·만료일 변경 — 워커 /admin/plan (승인 상태·승인 시각은 그대로) */
 /* ★ 일괄 적용 (2026-09-18) — 체크한 사람들의 요금제·만료일·초대 표시를 한 번에 바꿈.
    워커 경로는 한 명씩 부르는 기존 것(/admin/plan, /admin/tier)을 순서대로 호출한다. */

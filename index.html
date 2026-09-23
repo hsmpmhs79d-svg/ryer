@@ -12553,7 +12553,10 @@ function copyContact(el) {
             '<a href="tel:' + SG_TEL.replace(/-/g, '') + '" style="flex:1;text-align:center;background:#fff;border:1.5px solid #e0c9a6;color:#7c2d12;border-radius:9px;padding:10px 4px;font-size:13.5px;font-weight:800;text-decoration:none;">📞 ' + SG_TEL + '</a>' +
             '<a href="' + SG_KAKAO + '" target="_blank" rel="noopener" style="flex:1;text-align:center;background:#FEE500;border:1.5px solid #e5cf00;color:#3c1e1e;border-radius:9px;padding:10px 4px;font-size:13.5px;font-weight:800;text-decoration:none;">💬 카톡 문의</a>' +
           '</div></div>';
-      var other = '<div style="margin-top:14px;"><a href="#" onclick="if(window.doLoginOther)doLoginOther();return false;" style="color:#94a3b8;font-size:13.5px;text-decoration:underline;">다른 계정으로 로그인</a></div>';
+      /* ★ 2026-09-23: 체험 중에 이 화면을 열었다면 되돌아갈 길을 만들어 둔다 */
+      var other = '<div style="margin-top:14px;">' +
+          (window.__sgTrial__ ? '<a href="#" onclick="if(window.sgTrialBack)sgTrialBack();return false;" style="color:#15803d;font-size:13.5px;font-weight:800;text-decoration:underline;margin-right:14px;">← 체험 화면으로</a>' : '') +
+          '<a href="#" onclick="if(window.doLoginOther)doLoginOther();return false;" style="color:#94a3b8;font-size:13.5px;text-decoration:underline;">다른 계정으로 로그인</a></div>';
       var emailBox = '<div style="background:#fff6ed;border:1.5px solid #f5d9bd;border-radius:10px;padding:10px 13px;margin-bottom:14px;">' +
           '<div style="font-size:12px;color:#a06a42;">내 계정</div>' +
           '<div style="font-size:14.5px;font-weight:800;color:#7c2d12;word-break:break-all;">' + (email||'') + '</div></div>';
@@ -12566,10 +12569,23 @@ function copyContact(el) {
           emailBox +
           '<input id="sg-name" placeholder="이름 (필수)" oninput="window.salguKeepName(this)" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:8px;box-sizing:border-box;">' +
           '<input id="sg-phone" placeholder="전화번호 (필수)" inputmode="numeric" maxlength="13" oninput="window.salguPhoneFmt(this)" style="width:100%;padding:11px 13px;border:1.5px solid #ddccb6;border-radius:9px;font-size:15px;font-family:inherit;margin-bottom:13px;box-sizing:border-box;">' +
+          _sgTrialBox() +
           '<div style="text-align:left;font-size:13px;font-weight:800;color:#92400e;margin-bottom:7px;">이용 기간 선택</div>' +
           _sgPlanCards() +
           '<div style="height:13px;"></div>' +
           '<button onclick="window.salguApply()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:9px;padding:12px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit;">이용 신청하기</button>' +
+          contact + other;
+      } else if (status === 'pending' && (window.__sgTrialReq__ || window.__sgTrialState__ === 'req')) {
+        /* ★ 2026-09-23: 무료체험 신청 대기 — 입금 안내는 보여주지 않는다 */
+        card.innerHTML =
+          '<div style="font-size:46px;line-height:1;margin-bottom:8px;">🎁</div>' +
+          '<h1 style="font-size:24px;color:#15803d;margin-bottom:4px;">무료체험 신청 완료</h1>' +
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">5일 무료체험 신청이 접수되었습니다.<br>확인 후 바로 열어드리겠습니다.</p>' +
+          emailBox +
+          '<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 14px;text-align:left;font-size:13px;color:#166534;line-height:1.75;">' +
+            '체험이 열리면 <b>5일 동안</b> 살구를 둘러보실 수 있습니다.<br>' +
+            '고객은 <b>10명까지</b> 등록되고, 상담자료·퀵메시지 같은 일부 기능은 잠겨 있습니다.' +
+          '</div>' +
           contact + other;
       } else if (status === 'pending') {
         card.innerHTML =
@@ -12610,6 +12626,44 @@ function copyContact(el) {
   /* 중지·만료 화면에서 "다시 이용 신청하기" → 신청 폼으로 전환 (2026-08-10) */
   window.salguReapplyForm = function() {
     showPendingScreen(window.__pendingEmail__ || '', 'none');
+  };
+
+  /* ═══ 🎁 5일 무료체험 (2026-09-23) ═══
+     신청 화면에서 "먼저 써보기"를 고를 수 있게 한다.
+     승인은 관리자가 직접 한다(자동 승인 아님). 이미 써본 계정에는 보이지 않는다. */
+  function _sgTrialBox() {
+    if (window.__sgTrialUsed__) return '';
+    return '<div style="border:2px dashed #86efac;background:#f0fdf4;border-radius:11px;padding:13px 14px;margin-bottom:13px;text-align:left;">' +
+      '<div style="font-size:14.5px;font-weight:800;color:#15803d;margin-bottom:3px;">🎁 먼저 5일 무료로 써보세요</div>' +
+      '<div style="font-size:12.5px;color:#4d7c5f;line-height:1.65;margin-bottom:9px;">결제 없이 살구를 둘러보실 수 있습니다. 고객은 10명까지 등록되고,<br>상담자료·퀵메시지 등 일부 기능은 잠겨 있습니다.</div>' +
+      '<button onclick="window.salguTrial()" style="width:100%;background:#fff;color:#15803d;border:2px solid #16a34a;border-radius:9px;padding:10px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;">5일 무료체험 신청하기</button>' +
+      '</div>';
+  }
+
+  /* 체험 신청 전송 — 이름·전화는 정식 신청과 같은 칸을 쓴다 */
+  window.salguTrial = function() {
+    var name = (document.getElementById('sg-name') || {}).value || '';
+    var phone = (document.getElementById('sg-phone') || {}).value || '';
+    name = name.trim(); phone = phone.trim();
+    if (!name || !phone) { alert('이름과 전화번호를 모두 입력해주세요.'); return; }
+    var _pd = phone.replace(/[^0-9]/g, '');
+    if (_pd.length < 9 || _pd.length > 11) { alert('전화번호를 정확히 입력해주세요.\n예) 010-1234-5678'); return; }
+    fetch('https://salgu-api.wmmryer.workers.dev/trial', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: window.__pendingEmail__ || '', name: name, phone: phone })
+    }).then(function(r){ return r.json(); })
+      .then(function(j){
+        if (j && j.ok) {
+          window.__sgTrialReq__ = true;
+          alert('🎁 무료체험 신청이 접수되었습니다!\n\n확인 후 바로 열어드리겠습니다.');
+          showPendingScreen(window.__pendingEmail__ || '', 'pending');
+        } else {
+          if (j && j.used) { window.__sgTrialUsed__ = true; try { showPendingScreen(window.__pendingEmail__ || '', 'none'); } catch (e2) {} }
+          alert((j && j.error) || '신청에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        }
+      })
+      .catch(function(){ alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'); });
   };
 
   /* ═══ 요금제 3종 (2026-09-02) ═══
@@ -12775,6 +12829,12 @@ function copyContact(el) {
       .then(function(j){
         if (j && j.ok) {
           var _p = _sgPlanOf(_sgPlanKey());
+          /* ★ 2026-09-23: 체험 중에 정식 신청한 경우 — 체험은 그대로 두고 앱으로 돌아간다 */
+          if (j.status === 'trial') {
+            alert('✅ 이용 신청이 접수되었습니다!\n\n선택하신 기간: ' + _p.label + ' (' + _sgWon(_p.price) + '원)\n토스뱅크 ' + SG_ACCT + ' · 예금주 여상현\n입금자명은 신청하신 이름으로 보내주세요.\n\n남은 체험 기간은 그대로 쓰실 수 있습니다.');
+            if (window.sgTrialBack) window.sgTrialBack();
+            return;
+          }
           alert('✅ 신청이 접수되었습니다!\n\n선택하신 기간: ' + _p.label + ' (' + _sgWon(_p.price) + '원)\n입금 후 [입금 완료 알리기]를 눌러주세요.');
           showPendingScreen(window.__pendingEmail__ || '', 'pending');
         } else {
@@ -12848,6 +12908,18 @@ function copyContact(el) {
               .then(function(j){
                 if (!j || !j.status || j.status === 'approved') { afterLogin(); return; }  /* 승인 또는 응답 이상 → 통과 */
                 try { if (j.plan) window.__sgPlan__ = j.plan; } catch (ePl) {}   /* 이미 고른 요금제 복원 (2026-09-02) */
+                /* ★ 2026-09-23: 무료체험 — 'trial' 은 통과시키되 기능을 잠근다 */
+                try {
+                  window.__sgTrialState__ = j.trial_state || null;
+                  window.__sgTrialUsed__  = (j.trial_state === 'on' || j.trial_state === 'done');
+                } catch (eTs) {}
+                if (j.status === 'trial') {
+                  window.__sgTrial__ = true;
+                  window.__sgTrialEnd__ = j.expires_at || '';
+                  try { if (window.sgTrialBar) window.sgTrialBar(); } catch (eTb) {}
+                  afterLogin();
+                  return;
+                }
                 showPendingScreen(_me, j.status);   /* none=신청 폼 / pending=대기 / expired=만료 / rejected=중지 */
               })
               .catch(function(){ afterLogin(); });   /* 서버 오류 → 통과 */
@@ -12997,6 +13069,12 @@ function copyContact(el) {
           fetch('https://salgu-api.wmmryer.workers.dev/check?email=' + encodeURIComponent(_bmail) + '&t=' + Date.now())
             .then(function(r){ return r.ok ? r.json() : null; })
             .then(function(j){
+              /* ★ 2026-09-23: 체험 중이면 잠금 표시줄을 띄운다 (차단은 하지 않음) */
+              if (j && j.status === 'trial') {
+                window.__sgTrial__ = true;
+                window.__sgTrialEnd__ = j.expires_at || '';
+                try { if (window.sgTrialBar) window.sgTrialBar(); } catch (eTb2) {}
+              }
               if (j && (j.status === 'rejected' || j.status === 'expired')) {
                 /* ★ 2026-08-12: 차단 확정 시 잠금 플래그 — 이후 로딩 완료 코드(hideLogin)가
                    차단 화면을 덮어버리는 것을 감시 타이머로 막음. 다른 계정으로 재로그인해
@@ -16515,6 +16593,7 @@ function copyContact(el) {
   };
 
   function uploadProposalPdf(c, file, container, status) {
+    if (window.sgTrialStop && window.sgTrialStop('제안서·자료 업로드')) return;   /* ★ 체험 제한 (2026-09-23) */
     if (!_accessToken) { alert('Google 로그인이 필요합니다'); return; }
     // ★ 모든 파일 타입 허용 (2026-06-26) — PDF, 이미지, 엑셀, 워드, 한글 등
     if (file.size > 50 * 1024 * 1024) { alert('50MB 이하만 업로드 가능합니다'); return; }
@@ -19362,6 +19441,132 @@ window.sgSeedSamples = function () {
   }
 };
 
+/* ═══ 🎁 5일 무료체험 — 잠긴 기능 (2026-09-23) ═══════════════════════
+   window.__sgTrial__ 이 true 일 때만 작동한다. 정식 사용자에게는 아무 일도 안 한다.
+   잠그는 기능 — 상담자료 · 퀵메시지 · 고객 일괄 등록 · 상담 스크립트 ·
+                 연락처 동기화 · 캘린더 동기화 · 제안서·자료 업로드
+   고객 등록은 10명까지 (샘플 고객 5명은 세지 않는다)
+   ※ 원래 함수는 손대지 않고 앞에서 한 번 걸러내는 방식이라,
+      체험이 아닐 때는 예전과 똑같이 동작한다. */
+(function () {
+  var TRIAL_MAX_CUST = 10;
+
+  /* 오늘 포함 남은 날짜 */
+  window.sgTrialLeft = function () {
+    try {
+      var e = String(window.__sgTrialEnd__ || '');
+      if (!e) return 0;
+      var t = new Date(); t.setHours(0, 0, 0, 0);
+      var d = new Date(e + 'T00:00:00');
+      return Math.max(0, Math.round((d - t) / 86400000) + 1);
+    } catch (x) { return 0; }
+  };
+
+  /* 잠긴 기능을 눌렀을 때 — 막았으면 true */
+  window.sgTrialStop = function (label) {
+    if (!window.__sgTrial__) return false;
+    alert('🎁 무료체험 중에는 ' + label + ' 기능을 쓰실 수 없습니다.\n\n정식으로 이용 신청하시면 모두 열립니다.\n화면 왼쪽 아래 [이용 신청하기]를 눌러주세요.');
+    return true;
+  };
+
+  /* 체험 중 고객 수 — 샘플 고객과 개인일정은 빼고 센다 */
+  function custCount() {
+    try {
+      if (!Array.isArray(window.customers)) return 0;
+      return window.customers.filter(function (c) {
+        if (!c || c._personal) return false;
+        var t = c.tags || [];
+        for (var i = 0; i < t.length; i++) if (t[i] === '샘플') return false;
+        return true;
+      }).length;
+    } catch (x) { return 0; }
+  }
+  window.sgTrialCustFull = function () {
+    if (!window.__sgTrial__) return false;
+    if (custCount() < TRIAL_MAX_CUST) return false;
+    alert('🎁 무료체험 중에는 고객을 ' + TRIAL_MAX_CUST + '명까지 등록하실 수 있습니다.\n\n정식으로 이용 신청하시면 제한 없이 등록하실 수 있습니다.');
+    return true;
+  };
+
+  /* 잠긴 기능 감싸기 */
+  var LOCK = [
+    ['openConsultLib',       '상담자료'],
+    ['openDmTemplates',      '퀵메시지'],
+    ['xlsxImport',           '고객 일괄 등록'],
+    ['sgImportGuide',        '고객 일괄 등록'],
+    ['sgImportIntro',        '고객 일괄 등록'],
+    ['toggleScriptPanel',    '상담 스크립트'],
+    ['syncContacts',         '연락처 동기화'],
+    ['syncCalendar',         '캘린더 동기화'],
+    ['headerProposalUpload', '제안서·자료 업로드']
+  ];
+  for (var i = 0; i < LOCK.length; i++) {
+    (function (nm, label) {
+      var fn = window[nm];
+      if (typeof fn !== 'function') return;
+      window[nm] = function () {
+        /* 사용법 가이드가 스스로 여닫을 때는 막지 않는다 */
+        if (!window.__sgLockBypass__ && window.sgTrialStop(label)) return;
+        return fn.apply(this, arguments);
+      };
+    })(LOCK[i][0], LOCK[i][1]);
+  }
+
+  /* 고객 등록 10명 제한 */
+  var ADD = ['openAddModal', 'mvAddCustomer'];
+  for (var k = 0; k < ADD.length; k++) {
+    (function (nm) {
+      var fn = window[nm];
+      if (typeof fn !== 'function') return;
+      window[nm] = function () {
+        if (window.sgTrialCustFull()) return;
+        return fn.apply(this, arguments);
+      };
+    })(ADD[k]);
+  }
+
+  /* 화면 왼쪽 아래 남은 날짜 표시줄 */
+  window.sgTrialBar = function () {
+    try {
+      if (!window.__sgTrial__) return;
+      var el = document.getElementById('sg-trial-bar');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'sg-trial-bar';
+        el.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:9998;background:#fff;' +
+          'border:2px solid #16a34a;border-radius:12px;padding:9px 13px;max-width:215px;' +
+          'box-shadow:0 6px 20px rgba(0,0,0,.16);font-family:inherit;font-size:12.5px;color:#166534;line-height:1.5;';
+        document.body.appendChild(el);
+      }
+      var left = window.sgTrialLeft();
+      el.innerHTML = '<b style="font-size:13.5px;">🎁 무료체험 ' + (left > 1 ? 'D-' + (left - 1) : '오늘까지') + '</b>' +
+        '<div style="color:#4d7c5f;margin:2px 0 7px;">고객 ' + custCount() + ' / ' + TRIAL_MAX_CUST + '명 · 일부 기능 잠김</div>' +
+        '<button onclick="if(window.salguTrialToApply)salguTrialToApply()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;">이용 신청하기</button>';
+    } catch (x) {}
+  };
+
+  /* 체험 중에 정식 신청하기 — 신청 폼을 다시 띄운다 */
+  window.salguTrialToApply = function () {
+    try {
+      window.__sgTrialReq__ = false;
+      window.__sgTrialUsed__ = true;                 /* 체험 카드는 숨긴다 */
+      if (typeof window.salguReapplyForm === 'function') window.salguReapplyForm();
+    } catch (x) {}
+  };
+
+  /* 신청 폼에서 체험 화면으로 되돌아가기 */
+  window.sgTrialBack = function () {
+    try {
+      var ov = document.getElementById('login-overlay');
+      if (ov) ov.style.display = 'none';
+      window.sgTrialBar();
+    } catch (x) {}
+  };
+
+  /* 이미 체험 중이라고 판정됐다면 표시줄을 띄운다 */
+  if (window.__sgTrial__) { try { window.sgTrialBar(); } catch (x) {} }
+})();
+
 </script>
 <!-- ═══ 🍑 사용법 가이드 (2026-09-10) ═══════════════════════════════
      스포트라이트 8단계. 외부 라이브러리 없음.
@@ -19446,7 +19651,8 @@ window.sgSeedSamples = function () {
     try {
       var el = document.getElementById('script-panel');
       if (el && (el.style.display === 'none' || !el.style.display) && typeof window.toggleScriptPanel === 'function') {
-        window.toggleScriptPanel();
+        window.__sgLockBypass__ = true;                 /* ★ 체험 잠금 우회 (2026-09-23) */
+        try { window.toggleScriptPanel(); } finally { window.__sgLockBypass__ = false; }
         _spOpened = true;
       }
     } catch (e) {}
@@ -19454,7 +19660,12 @@ window.sgSeedSamples = function () {
   function closeScriptIfOpened() {
     if (!_spOpened) return;
     _spOpened = false;
-    try { if (typeof window.toggleScriptPanel === 'function') window.toggleScriptPanel(); } catch (e) {}
+    try {
+      if (typeof window.toggleScriptPanel === 'function') {
+        window.__sgLockBypass__ = true;                 /* ★ 체험 잠금 우회 (2026-09-23) */
+        try { window.toggleScriptPanel(); } finally { window.__sgLockBypass__ = false; }
+      }
+    } catch (e) {}
   }
 
   function openDetailMB() {
