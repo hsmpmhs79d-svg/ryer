@@ -5459,7 +5459,7 @@ function xlsxImport() {
 /* 실제로 파일을 고르는 부분 — 안내 화면의 [엑셀 파일 고르기] 에서도 부른다 */
 function sgXlsxPick() {
   if (window.__IS_MOBILE__) return;
-  var _ov = _showFileDropModal('.xlsx,.xls,.csv,.txt,.pdf', '엑셀 · 메모장 · PDF에서 고객 일괄 등록', function(f) {
+  var _ov = _showFileDropModal('.xlsx,.xls,.csv,.txt,.rtf,.pdf', '엑셀 · 메모장 · PDF에서 고객 일괄 등록', function(f) {
     /* ★ 일괄 태그 (2026-08-15) — 이 파일의 고객 전체에 같은 태그를 붙여 나중에 통째로 검색 */
     var _t = prompt('이 파일의 고객 전체에 붙일 태그를 입력하세요.\n(쉼표로 여러 개 · 비워두고 확인하면 태그 없이 등록)\n예: 8월흥생DB', '');
     if (_t === null) { showToast('엑셀 등록 취소됨', 'orange'); return; }
@@ -5521,7 +5521,7 @@ window.sgImportIntro = function () {
     + '<div style="border:1.5px solid #f0c9a8;border-radius:14px;padding:16px 18px;background:#fffaf5;">'
     + '<div style="font-size:15.5px;font-weight:800;color:#9a3412;">📂 파일이 있으면 바로 올리세요</div>'
     + '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;">'
-    + ['엑셀 (양식 상관없음)', 'CSV', '메모장 (.txt)', '글자가 있는 PDF'].map(function (t) { return '<span style="background:#fff;border:1px solid #eadcc9;border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:700;color:#7c2d12;">' + t + '</span>'; }).join('')
+    + ['엑셀 (양식 상관없음)', 'CSV', '메모장 (.txt)', '텍스트편집기 (.rtf)', '글자가 있는 PDF'].map(function (t) { return '<span style="background:#fff;border:1px solid #eadcc9;border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:700;color:#7c2d12;">' + t + '</span>'; }).join('')
     + '</div>'
     + '<div style="font-size:13px;color:#6b5a4c;line-height:1.7;margin-top:10px;">'
     + '<b>한 줄에 한 사람</b>이면 됩니다. 이름 · 전화번호 · 주민번호 · 주소 · 메모가 한 줄에 있으면 순서는 상관없고, 띄어쓰기나 쉼표로 나뉘어 있으면 됩니다. 엑셀은 첫 줄이 제목(이름, 연락처, 주소…)이면 살구가 알아서 맞춥니다.'
@@ -5561,13 +5561,19 @@ window.sgImportIntro = function () {
 function sgSmartImport(file) {
   var name = (file && file.name || '').toLowerCase();
   var ext = name.split('.').pop();
-  if (ext === 'txt' || ext === 'text') {
+  if (ext === 'txt' || ext === 'text' || ext === 'rtf') {
     /* 글자 인코딩 자동 판별 — 윈도우 메모장(ANSI/CP949)으로 저장한 파일은 UTF-8로 읽으면 깨진다 */
     var r1 = new FileReader();
     r1.onload = function (e) {
       var buf = e.target.result, txt = '';
-      try { txt = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
-      catch (err) { try { txt = new TextDecoder('euc-kr').decode(buf); } catch (err2) { txt = new TextDecoder('utf-8').decode(buf); } }
+      if (ext === 'rtf') {
+        /* RTF 는 글자를 \\u 숫자로 적어두므로 한 바이트씩 읽어도 된다 */
+        try { txt = sgRtfToText(new TextDecoder('windows-1252').decode(buf)); }
+        catch (errR) { txt = sgRtfToText(new TextDecoder('utf-8').decode(buf)); }
+      } else {
+        try { txt = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+        catch (err) { try { txt = new TextDecoder('euc-kr').decode(buf); } catch (err2) { txt = new TextDecoder('utf-8').decode(buf); } }
+      }
       sgMapPreview(sgTextToRows(txt), file.name);
     };
     r1.readAsArrayBuffer(file);
@@ -5582,6 +5588,11 @@ function sgSmartImport(file) {
       }
       sgMapPreview(sgTextToRows(txt), file.name);
     }).catch(function (err) { console.error(err); showToast('PDF 읽기 실패: ' + (err && err.message || ''), 'red'); });
+    return;
+  }
+  /* ★ 2026-09-28: 엑셀이 아닌 파일이 들어오면 '엑셀 파싱 실패' 대신 무엇이 되는지 알려준다 */
+  if (['xlsx', 'xls', 'xlsm', 'csv'].indexOf(ext) < 0) {
+    alert('이 형식(.' + ext + ')은 아직 읽지 못합니다.\n\n올리실 수 있는 것 — 엑셀(.xlsx·.xls) · CSV · 메모장(.txt) · 텍스트편집기(.rtf) · 글자가 있는 PDF\n\n맥 텍스트편집기라면 [포맷 → 일반 텍스트로 만들기] 후 저장하시거나, 그대로 .rtf 로 올리셔도 됩니다.');
     return;
   }
   if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중... 3초 뒤 다시 시도해주세요', 'orange'); return; }
@@ -5659,6 +5670,8 @@ var SG_B_SEX   = /(남자|여자|남성|여성|^남$|^여$|^M$|^F$)/i;
 var SG_B_LABEL = /^\s*(고객명|고객성명|성명|이름|성함|전화번호|전화|연락처|휴대폰|핸드폰|폰번호|주민번호|주민등록번호|주민|생년월일|생일|나이|주소|자택주소|직업|직장|직업군|성별|비고|메모|특이사항|참고|권역|지역|DB구분|DB매체|DB상태|배정일자|담당|상태)\s*[:：]?\s*/i;
 var SG_B_ADDR  = /^(서울|경기|인천|부산|대구|대전|광주|울산|세종|강원|충북|충남|전북|전남|경북|경남|제주|충청|전라|경상)/;
 /* 생년월일이 아닌 날짜 라벨 — 배정일자 같은 걸 생년월일로 잘못 읽지 않게 */
+/* 라벨만 있고 값은 다음 줄에 있는 경우 — 회사 DB 화면을 복사하면 이렇게 된다 */
+var SG_B_LABELONLY = /^\s*(고객명|고객성명|성명|이름|성함|전화번호|전화|연락처|휴대폰|핸드폰|폰번호|주민번호|주민등록번호|주민|생년월일|생일|나이|주소|자택주소|직업|직장|직업군|성별|비고|메모|특이사항|참고|권역|지역|DB구분|DB매체|DB상태|배정일자|배정일|담당|상태)\s*[:：]?\s*$/i;
 var SG_B_DATELAB = /^(배정일자|배정일|등록일|등록일자|접수일|접수일자|상담일|상담일자|계약일|계약일자|만기일|가입일|작성일|수정일|날짜|일자|기준일)$/;
 var SG_B_STOP  = /^(이름|성명|고객명|전화|연락처|주민|주소|메모|비고|직업|성별|나이|고객|명단|목록|번호|없음|미상|기타|재연락|가망|가입|거절|부재|상담|미팅|약속|보험|상품|월납|자녀|배우자|부모|남편|아내|아들|딸|어머니|아버지|본인|자택|직장|수도권|여자|남자|여성|남성|주부|학생|무직|사무직|회사원|공무원|자영업|프리랜서|수령|미수령|진행|완료|보류|반려|신규|제휴|자사|배정|계좌|농협|국민|신한|우리|하나|기업|카카오|토스)$/;
 
@@ -5691,14 +5704,18 @@ function _sgBRow(p) {
 function sgTxtRowsBlock(text) {
   var out = [['이름', '전화번호', '주민번호', '주소', '직업', '운전여부', '병력', '메모']];
   var lines = String(text || '').replace(/\r/g, '').split('\n');
-  var cur = _sgBNew(), people = [], gap = false;
+  var cur = _sgBNew(), people = [], gap = false, pend = '';
   function push() { if (cur.name || _sgBDone(cur) || cur.addr || cur.memo.length) people.push(cur); cur = _sgBNew(); }
 
   for (var i = 0; i < lines.length; i++) {
     var raw = lines[i];
     if (!raw.trim()) { gap = true; continue; }
-    var lab = (raw.trim().match(SG_B_LABEL) || [''])[0].replace(/[\s:：]/g, '');
-    var s = raw.trim().replace(SG_B_LABEL, '').trim();
+    var t0 = raw.trim();
+    if (SG_B_LABELONLY.test(t0)) { pend = t0.replace(/[\s:：]/g, ''); continue; }  /* 라벨 줄 — 값은 다음 줄에 있다 */
+    var lab = (t0.match(SG_B_LABEL) || [''])[0].replace(/[\s:：]/g, '');
+    var s = t0.replace(SG_B_LABEL, '').trim();
+    if (!lab && pend) lab = pend;
+    pend = '';
     if (!s) continue;
 
     var phone = '', jumin = '', birth = '', sex = '', used = false;
@@ -5724,7 +5741,7 @@ function sgTxtRowsBlock(text) {
     if (ms && s.replace(/\s/g, '').length <= 4) sex = ms[0];
 
     var bare = s.replace(/\([^)]*\)/g, '').replace(/(님|고객님|씨)$/, '').trim();
-    var isName = /^[가-힣]{2,4}$/.test(bare) && !SG_B_STOP.test(bare);
+    var isName = /^[가-힣]{2,4}$/.test(bare) && (!SG_B_STOP.test(bare) || /^(고객명|고객성명|성명|이름|성함)$/.test(lab));
     var lead = '';
     if (!isName && (phone || jumin || birth)) {
       var h = s.split(/[\s(\/,·]/)[0].replace(/(님|고객님|씨)$/, '');
@@ -5745,6 +5762,7 @@ function sgTxtRowsBlock(text) {
     if (birth && !cur.birth) { cur.birth = birth; used = true; }
     if (sex && !cur.sex) { cur.sex = sex; used = true; }
     if (!cur.addr && (SG_B_ADDR.test(s) || /^(주소|자택주소)$/.test(lab)) && s.length >= 4) { cur.addr = s; used = true; }
+    else if (/^(권역|지역|DB구분|DB매체|DB상태|배정일자|배정일|담당|상태|비고|메모|특이사항|참고)$/.test(lab)) { cur.memo.push((/^(비고|메모)$/.test(lab) ? '' : lab + ' ') + s); used = true; }
     if (!cur.job && /^(직업|직장|직업군)$/.test(lab)) { cur.job = s; used = true; }
     if (!cur.name) {
       if (isName) { cur.name = bare; used = true; }
@@ -5766,6 +5784,44 @@ function sgTxtRowsBlock(text) {
     out.push(_sgBRow(p));
   }
   return out;
+}
+
+/* ★ RTF(서식 있는 텍스트) → 글자만 남기기 (2026-09-28)
+   맥 '텍스트편집기'가 기본으로 저장하는 형식이라, 메모장 대신 이게 올라오는 일이 잦다 */
+function sgRtfToText(rtf) {
+  var str = String(rtf || '');
+  var DROP = /^\\\*?\\?(fonttbl|colortbl|expandedcolortbl|stylesheet|listtable|listoverridetable|info|pict|generator|themedata|datastore|latentstyles|filetbl)/;
+  var out = '', i = 0;
+  while (i < str.length) {
+    var ch = str.charAt(i);
+    if (ch === '{') {
+      if (DROP.test(str.substr(i + 1, 24))) {          /* 글꼴표·색표 같은 덩어리는 통째로 버린다 */
+        var d = 0;
+        while (i < str.length) {
+          var c2 = str.charAt(i);
+          if (c2 === '{') d++;
+          else if (c2 === '}') { d--; if (d === 0) { i++; break; } }
+          else if (c2 === '\\') i++;
+          i++;
+        }
+        continue;
+      }
+      i++; continue;
+    }
+    if (ch === '}') { i++; continue; }
+    out += ch; i++;
+  }
+  out = out.replace(/\\\r?\n/g, '\n');
+  out = out.replace(/\\(?:par|pard|line|sect)\b/g, '\n');
+  out = out.replace(/\\uc\d+[ ]?/g, '');
+  out = out.replace(/\\u(-?\d+)[ ]?\??/g, function (m, n) {
+    var c = parseInt(n, 10); if (c < 0) c += 65536; return String.fromCharCode(c);
+  });
+  out = out.replace(/\\'[0-9a-fA-F]{2}/g, '');
+  out = out.replace(/\\[a-zA-Z]+-?\d*[ ]?/g, '');
+  out = out.replace(/\\([\\{}])/g, '$1');
+  out = out.split('\n').map(function (l) { return l.replace(/[ \t]+/g, ' ').trim(); }).join('\n');
+  return out.replace(/\n{3,}/g, '\n\n').trim();
 }
 
 /* 어느 쪽으로 읽은 게 더 잘 읽혔는지 점수 — 이름+연락처가 다 있는 줄이 많을수록 좋다 */
