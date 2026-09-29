@@ -9995,7 +9995,7 @@ function buildManagerRequestSection(id) {
       var mgrCo = prof ? (prof.company || '') : '';
       var mgrRole = prof ? (prof.memo || '') : '';
       h += '<div class="mr-item' + (r.completed ? ' mr-completed' : '') + '">';
-      h += '<div class="mr-item-check' + (r.completed ? ' checked' : '') + '" onclick="toggleMrComplete(' + id + ',' + idx + ')" title="완료 토글">' + (r.completed ? '✓' : '') + '</div>';
+      h += '<div class="mr-item-check' + (r.completed ? ' checked' : '') + '" onclick="toggleMrComplete(' + id + ',' + idx + ',this)" title="완료 토글">' + (r.completed ? '✓' : '') + '</div>';
       h += '<div class="mr-item-info">';
       h += '<div class="mr-item-top"><span class="mr-date">' + _mrEsc(r.date || '') + '</span>';
       h += '<span class="mr-mgr-name">' + _mrEsc(mgrName) + '</span>';
@@ -10137,12 +10137,21 @@ function delMrRequestFromModal() {
   closeMrReq();
 }
 
-function toggleMrComplete(cid, idx) {
+function toggleMrComplete(cid, idx, el) {
   var c = customers.find(function(x){return x.id===cid;});
   if (!c || !c.managerRequests || !c.managerRequests[idx]) return;
   c.managerRequests[idx].completed = !c.managerRequests[idx].completed;
   c._updated = Date.now();
   if (typeof autoSave === 'function') autoSave();
+  /* ★ 2026-09-29: 카드 전체를 다시 그리면 화면이 아래로 밀려서, 누른 줄만 바꾼다 */
+  var item = el && el.closest ? el.closest('.mr-item') : null;
+  if (item) {
+    var done = !!c.managerRequests[idx].completed;
+    item.classList.toggle('mr-completed', done);
+    el.classList.toggle('checked', done);
+    el.textContent = done ? '✓' : '';
+    return;
+  }
   if (typeof selectCustomer === 'function') selectCustomer(cid);
 }
 
