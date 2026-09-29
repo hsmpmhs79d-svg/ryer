@@ -3176,7 +3176,7 @@ function selectCustomer(id) {
     +'<div class="value" onclick="copyField(this,\'계좌\')">'+v(((c.bank||'')+' '+(c.account||'')).trim()+((c.holder&&c.holder!==c.name)?' ('+c.holder+')':''))+'</div></div>'
     +'<div class="info-item full-width"><div class="label">병력 / 고지사항'+pen('medical_history')+'</div><div class="value" onclick="copyField(this,\'병력/고지사항\')">'+(c.medical_history?c.medical_history:'<span class="empty">미입력</span>')+'</div></div>'
     /* ★ 메모는 비어 있어도 칸을 보여 바로 적을 수 있게 (2026-09-18) */
-    +'<div class="info-item full-width"><div class="label">메모'+pen('notes')+'</div><div class="value" onclick="copyField(this,\'메모\')">'+(c.notes?c.notes:'<span class="empty">미입력</span>')+'</div></div>'
+    +'<div class="info-item full-width"><div class="label">메모'+pen('notes')+'</div><div class="value" style="white-space:pre-wrap" onclick="copyField(this,\'메모\')">'+(c.notes?c.notes:'<span class="empty">미입력</span>')+'</div></div>'
     /* ★ 관계 (2026-09-18) — 배우자·자녀·부모·형제/자매·기타. 칩을 누르면 그 고객으로 이동 */
     +'<div class="info-item full-width"><div class="label">관계 <span style="font-size:11px;color:#94a3b8;font-weight:400;">(가족 등 연결된 고객)</span>'
     +'<button type="button" class="sg-rel-add" onclick="sgRelOpen('+id+')">+ 관계 추가</button></div>'
