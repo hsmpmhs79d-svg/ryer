@@ -12801,11 +12801,11 @@ function copyContact(el) {
         card.innerHTML =
           '<div style="font-size:46px;line-height:1;margin-bottom:8px;">🎁</div>' +
           '<h1 style="font-size:24px;color:#15803d;margin-bottom:4px;">무료체험 신청 완료</h1>' +
-          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">5일 무료체험 신청이 접수되었습니다.<br>확인 후 바로 열어드리겠습니다.</p>' +
+          '<p style="color:#334155;font-size:14.5px;line-height:1.7;margin-bottom:12px;">70일 무료체험 신청이 접수되었습니다.<br>확인 후 바로 열어드리겠습니다.</p>' +
           emailBox +
           '<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:12px 14px;text-align:left;font-size:13px;color:#166534;line-height:1.75;">' +
-            '체험이 열리면 <b>5일 동안</b> 살구를 둘러보실 수 있습니다.<br>' +
-            '고객은 <b>10명까지</b> 등록되고, 상담자료·퀵메시지 같은 일부 기능은 잠겨 있습니다.' +
+            '체험이 열리면 <b>70일 동안</b> 살구를 둘러보실 수 있습니다.<br>' +
+            '체험 기간에도 <b>모든 기능</b>을 제한 없이 쓰실 수 있습니다.' +
           '</div>' +
           contact + other;
       } else if (status === 'pending') {
@@ -12855,9 +12855,9 @@ function copyContact(el) {
   function _sgTrialBox() {
     if (window.__sgTrialUsed__) return '';
     return '<div style="border:2px dashed #86efac;background:#f0fdf4;border-radius:11px;padding:13px 14px;margin-bottom:13px;text-align:left;">' +
-      '<div style="font-size:14.5px;font-weight:800;color:#15803d;margin-bottom:3px;">🎁 먼저 5일 무료로 써보세요</div>' +
-      '<div style="font-size:12.5px;color:#4d7c5f;line-height:1.65;margin-bottom:9px;">결제 없이 살구를 둘러보실 수 있습니다. 고객은 10명까지 등록되고,<br>상담자료·퀵메시지 등 일부 기능은 잠겨 있습니다.</div>' +
-      '<button onclick="window.salguTrial()" style="width:100%;background:#fff;color:#15803d;border:2px solid #16a34a;border-radius:9px;padding:10px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;">5일 무료체험 신청하기</button>' +
+      '<div style="font-size:14.5px;font-weight:800;color:#15803d;margin-bottom:3px;">🎁 먼저 70일 무료로 써보세요</div>' +
+      '<div style="font-size:12.5px;color:#4d7c5f;line-height:1.65;margin-bottom:9px;">결제 없이 살구를 써보실 수 있습니다.<br>체험 기간에도 모든 기능을 제한 없이 쓰실 수 있습니다.</div>' +
+      '<button onclick="window.salguTrial()" style="width:100%;background:#fff;color:#15803d;border:2px solid #16a34a;border-radius:9px;padding:10px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;">70일 무료체험 신청하기</button>' +
       '</div>';
   }
 
@@ -19671,6 +19671,8 @@ window.sgSeedSamples = function () {
       체험이 아닐 때는 예전과 똑같이 동작한다. */
 (function () {
   var TRIAL_MAX_CUST = 10;
+  /* ★ 2026-09-30: 체험 제한 전면 해제 (체험 70일). 다시 잠그려면 false 로 */
+  var TRIAL_LOCKS_OFF = true;
 
   /* 오늘 포함 남은 날짜 */
   window.sgTrialLeft = function () {
@@ -19685,7 +19687,7 @@ window.sgSeedSamples = function () {
 
   /* 잠긴 기능을 눌렀을 때 — 막았으면 true */
   window.sgTrialStop = function (label) {
-    if (!window.__sgTrial__) return false;
+    if (!window.__sgTrial__ || TRIAL_LOCKS_OFF) return false;
     alert('🎁 무료체험 중에는 ' + label + ' 기능을 쓰실 수 없습니다.\n\n정식으로 이용 신청하시면 모두 열립니다.\n화면 왼쪽 아래 [이용 신청하기]를 눌러주세요.');
     return true;
   };
@@ -19703,7 +19705,7 @@ window.sgSeedSamples = function () {
     } catch (x) { return 0; }
   }
   window.sgTrialCustFull = function () {
-    if (!window.__sgTrial__) return false;
+    if (!window.__sgTrial__ || TRIAL_LOCKS_OFF) return false;
     if (custCount() < TRIAL_MAX_CUST) return false;
     alert('🎁 무료체험 중에는 고객을 ' + TRIAL_MAX_CUST + '명까지 등록하실 수 있습니다.\n\n정식으로 이용 신청하시면 제한 없이 등록하실 수 있습니다.');
     return true;
@@ -19761,7 +19763,7 @@ window.sgSeedSamples = function () {
       }
       var left = window.sgTrialLeft();
       el.innerHTML = '<b style="font-size:13.5px;">🎁 무료체험 ' + (left > 1 ? 'D-' + (left - 1) : '오늘까지') + '</b>' +
-        '<div style="color:#4d7c5f;margin:2px 0 7px;">고객 ' + custCount() + ' / ' + TRIAL_MAX_CUST + '명 · 일부 기능 잠김</div>' +
+        '<div style="color:#4d7c5f;margin:2px 0 7px;">' + (TRIAL_LOCKS_OFF ? '모든 기능 사용 가능' : ('고객 ' + custCount() + ' / ' + TRIAL_MAX_CUST + '명 · 일부 기능 잠김')) + '</div>' +
         '<button onclick="if(window.salguTrialToApply)salguTrialToApply()" style="width:100%;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;">이용 신청하기</button>';
     } catch (x) {}
   };

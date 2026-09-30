@@ -233,7 +233,7 @@ function render() {
     if (_tab !== 'all') {
       /* ★ 2026-09-23: 체험 신청 — 한 번 눌러 5일 열어주기 (일수는 고칠 수 있다) */
       if (st === 'trialreq') {
-        acts += '<input type="number" id="td-' + esc(u.email) + '" value="5" min="1" max="60" style="width:56px" title="체험 일수">'
+        acts += '<input type="number" id="td-' + esc(u.email) + '" value="70" min="1" max="120" style="width:56px" title="체험 일수">'
              + '<button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none" onclick="approveTrial(\'' + esc(u.email) + '\')">🎁 체험 열기</button>';
       }
       /* ★ 체험 중 — 정식 전환은 아래 승인 버튼, 중단은 이용 중지 */
@@ -478,9 +478,9 @@ function approve(email) {
 /* ★ 2026-09-23: 무료체험 열어주기 — 오늘부터 N일 (기본 5일) */
 function approveTrial(email) {
   var dEl = document.getElementById('td-' + email);
-  var days = dEl && dEl.value ? parseInt(dEl.value, 10) : 5;
-  if (isNaN(days) || days < 1 || days > 60) days = 5;
-  if (!confirm(email + ' 님에게 ' + days + '일 무료체험을 열어줄까요?\n\n체험 중에는 고객 10명까지 등록되고\n상담자료·퀵메시지 등 일부 기능이 잠깁니다.')) return;
+  var days = dEl && dEl.value ? parseInt(dEl.value, 10) : 70;
+  if (isNaN(days) || days < 1 || days > 120) days = 70;
+  if (!confirm(email + ' 님에게 ' + days + '일 무료체험을 열어줄까요?\n\n체험 중에도 모든 기능을 제한 없이 쓸 수 있습니다.')) return;
   api('/admin/trial', { method:'POST', body: JSON.stringify({ email: email, days: days }) })
     .then(function(r){ if (r.ok) { toast('🎁 체험 열림 — ' + r.expires_at + ' 까지'); load(); } else toast('실패: ' + (r.error||'')); });
 }
