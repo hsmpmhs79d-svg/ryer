@@ -21640,7 +21640,7 @@ window.sgSeedSamples = function () {
           for (var j = 0; j < st.length; j++) {
             var pr = st[j], k = kindFor(pr, st); if (!k) continue;
             var v = st.getPropertyValue(pr), nv = mapVal(v, k);
-            if (nv !== v) decl += pr + ':' + nv + ' !important;';
+            if (nv !== v) decl += pr + ':' + nv + (st.getPropertyPriority(pr) ? ' !important' : '') + ';';   /* 원래 규칙의 !important 여부를 그대로 따름 — 선택 상태(.on 등)가 덮이지 않게 (2026-10-01) */
           }
           if (decl) acc.push(prefix(r.selectorText) + '{' + decl + '}');
         } else if (r.type === 4 && r.cssRules) {
