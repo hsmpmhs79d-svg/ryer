@@ -1650,7 +1650,7 @@ try {
       <input type="checkbox" id="join-alert-anniv" checked style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 🎉 가입 1주년 알림 (1년 후 같은 날)
     </label>
     <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:9px;">
-      <input type="checkbox" id="join-alert-cancer" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> 🎗 암 보장 포함 — 보장개시 알림 (가입 91일째)
+      <input type="checkbox" id="join-alert-cancer" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;"> ✅ 암 보장 포함 — 보장개시 알림 (가입 91일째)
     </label>
     <!-- ★ 카드납 알림 (2026-07-30) — 매월 15일, 자동 연장 -->
     <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:#1a202c;cursor:pointer;margin-bottom:9px;">
@@ -15337,7 +15337,7 @@ function copyContact(el) {
     if (!c || !c.gifts || !c.gifts.length) return;
     var targets = c.gifts.filter(function(g) {
       return g && !g.completed && typeof g.content === 'string' &&
-        (g.content.indexOf('🎗 암 보장 개시:') === 0 || g.content.indexOf('🎉 가입 1년:') === 0 || g.content.indexOf('💳 카드결제:') === 0);
+        (g.content.indexOf('✅ 암 보장 개시:') === 0 || g.content.indexOf('🎗 암 보장 개시:') === 0 || g.content.indexOf('🎉 가입 1년:') === 0 || g.content.indexOf('💳 카드결제:') === 0);
     });
     if (!targets.length) return;
     if (!confirm('가입완료 때 등록된 알림 ' + targets.length + '개(가입 1주년/암 보장개시/카드결제)가 있습니다.\n같이 삭제할까요?')) return;
@@ -15422,7 +15422,7 @@ function copyContact(el) {
     var added = [];
     if (wantCancer) {
       var cd = _joinAddDays(date, 91);
-      c.gifts.push({ kind:'task', content:'🎗 암 보장 개시: ' + c.name + ' — 면책 90일 종료 (가입일 ' + date + ')', memo:'', payDate: cd, time:'', promisedAt: (typeof _giftToday === 'function' ? _giftToday() : date), completed:false, completedAt:null });
+      c.gifts.push({ kind:'task', content:'✅ 암 보장 개시: ' + c.name + ' — 면책 90일 종료 (가입일 ' + date + ')', memo:'', payDate: cd, time:'', promisedAt: (typeof _giftToday === 'function' ? _giftToday() : date), completed:false, completedAt:null });
       added.push('암 보장개시 ' + cd);
     }
     if (wantAnniv) {
