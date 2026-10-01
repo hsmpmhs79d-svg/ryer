@@ -294,9 +294,10 @@ function isInvited(u) {
 
 /* ★ 요금제 (2026-09-02) — 값은 워커·본체와 맞춰져 있음 */
 var PLAN = {
-  '6m': { label:'6개월', months:6,  price:29000 },
-  '1y': { label:'1년',   months:12, price:49000 },
-  '2y': { label:'2년',   months:24, price:89000 }
+  '3m': { label:'3개월', months:3,  price:39000 },
+  '6m': { label:'6개월', months:6,  price:59000 },
+  '1y': { label:'1년',   months:12, price:99000 },
+  '2y': { label:'2년(이전 요금제)', months:24, price:89000 }   /* 2026-10-01 신규 판매 종료, 기존 이용자용으로만 유지 */
 };
 function planOf(u) { return PLAN[String(u.plan || '')] ? String(u.plan) : ''; }
 function planHtml(u) {
