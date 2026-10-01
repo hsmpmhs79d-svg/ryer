@@ -1500,20 +1500,28 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
 <style id="sg-1001-css">
 /* ── 다크모드: 화면 전체 밝기를 뒤집고, 사진·그림만 원래 색으로 되돌린다 ── */
 /* 다크모드 기본 바탕 — 나머지 색은 아래 스크립트(SGD)가 살구의 색을 하나씩 바꿔 칠한다 (2026-10-01) */
-html.sg-dark { color-scheme: dark; background:#17120f; }
-html.sg-dark body { background-color:#17120f; color:#ebe3dc; }
-html.sg-dark input, html.sg-dark select, html.sg-dark textarea { background-color:#231c18; color:#ebe3dc; border-color:#4a3c32; }
+html.sg-dark { color-scheme: dark; background:#1c1c1e; }
+html.sg-dark body { background-color:#1c1c1e; color:#f2f2f7; }
+html.sg-dark input, html.sg-dark select, html.sg-dark textarea { background-color:#2c2c2e; color:#f2f2f7; border-color:#545458; }
 #sg-dark-btn { background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.45); color:#fff; width:30px; height:28px; padding:0; border-radius:50%; font-size:14px; line-height:1; cursor:pointer; flex-shrink:0; }
 
 /* ── 모바일: 위쪽 버튼 정리 (기능은 🧰 도구 서랍으로) ── */
+/* 2026-10-01: 청구서류·내 파일은 밖에도 남긴다 (도구 서랍 안에도 있음) */
 body.mobile-mode .mv-header button[onclick="openPolicyLinksModal()"],
-body.mobile-mode .mv-header button[onclick="openClaimDocsModal()"],
 body.mobile-mode .mv-header button[onclick="openConsultLib()"],
-body.mobile-mode .mv-header button[onclick="sgMobileMyFiles()"],
 body.mobile-mode .mv-header #sg-admin-link-m,
 body.mobile-mode .mv-header #sg-mv-font { display:none !important; }
 #sg-mv-tools-btn { display:inline-flex !important; flex-direction:column; align-items:center; justify-content:center; font-size:16px !important; line-height:1; }
 #sg-mv-tools-btn::after { content:'도구'; font-size:7.5px; font-weight:700; color:#8a6a4e; margin-top:2px; line-height:1; letter-spacing:-0.3px; }
+/* 2026-10-01: 보험사 연락처·다크모드 버튼도 위쪽 줄에 */
+#sg-mv-contact-btn, #sg-mv-dark-btn { display:inline-flex !important; flex-direction:column; align-items:center; justify-content:center; font-size:15px !important; line-height:1; }
+#sg-mv-contact-btn::after, #sg-mv-dark-btn::after { font-size:7.5px; font-weight:700; color:#8a6a4e; margin-top:2px; line-height:1; letter-spacing:-0.3px; }
+#sg-mv-contact-btn::after { content:'연락처'; }
+#sg-mv-dark-btn::after { content:'다크'; }
+html.sg-dark #sg-mv-dark-btn::after { content:'밝게'; }
+/* 버튼 8개가 좁은 휴대폰에서도 한 줄에 들어가도록 똑같이 나눠 쓴다 */
+body.mobile-mode .mv-header .mv-font-controls { flex-wrap:nowrap !important; gap:4px !important; }
+body.mobile-mode .mv-header .mv-font-controls > button { flex:1 1 0 !important; min-width:0 !important; padding:5px 1px !important; }
 
 /* 아래에서 올라오는 서랍 */
 #sg-drawer-ov { position:fixed; inset:0; background:rgba(28,14,4,.45); z-index:99000; display:none; }
@@ -21505,6 +21513,8 @@ window.sgSeedSamples = function () {
   var DK = '__salgu_dark__';
   function isDark(){ return document.documentElement.classList.contains('sg-dark'); }
   function paintBtn(){
+    var md = document.getElementById('sg-mv-dark-btn');
+    if (md) md.textContent = isDark() ? '☀️' : '🌙';
     var b = document.getElementById('sg-dark-btn');
     if (b) { b.textContent = isDark() ? '☀️' : '🌙'; b.title = isDark() ? '밝은 화면으로' : '어두운 화면(다크모드)으로'; }
     var d = document.getElementById('sgd-dark');
@@ -21565,14 +21575,21 @@ window.sgSeedSamples = function () {
       var c = parse(str), res = str;
       if (c) {
         var hsl = toHsl(c[0],c[1],c[2]), h = hsl[0], s = hsl[1], l = hsl[2];
+        /* ★ 2026-10-01 D톤(차분한 회색): 살구의 크림·베이지·갈색 계열은 회색으로,
+           상태 색(초록·노랑·파랑·빨강 등)과 주황 버튼은 색 기운을 살린다 */
+        var chroma = (Math.max(c[0],c[1],c[2]) - Math.min(c[0],c[1],c[2])) / 255;
+        var deg = h * 360, warm = deg >= 8 && deg <= 44;
+        var plain = chroma < .12 || (warm && chroma < .32);   /* 크림·베이지·갈색 = 무채색 취급 */
         if (kind === 'bg' && c[3] < .6) { /* 색 위에 얹은 반투명 흰 막(버튼 유리효과)은 그대로 */ }
         else if (kind === 'bg') {
-          if (l >= .78) res = out(fromHsl(h, Math.min(s, .4) * .35, .105 + (1 - l) * .42), c[3]);
-          else if (l >= .62) res = out(fromHsl(h, Math.min(s, .5) * .6, .21), c[3]);
+          if (l >= .78) res = plain ? out(fromHsl(0, 0, l >= .965 ? .114 : (l >= .9 ? .172 : .228)), c[3])
+                                    : out(fromHsl(h, Math.min(s, .4) * .45, .14 + (1 - l) * .35), c[3]);
+          else if (l >= .62) res = plain ? out(fromHsl(0, 0, .26), c[3]) : out(fromHsl(h, Math.min(s, .5) * .6, .22), c[3]);
         } else if (kind === 'fg') {
-          if (l < .5) res = out(fromHsl(h, s * .85, .93 - l * .5), c[3]);
+          if (l < .5) res = plain ? out(fromHsl(0, 0, l < .3 ? .95 : (l < .4 ? .84 : .70)), c[3])
+                                  : out(fromHsl(h, s * .85, .93 - l * .5), c[3]);
         } else {
-          if (l >= .68) res = out(fromHsl(h, Math.min(s, .4) * .5, .27), c[3]);
+          if (l >= .68) res = (plain || chroma < .3) ? out(fromHsl(0, 0, .33), c[3]) : out(fromHsl(h, Math.min(s, .4) * .5, .3), c[3]);
         }
       }
       CK[key] = res; return res;
@@ -21906,7 +21923,19 @@ window.sgSeedSamples = function () {
     b.type = 'button'; b.id = 'sg-mv-tools-btn'; b.className = 'mv-font-btn'; b.title = '🧰 도구 — 보험사 연락처·약관·청구·상담자료·화면 설정';
     b.style.cssText = bd.style.cssText; b.textContent = '🧰';
     b.onclick = function(e){ e.stopPropagation(); window.sgOpenTools(); };
-    bd.parentNode.insertBefore(b, bd.nextSibling);
+    bd.parentNode.appendChild(b);   /* 도구는 맨 끝 */
+    /* 2026-10-01: 보험사 연락처 · 다크모드 — 생일자 바로 뒤 (도구 서랍 안에도 그대로 있음) */
+    var c = document.createElement('button');
+    c.type = 'button'; c.id = 'sg-mv-contact-btn'; c.className = 'mv-font-btn'; c.title = '📞 보험사 연락처';
+    c.style.cssText = bd.style.cssText; c.textContent = '📞';
+    c.onclick = function(e){ e.stopPropagation(); window.sgMvContacts(); };
+    var d = document.createElement('button');
+    d.type = 'button'; d.id = 'sg-mv-dark-btn'; d.className = 'mv-font-btn'; d.title = '다크모드 켜기/끄기';
+    d.style.cssText = bd.style.cssText;
+    d.onclick = function(e){ e.stopPropagation(); window.sgToggleDark(); };
+    bd.parentNode.insertBefore(c, bd.nextSibling);
+    bd.parentNode.insertBefore(d, c.nextSibling);
+    paintBtn();
   }
 
   /* ═══ 5) 모바일 고객 화면 바로가기 줄 ═══ */
