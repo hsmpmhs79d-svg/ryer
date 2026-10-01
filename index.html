@@ -1495,6 +1495,77 @@ body.mobile-mode #mv-top-fab:active { transform: translateX(-50%) scale(0.94); }
   })();
 </script>
 
+
+<!-- ★ 2026-10-01 다크모드·모바일 도구 서랍·바로가기 줄·모바일 연락처·계정 삭제 요청 화면 -->
+<style id="sg-1001-css">
+/* ── 다크모드: 화면 전체 밝기를 뒤집고, 사진·그림만 원래 색으로 되돌린다 ── */
+html.sg-dark { filter: invert(.92) hue-rotate(180deg); background:#fff; }
+html.sg-dark img, html.sg-dark video, html.sg-dark canvas, html.sg-dark iframe, html.sg-dark picture { filter: invert(1) hue-rotate(180deg); }
+#sg-dark-btn { background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.45); color:#fff; width:30px; height:28px; padding:0; border-radius:50%; font-size:14px; line-height:1; cursor:pointer; flex-shrink:0; }
+
+/* ── 모바일: 위쪽 버튼 정리 (기능은 🧰 도구 서랍으로) ── */
+body.mobile-mode .mv-header button[onclick="openPolicyLinksModal()"],
+body.mobile-mode .mv-header button[onclick="openClaimDocsModal()"],
+body.mobile-mode .mv-header button[onclick="openConsultLib()"],
+body.mobile-mode .mv-header button[onclick="sgMobileMyFiles()"],
+body.mobile-mode .mv-header #sg-admin-link-m,
+body.mobile-mode .mv-header #sg-mv-font { display:none !important; }
+#sg-mv-tools-btn { display:inline-flex !important; flex-direction:column; align-items:center; justify-content:center; font-size:16px !important; line-height:1; }
+#sg-mv-tools-btn::after { content:'도구'; font-size:7.5px; font-weight:700; color:#8a6a4e; margin-top:2px; line-height:1; letter-spacing:-0.3px; }
+
+/* 아래에서 올라오는 서랍 */
+#sg-drawer-ov { position:fixed; inset:0; background:rgba(28,14,4,.45); z-index:99000; display:none; }
+#sg-drawer-ov.open { display:block; }
+#sg-drawer { position:absolute; left:0; right:0; bottom:0; background:#fffaf4; border-radius:18px 18px 0 0; max-height:82vh; overflow-y:auto; overscroll-behavior:contain; padding:10px 16px calc(18px + env(safe-area-inset-bottom)); box-shadow:0 -8px 30px rgba(0,0,0,.2); font-family:inherit; }
+#sg-drawer .sgd-grip { width:42px; height:5px; border-radius:3px; background:#e6cdb0; margin:2px auto 10px; }
+#sg-drawer .sgd-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+#sg-drawer .sgd-top b { font-size:17px; color:#7c2d12; }
+#sg-drawer .sgd-x { background:#fff; border:1.5px solid #ecd5bd; color:#7c2d12; border-radius:8px; width:34px; height:34px; font-size:16px; cursor:pointer; }
+#sg-drawer .sgd-h { font-size:12.5px; font-weight:800; color:#a0785a; margin:14px 2px 7px; }
+#sg-drawer .sgd-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+#sg-drawer .sgd-it { background:#fff; border:1.5px solid #f0dcc6; border-radius:12px; padding:11px 2px 9px; display:flex; flex-direction:column; align-items:center; gap:5px; font-size:22px; line-height:1; cursor:pointer; font-family:inherit; color:#5b3a22; }
+#sg-drawer .sgd-it span { font-size:11.5px; font-weight:700; letter-spacing:-0.4px; line-height:1.25; text-align:center; word-break:keep-all; }
+#sg-drawer .sgd-it:active { background:#fdeadd; }
+
+/* ── 모바일 고객 화면: 바로가기 줄 ── */
+#sg-mv-chips { position:sticky; top:0; z-index:50; display:flex; gap:7px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; background:#f5f6f8; margin:8px -14px 10px; padding:8px 14px; box-shadow:0 3px 6px -4px rgba(0,0,0,.18); }
+#sg-mv-chips::-webkit-scrollbar { display:none; }
+#sg-mv-chips button { flex-shrink:0; background:#fff; border:1.5px solid #ecd5bd; color:#7c2d12; border-radius:18px; padding:7px 13px; font-size:13px; font-weight:700; font-family:inherit; cursor:pointer; white-space:nowrap; }
+#sg-mv-chips button.on { background:#e46a25; border-color:#e46a25; color:#fff; }
+
+/* ── 모바일 보험사 연락처 ── */
+#sg-mc-ov { position:fixed; inset:0; background:rgba(28,14,4,.5); z-index:99010; display:none; align-items:flex-end; justify-content:center; }
+#sg-mc-ov.open { display:flex; }
+#sg-mc { background:#fffaf4; width:100%; max-width:560px; height:90vh; border-radius:18px 18px 0 0; display:flex; flex-direction:column; overflow:hidden; font-family:inherit; }
+#sg-mc .mc-head { background:linear-gradient(135deg,#9a3412,#e46a25); color:#fff; padding:13px 16px; display:flex; align-items:center; justify-content:space-between; }
+#sg-mc .mc-head b { font-size:16px; }
+#sg-mc .mc-head small { font-size:11.5px; opacity:.9; margin-left:6px; font-weight:600; }
+#sg-mc .mc-x { background:rgba(255,255,255,.22); border:none; color:#fff; width:32px; height:32px; border-radius:8px; font-size:16px; cursor:pointer; }
+#sg-mc .mc-search { padding:10px 12px; border-bottom:1px solid #f0dcc6; background:#fff; }
+#sg-mc .mc-search input { width:100%; box-sizing:border-box; border:1.5px solid #ecd5bd; border-radius:10px; padding:11px 12px; font-size:15px; font-family:inherit; outline:none; }
+#sg-mc .mc-body { flex:1; overflow-y:auto; overscroll-behavior:contain; padding:10px 12px 24px; }
+#sg-mc .mc-sec { font-size:12.5px; font-weight:800; color:#a0785a; margin:10px 2px 6px; }
+#sg-mc .mc-co { background:#fff; border:1px solid #f0dcc6; border-radius:12px; margin-bottom:8px; overflow:hidden; }
+#sg-mc .mc-name { font-size:15px; font-weight:800; color:#7c2d12; padding:10px 12px 6px; }
+#sg-mc .mc-row { display:flex; align-items:center; gap:8px; padding:8px 12px; border-top:1px solid #f8efe4; }
+#sg-mc .mc-lbl { width:84px; flex-shrink:0; font-size:12px; font-weight:700; color:#a0785a; }
+#sg-mc .mc-num { flex:1; font-size:15px; font-weight:700; color:#1e293b; cursor:pointer; padding:4px 0; border-radius:6px; word-break:break-all; }
+#sg-mc .mc-num.copied { background:#d1fae5; }
+#sg-mc .mc-num.na { color:#94a3b8; font-weight:600; cursor:default; }
+#sg-mc .mc-call { flex-shrink:0; background:#fff; border:1.5px solid #ecd5bd; color:#9a3412; border-radius:8px; padding:6px 9px; font-size:12px; font-weight:700; text-decoration:none; }
+#sg-mc .mc-empty { text-align:center; color:#94a3b8; padding:30px 0; display:none; }
+
+/* ── 계정 삭제 요청 ── */
+#sg-del-ov { position:fixed; inset:0; background:rgba(28,14,4,.55); z-index:99020; display:none; align-items:center; justify-content:center; padding:16px; }
+#sg-del-ov.open { display:flex; }
+#sg-del { background:#fff; border-radius:16px; width:460px; max-width:100%; max-height:90vh; overflow-y:auto; font-family:inherit; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+#sg-del .dh { background:linear-gradient(135deg,#7f1d1d,#dc2626); color:#fff; padding:14px 18px; font-weight:800; font-size:16px; }
+#sg-del .db { padding:16px 18px 6px; font-size:14px; color:#4b3a2c; line-height:1.75; }
+#sg-del .db ul { margin:6px 0 10px; padding-left:18px; }
+#sg-del .df { padding:12px 18px 18px; display:flex; flex-direction:column; gap:8px; }
+#sg-del .df button { border-radius:10px; padding:12px; font-size:15px; font-weight:800; font-family:inherit; cursor:pointer; }
+</style>
+<script>try{if(localStorage.getItem('__salgu_dark__')==='1')document.documentElement.classList.add('sg-dark');}catch(e){}</script>
 </head>
 <body style="">
 
@@ -18181,7 +18252,9 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
       ['📢 공지사항 (새 소식)', function(){ if (window.sgNotice) window.sgNotice(); }],   /* ★ 공지 (2026-09-11) */
       '-',
       ['화면: 기본', function(){ setLayoutMode('default'); }],
-      ['화면: 넓게', function(){ setLayoutMode('wide'); }]
+      ['화면: 넓게', function(){ setLayoutMode('wide'); }],
+      '-',
+      ['🗑 계정 삭제 요청', function(){ if (window.sgAccountDelete) window.sgAccountDelete(); }]   /* ★ 스토어 필수 (2026-10-01) */
     ]);
     /* 알림 종 버튼 — 빨간 배너 대신. 누르면 기존 알림 배너를 펼쳤다 접음 */
     var bell = document.createElement('button');
@@ -19965,7 +20038,7 @@ window.sgSeedSamples = function () {
       d: '<b>추천 플랜</b>을 고르면 그 담보만 목록으로 떠서, 금액을 드롭다운으로 바로 고칠 수 있습니다.<br>다 채우고 <b>정보+설계요청</b>을 누르면 그대로 복사됩니다.' },
     { sel: '.mv-header',
       t: '⑦ 위쪽 버튼들',
-      d: '📚 상담자료 · 📋 청구 필요서류 · 📜 약관 공시실 · 🎂 생일자.<br>🔄 를 누르면 <b>최신 데이터를 다시 받아옵니다.</b>' },
+      d: '⭐ 중요할일 · 🎂 생일자 옆 <b>🧰 도구</b>를 누르면 보험사 연락처 · 약관 · 청구 · 상담자료 · 다크모드 · 글자 크기가 모여 있습니다.<br>🔄 를 누르면 <b>최신 데이터를 다시 받아옵니다.</b>' },
     { sel: '#sgf-mbtn',
       t: '⑧ 길을 잃으면 여기를 누르세요',
       d: '메뉴 이름을 몰라도 됩니다. <b>실비</b>, <b>견적</b>, <b>문자</b>처럼 생각나는 대로 치면 찾아줍니다.<br>이 안내를 다시 보시려면 고객 목록 위 <b>❓ 사용법</b>을 누르세요.' }
@@ -20314,7 +20387,7 @@ window.sgSeedSamples = function () {
     { e:'📜', t:'보험약관 공시실', g:'보험', w:['약관','공시실','상품설명서','보장내용','규정','상품요약서'],
       pc:go('openPolicyLinksModal'), mb:go('openPolicyLinksModal') },
     { e:'📞', t:'보험사 연락처', g:'보험', w:['연락처','고객센터','전화번호','콜센터','팩스번호','대표번호','인콜'],
-      pc:go('toggleContactPanel') },
+      pc:go('toggleContactPanel'), mb:go('sgMvContacts') },
     { e:'🔑', t:'대표코드', g:'내 정보', w:['코드','대표코드','상품코드','설계코드'],
       pc:go('toggleCodePanel') },
     { e:'🔐', t:'내 아이디·비밀번호', g:'내 정보', w:['아이디','비번','비밀번호','로그인정보','계정','사이트'],
@@ -21407,6 +21480,279 @@ window.sgSeedSamples = function () {
     h += '</div>';
     return h;
   };
+})();
+</script>
+
+
+<!-- ═══ 2026-10-01 화면 개편: 다크모드 · 모바일 도구 서랍 · 고객화면 바로가기 줄 · 모바일 보험사 연락처 · 계정 삭제 요청 ═══ -->
+
+<script>
+(function(){
+  var MB = !!window.__IS_MOBILE__;
+
+  /* ═══ 1) 다크모드 — 고른 모드는 이 브라우저에 기억 ═══ */
+  var DK = '__salgu_dark__';
+  function isDark(){ return document.documentElement.classList.contains('sg-dark'); }
+  function paintBtn(){
+    var b = document.getElementById('sg-dark-btn');
+    if (b) { b.textContent = isDark() ? '☀️' : '🌙'; b.title = isDark() ? '밝은 화면으로' : '어두운 화면(다크모드)으로'; }
+    var d = document.getElementById('sgd-dark');
+    if (d) d.innerHTML = (isDark() ? '☀️' : '🌙') + '<span>' + (isDark() ? '밝게' : '다크 모드') + '</span>';
+  }
+  window.sgToggleDark = function(){
+    var on = !isDark();
+    document.documentElement.classList.toggle('sg-dark', on);
+    try { localStorage.setItem(DK, on ? '1' : '0'); } catch(e) {}
+    paintBtn();
+  };
+  try { if (localStorage.getItem(DK) === '1') document.documentElement.classList.add('sg-dark'); } catch(e) {}
+
+  /* PC: 로그아웃 옆 작은 달 버튼 (헤더 메뉴가 만들어진 뒤에 붙인다) */
+  function addPcDarkBtn(tries){
+    if (MB || document.getElementById('sg-dark-btn')) return;
+    var lo = document.querySelector('.header button[onclick*="salguLogout"]');
+    if (!lo) { if ((tries|0) < 40) setTimeout(function(){ addPcDarkBtn((tries|0)+1); }, 250); return; }
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'sg-dark-btn';
+    b.onclick = function(e){ e.stopPropagation(); window.sgToggleDark(); };
+    lo.parentNode.insertBefore(b, lo.nextSibling);
+    paintBtn();
+  }
+
+  /* ═══ 2) 계정 삭제 요청 (스토어 필수) ═══ */
+  window.sgAccountDelete = function(){
+    var ov = document.getElementById('sg-del-ov');
+    var me = String(window.__salguMe || '').trim();
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'sg-del-ov';
+      ov.innerHTML = '<div id="sg-del">'
+        + '<div class="dh">🗑 계정 삭제 요청</div>'
+        + '<div class="db">'
+        +   '삭제를 요청하시면 운영자가 확인 후 <b>살구 가입 정보</b>(이메일·이름·연락처·요금제·이용 기록)를 지웁니다. 처리되면 메일로 알려 드립니다.'
+        +   '<div style="margin-top:10px;font-weight:800;color:#7c2d12;">고객 데이터는 직접 지우셔야 합니다</div>'
+        +   '살구의 고객 자료는 운영자 서버가 아니라 <b>본인 구글 드라이브</b>에 있어 운영자가 볼 수도, 지울 수도 없습니다. 함께 지우시려면:'
+        +   '<ul><li>구글 드라이브에서 <b>고객관리_백업.html</b> 파일과 <b>살구 내 파일</b> 폴더 삭제</li>'
+        +   '<li>구글 계정 → 보안 → <b>타사 앱 및 서비스</b>에서 살구 연결 해제</li></ul>'
+        + '</div>'
+        + '<div class="df">'
+        +   '<button type="button" id="sg-del-go" style="background:#dc2626;color:#fff;border:none;">삭제 요청 메일 보내기</button>'
+        +   '<button type="button" id="sg-del-no" style="background:#fff;color:#5b4636;border:1.5px solid #e6cdb0;">닫기</button>'
+        +   '<div style="font-size:12px;color:#a08a76;text-align:center;line-height:1.6;">메일 앱이 열리지 않으면 <b>salgucrm@gmail.com</b> 으로<br>"살구 계정 삭제 요청"과 가입한 이메일을 보내 주세요.</div>'
+        + '</div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if (e.target === ov) ov.classList.remove('open'); });
+      ov.querySelector('#sg-del-no').onclick = function(){ ov.classList.remove('open'); };
+    }
+    ov.querySelector('#sg-del-go').onclick = function(){
+      var who = String(window.__salguMe || '').trim();
+      var body = '살구 CRM 계정 삭제를 요청합니다.\n\n가입 이메일: ' + (who || '(여기에 적어 주세요)') + '\n';
+      location.href = 'mailto:salgucrm@gmail.com?subject=' + encodeURIComponent('[살구] 계정 삭제 요청') + '&body=' + encodeURIComponent(body);
+    };
+    ov.classList.add('open');
+  };
+
+  /* ═══ 3) 모바일 보험사 연락처 — PC 표를 그대로 읽어 같은 방식으로 복사 ═══ */
+  window.sgMvContacts = function(){
+    try { if (typeof _restoreContactFromTag === 'function') _restoreContactFromTag(); } catch(e) {}
+    var tbl = document.getElementById('contact-table');
+    if (!tbl) { alert('보험사 연락처를 불러오지 못했습니다.'); return; }
+    var heads = [];
+    var hr = tbl.querySelector('thead tr');
+    if (hr) for (var h = 0; h < hr.cells.length; h++) heads.push((hr.cells[h].textContent || '').trim());
+    var ov = document.getElementById('sg-mc-ov');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'sg-mc-ov';
+      ov.innerHTML = '<div id="sg-mc">'
+        + '<div class="mc-head"><span><b>📞 보험사 연락처</b><small>번호를 누르면 복사됩니다</small></span><button type="button" class="mc-x">✕</button></div>'
+        + '<div class="mc-search"><input type="search" id="sg-mc-q" placeholder="보험사 이름 검색 (예: 메리츠, 삼성)" autocomplete="off"></div>'
+        + '<div class="mc-body" id="sg-mc-body"></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if (e.target === ov) ov.classList.remove('open'); });
+      ov.querySelector('.mc-x').onclick = function(){ ov.classList.remove('open'); };
+      ov.querySelector('#sg-mc-q').addEventListener('input', function(){ mcFilter(this.value); });
+      ov.querySelector('#sg-mc-body').addEventListener('click', function(e){
+        var t = e.target.closest ? e.target.closest('.mc-num') : null;
+        if (!t || t.classList.contains('na')) return;
+        var cell = window.__sgMcCells && window.__sgMcCells[+t.dataset.k];
+        if (!cell) return;
+        try { copyContact(cell); } catch(err) {}   /* PC와 같은 함수 → 같은 글자로 복사 */
+        t.classList.add('copied'); setTimeout(function(){ t.classList.remove('copied'); }, 700);
+      });
+    }
+    /* 표 → 목록 */
+    var cells = []; var html = '';
+    var rows = tbl.querySelectorAll('tbody tr');
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      if (r.classList.contains('section-header')) { html += '<div class="mc-sec">' + esc(r.textContent.trim()) + '</div>'; continue; }
+      if (!r.classList.contains('data-row')) continue;
+      var nm = r.cells[0] ? r.cells[0].textContent.trim() : '';
+      var co = '<div class="mc-co" data-n="' + esc(nm.toLowerCase().replace(/\s+/g, '')) + '"><div class="mc-name">' + esc(nm) + '</div>';
+      for (var j = 1; j < r.cells.length; j++) {
+        var v = (r.cells[j].textContent || '').trim();
+        if (!v) continue;
+        var lbl = heads[j] || '';
+        var na = (v === '고객센터 문의');
+        var k = cells.length; cells.push(r.cells[j]);
+        var tel = (!na && lbl.indexOf('FAX') === -1) ? (v.match(/[0-9][0-9\-]{6,}[0-9]/) || [''])[0] : '';
+        co += '<div class="mc-row"><div class="mc-lbl">' + esc(lbl) + '</div>'
+           +  '<div class="mc-num' + (na ? ' na' : '') + '" data-k="' + k + '">' + esc(v) + '</div>'
+           +  (tel ? '<a class="mc-call" href="tel:' + tel.replace(/-/g, '') + '">📞 전화</a>' : '')
+           +  '</div>';
+      }
+      html += co + '</div>';
+    }
+    html += '<div class="mc-empty" id="sg-mc-empty">검색 결과가 없습니다</div>';
+    window.__sgMcCells = cells;
+    document.getElementById('sg-mc-body').innerHTML = html;
+    var q = document.getElementById('sg-mc-q'); q.value = ''; mcFilter('');
+    ov.classList.add('open');
+  };
+  function mcFilter(v){
+    var q = String(v || '').toLowerCase().replace(/\s+/g, '');
+    var cos = document.querySelectorAll('#sg-mc-body .mc-co'), n = 0;
+    for (var i = 0; i < cos.length; i++) {
+      var hit = !q || cos[i].dataset.n.indexOf(q) !== -1 || cos[i].textContent.toLowerCase().indexOf(q) !== -1;
+      cos[i].style.display = hit ? '' : 'none'; if (hit) n++;
+    }
+    var secs = document.querySelectorAll('#sg-mc-body .mc-sec');
+    for (var s = 0; s < secs.length; s++) secs[s].style.display = q ? 'none' : '';
+    var em = document.getElementById('sg-mc-empty'); if (em) em.style.display = n ? 'none' : 'block';
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  /* ═══ 4) 모바일 🧰 도구 서랍 ═══ */
+  function call(fn){ return function(){ closeDrawer(); setTimeout(function(){ try { fn(); } catch(e) {} }, 80); }; }
+  function closeDrawer(){ var o = document.getElementById('sg-drawer-ov'); if (o) o.classList.remove('open'); }
+  window.sgOpenTools = function(){
+    var ov = document.getElementById('sg-drawer-ov');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'sg-drawer-ov';
+      ov.innerHTML = '<div id="sg-drawer"><div class="sgd-grip"></div><div class="sgd-top"><b>🧰 도구</b><button type="button" class="sgd-x">✕</button></div><div id="sgd-body"></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', function(e){ if (e.target === ov) closeDrawer(); });
+      ov.querySelector('.sgd-x').onclick = closeDrawer;
+    }
+    var isAdmin = false;
+    try { var am = document.getElementById('sg-admin-link-m'); isAdmin = !!(am && am.style.display !== 'none'); } catch(e) {}
+    var G = [
+      ['보험 업무', [
+        ['📞', '보험사 연락처', function(){ window.sgMvContacts(); }],
+        ['📜', '약관 공시실', function(){ openPolicyLinksModal(); }],
+        ['📋', '청구 필요서류', function(){ openClaimDocsModal(); }],
+        ['📄', '청구서', function(){ openClaimFormsModal(); }],
+        ['🏥', '실손 비교표', function(){ window.mvOpenSilsonCompare(); }],
+        ['📚', '상담자료', function(){ openConsultLib(); }],
+        ['📁', '내 파일', function(){ window.sgMobileMyFiles(); }]
+      ].concat(isAdmin ? [['👑', '가입관리', function(){ window.open('admin.html', '_blank'); }]] : [])],
+      ['화면', [
+        ['dark', '', function(){ window.sgToggleDark(); }],
+        ['가−', '글자 작게', function(){ window.mvAdjustFont(-1); }],
+        ['가+', '글자 크게', function(){ window.mvAdjustFont(1); }],
+        ['⟳', '새로 고침', function(){ location.reload(); }]
+      ]],
+      ['기타', [
+        ['📖', '설명서', function(){ window.sgOpenManual(); }],
+        ['❓', '사용법', function(){ if (window.sgGuideStart) window.sgGuideStart(); }],
+        ['📢', '공지', function(){ if (window.sgNotice) window.sgNotice(); }],
+        ['🗑', '계정삭제 요청', function(){ window.sgAccountDelete(); }]
+      ]]
+    ];
+    var body = ov.querySelector('#sgd-body'); body.innerHTML = '';
+    G.forEach(function(g){
+      var h = document.createElement('div'); h.className = 'sgd-h'; h.textContent = g[0]; body.appendChild(h);
+      var grid = document.createElement('div'); grid.className = 'sgd-grid'; body.appendChild(grid);
+      g[1].forEach(function(it){
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'sgd-it';
+        if (it[0] === 'dark') { b.id = 'sgd-dark'; b.onclick = function(){ window.sgToggleDark(); }; }   /* 다크는 서랍을 닫지 않고 바로 바뀌는 걸 보여준다 */
+        else {
+          b.innerHTML = '<b style="font-weight:800;font-size:' + (/^[가⟳]/.test(it[0]) ? '19px' : '22px') + ';">' + it[0] + '</b><span>' + it[1] + '</span>';
+          /* 글자 크기는 서랍을 열어 둔 채 여러 번 누를 수 있게 */
+          b.onclick = (it[0] === '가−' || it[0] === '가+') ? it[2] : call(it[2]);
+        }
+        grid.appendChild(b);
+      });
+    });
+    paintBtn();
+    ov.classList.add('open');
+  };
+  function addMvToolsBtn(tries){
+    if (!MB || document.getElementById('sg-mv-tools-btn')) return;
+    var ctr = document.querySelector('.mv-header .mv-font-controls');
+    var bd = ctr && ctr.querySelector('button[onclick="openBirthdayPanel()"]');
+    if (!bd) { if ((tries|0) < 40) setTimeout(function(){ addMvToolsBtn((tries|0)+1); }, 250); return; }
+    var b = document.createElement('button');
+    b.type = 'button'; b.id = 'sg-mv-tools-btn'; b.className = 'mv-font-btn'; b.title = '🧰 도구 — 보험사 연락처·약관·청구·상담자료·화면 설정';
+    b.style.cssText = bd.style.cssText; b.textContent = '🧰';
+    b.onclick = function(e){ e.stopPropagation(); window.sgOpenTools(); };
+    bd.parentNode.insertBefore(b, bd.nextSibling);
+  }
+
+  /* ═══ 5) 모바일 고객 화면 바로가기 줄 ═══ */
+  var CHIP_NAME = { '인적사항':'고객정보', '고객 자료':'자료', '상담이력':'상담', '자동차 보험':'자동차', '실손 보험':'실손', '매니저 요청':'매니저' };
+  function chipLabel(sec){
+    var t = sec.querySelector('.mv-section-title'); if (!t) return '';
+    var s = '';
+    for (var n = t.firstChild; n; n = n.nextSibling) { if (n.nodeType === 3) s += n.textContent; else break; }
+    s = s.replace(/\(\d+\)/g, '').replace(/[^가-힣A-Za-z0-9 ]/g, '').trim();
+    return CHIP_NAME[s] || s;
+  }
+  function buildChips(){
+    var ct = document.getElementById('mv-content');
+    if (!ct || !ct.querySelector('.mv-back') || document.getElementById('sg-mv-chips')) return;
+    var secs = ct.querySelectorAll(':scope > .mv-section');
+    if (secs.length < 2) return;
+    var bar = document.createElement('div'); bar.id = 'sg-mv-chips';
+    for (var i = 0; i < secs.length; i++) {
+      var lb = chipLabel(secs[i]); if (!lb) continue;
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = lb;
+      (function(sec, btn){
+        btn.onclick = function(){
+          var y = sec.getBoundingClientRect().top + window.pageYOffset - bar.offsetHeight - (parseInt(bar.style.top, 10) || 0) - 6;
+          try { window.scrollTo({ top: y, behavior: 'smooth' }); } catch(e) { window.scrollTo(0, y); }
+          markChip(btn);
+        };
+        btn.__sec = sec;
+      })(secs[i], b);
+      bar.appendChild(b);
+    }
+    ct.insertBefore(bar, secs[0]);
+    /* 위에 붙어 있는 고객/캘린더 탭 바로 아래에 붙인다 */
+    try { var tb = document.querySelector('#mobile-view .mv-tabs'); if (tb && getComputedStyle(tb).position === 'sticky') bar.style.top = tb.offsetHeight + 'px'; } catch(e) {}
+    syncChips();
+  }
+  function markChip(btn){
+    var bar = document.getElementById('sg-mv-chips'); if (!bar) return;
+    var bs = bar.children;
+    for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i] === btn);
+    try { var l = btn.offsetLeft - 14; if (l < bar.scrollLeft || l + btn.offsetWidth > bar.scrollLeft + bar.clientWidth) bar.scrollTo({ left: Math.max(0, l - 40), behavior: 'smooth' }); } catch(e) {}
+  }
+  var _chipT = 0;
+  function syncChips(){
+    var bar = document.getElementById('sg-mv-chips'); if (!bar) return;
+    /* 맨 아래에 닿아 더 내려갈 수 없을 때는 누른 칸 표시를 그대로 둔다 */
+    var on = bar.querySelector('button.on');
+    if (on && on.__sec && (window.innerHeight + window.pageYOffset >= document.documentElement.scrollHeight - 4)
+        && on.__sec.getBoundingClientRect().top < window.innerHeight) return;
+    var lim = bar.getBoundingClientRect().bottom + 30, cur = bar.children[0];
+    for (var i = 0; i < bar.children.length; i++) {
+      var s = bar.children[i].__sec;
+      if (s && s.getBoundingClientRect().top <= lim) cur = bar.children[i];
+    }
+    if (cur && !cur.classList.contains('on')) markChip(cur);
+  }
+  window.addEventListener('scroll', function(){ clearTimeout(_chipT); _chipT = setTimeout(syncChips, 80); }, { passive: true });
+
+  function boot(){
+    addPcDarkBtn(0);
+    addMvToolsBtn(0);
+    paintBtn();
+    if (MB) {
+      var ct = document.getElementById('mv-content');
+      if (ct && window.MutationObserver) new MutationObserver(function(){ buildChips(); }).observe(ct, { childList: true });
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
 </script>
 
