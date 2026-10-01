@@ -18269,6 +18269,7 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
       ['사용설명서', function(){ window.sgOpenManual(); }],   /* ★ 웹 설명서 (2026-08-15) */
       ['사용법 안내 (화면에서 보기)', function(){ if (window.sgGuideStart) window.sgGuideStart(); }],   /* ★ 가이드 (2026-09-10) */
       ['📢 공지사항 (새 소식)', function(){ if (window.sgNotice) window.sgNotice(); }],   /* ★ 공지 (2026-09-11) */
+      ['💡 기능 안내 (다시 보기 · 켜고 끄기)', function(){ if (window.sgTipPanel) window.sgTipPanel(); }],   /* ★ 기능 안내 (2026-10-02) */
       '-',
       ['화면: 기본', function(){ setLayoutMode('default'); }],
       ['화면: 넓게', function(){ setLayoutMode('wide'); }],
@@ -19145,13 +19146,16 @@ window.sgNoticeMark = function () {
 window.SG_NOTICE_ITEMS = [
   { ic: '🌙', t: '다크모드',
     d: '· PC: 맨 위 <b>[로그아웃] 옆 🌙</b> 버튼<br>· 모바일: 위쪽 <b>🌙 다크</b> 버튼<br>· 한 번 더 누르면 밝은 화면으로 돌아옵니다',
-    b: '다크모드 켜 보기', fn: 'dark' },
+    b: '써 보기', fn: 'tip:dark' },
   { ic: '🧰', t: '모바일 도구 서랍',
-    d: '· <b>🧰 도구</b>에 연락처 · 약관 · 청구 · 상담자료를 모았습니다<br>· 📞 연락처 · 📋 청구서류 · 📂 내파일 · 🌙 다크는 밖에도 있습니다' },
+    d: '· <b>🧰 도구</b>에 연락처 · 약관 · 청구 · 상담자료를 모았습니다<br>· 📞 연락처 · 📋 청구서류 · 📂 내파일 · 🌙 다크는 밖에도 있습니다',
+    b: '써 보기', fn: 'tip:tools' },
   { ic: '📞', t: '모바일 보험사 연락처', mint: true,
-    d: '· 번호를 누르면 PC처럼 <b>"보험사 + 번호"</b>로 복사됩니다<br>· 카톡 · 문자에 바로 붙여 넣어 고객님께 보내세요' },
+    d: '· 번호를 누르면 PC처럼 <b>"보험사 + 번호"</b>로 복사됩니다<br>· 카톡 · 문자에 바로 붙여 넣어 고객님께 보내세요',
+    b: '써 보기', fn: 'tip:contacts' },
   { ic: '👆', t: '모바일 고객 화면 바로가기 줄',
-    d: '· 고객정보 · 자료 · 상담 · 실손 등을 누르면 <b>그 칸으로 바로 이동</b><br>· 화면을 내려도 위에 고정되어 따라옵니다' },
+    d: '· 고객정보 · 자료 · 상담 · 실손 등을 누르면 <b>그 칸으로 바로 이동</b><br>· 화면을 내려도 위에 고정되어 따라옵니다',
+    b: '써 보기', fn: 'tip:chips' },
   { ic: '✅', t: '암 보장 개시 알림', mint: true,
     d: '· 가입 91일째 <b>암 보장 개시 알림</b> 표시가 ✅로 바뀌었습니다' },
   { ic: '🔧', t: '그 밖의 손질',
@@ -19193,6 +19197,7 @@ window.sgNotice = function () {
             + (mint ? '#4a5f52' : '#6b5240') + ';">' + it.note + '</div>'
           : '')
       + (it.b && !(window.__IS_MOBILE__ && (it.fn === 'import' || it.fn === 'sync'))
+            && !(!window.__IS_MOBILE__ && /^tip:(tools|contacts|chips)$/.test(it.fn || ''))   /* ★ 모바일 전용 안내는 PC에서 숨김 (2026-10-02) */
           ? '<button type="button" class="sgnt-go" data-fn="' + it.fn + '" style="margin-top:9px;border:none;'
             + 'border-radius:8px;padding:6px 13px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;'
             + 'color:#fff;background:' + (mint ? '#166534' : 'linear-gradient(135deg,#9a3412,#e46a25)') + ';">'
@@ -19241,6 +19246,7 @@ window.sgNotice = function () {
           else if (fn === 'import' && (window.sgImportIntro || window.sgImportGuide)) (window.sgImportIntro || window.sgImportGuide)();
           else if (fn === 'sync' && window.syncContacts) window.syncContacts();
           else if (fn === 'dark' && window.sgToggleDark) { if (!document.documentElement.classList.contains('sg-dark')) window.sgToggleDark(); }
+          else if (fn && fn.indexOf('tip:') === 0 && window.sgTour) window.sgTour(fn.slice(4));   /* ★ 기능 안내 (2026-10-02) */
         } catch (e) {}
       }, 120);
       return;
@@ -20438,7 +20444,9 @@ window.sgSeedSamples = function () {
     { e:'❓', t:'사용법 안내 (화면에서 보기)', g:'도움말', w:['사용법','가이드','안내','처음','튜토리얼','따라하기','시작','어떻게'],
       pc:go('sgGuideStart'), mb:go('sgGuideStart') },
     { e:'📢', t:'공지사항 (새 소식)', g:'도움말', w:['공지','새소식','업데이트','뭐가바뀌었','새기능','소식'],
-      pc:go('sgNotice'), mb:go('sgNotice') }
+      pc:go('sgNotice'), mb:go('sgNotice') },
+    { e:'💡', t:'기능 안내 (다시 보기 · 켜고 끄기)', g:'도움말', w:['기능안내','안내','도움말','다시보기','힌트','팁','설명','처음'],
+      pc:go('sgTipPanel'), mb:go('sgTipPanel') }
   ];
 
   var MB = !!window.__IS_MOBILE__;
@@ -21893,6 +21901,7 @@ window.sgSeedSamples = function () {
         ['📖', '설명서', function(){ window.sgOpenManual(); }],
         ['❓', '사용법', function(){ if (window.sgGuideStart) window.sgGuideStart(); }],
         ['📢', '공지', function(){ if (window.sgNotice) window.sgNotice(); }],
+        ['💡', '기능 안내', function(){ if (window.sgTipPanel) window.sgTipPanel(); }],
         ['🗑', '계정삭제 요청', function(){ window.sgAccountDelete(); }]
       ]]
     ];
@@ -22004,6 +22013,329 @@ window.sgSeedSamples = function () {
     }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+
+
+<!-- ═══ 2026-10-02 💡 기능 안내 ═══════════════════════════════════════
+     · 처음 누를 때 1번: 그 기능 위에 짧은 말풍선 안내가 뜬다 (본 것은 다시 안 뜸)
+     · 공지 [써 보기]: 화면을 어둡게 하고 그 버튼만 비추며 단계별로 안내
+     · [💡 기능 안내] 창: 안내 다시 보기 · 처음 누를 때 안내 켜기/끄기 · 본 안내 초기화
+     기록은 이 브라우저(localStorage)에만 남는다.  sgTipSeen = {키:1} / sgTipOff = '1'
+     ───────────────────────────────────────────────────────────────── -->
+<style id="sg-tip-css">
+#sgt-catch{position:fixed;inset:0;z-index:100070;display:none;background:transparent}
+#sgt-ring{position:fixed;z-index:100071;display:none;border-radius:12px;pointer-events:none;
+  box-shadow:0 0 0 4px #ffb27a,0 0 0 9999px rgba(20,10,4,.6);transition:top .18s,left .18s,width .18s,height .18s}
+#sgt-ring.full{box-shadow:0 0 0 9999px rgba(20,10,4,.6)}
+#sgt-bub{position:fixed;z-index:100072;display:none;width:330px;max-width:calc(100vw - 24px);background:#fff;
+  border-radius:16px;padding:16px 18px 12px;box-shadow:0 18px 50px rgba(0,0,0,.35);font-family:inherit;
+  color:#3b2a1e;letter-spacing:-.3px;text-align:left}
+#sgt-bub .sgt-t{font-size:16px;font-weight:900;color:#9a3412;margin-bottom:6px;padding-right:24px;line-height:1.4}
+#sgt-bub .sgt-d{font-size:13.5px;line-height:1.72;color:#5b4636}
+#sgt-bub .sgt-d b{color:#c2410c}
+#sgt-bub .sgt-f{display:flex;align-items:center;gap:6px;margin-top:12px;flex-wrap:wrap}
+#sgt-bub .sgt-f button{border:1.5px solid #e7d4bd;background:#fff;color:#8a6f5c;border-radius:9px;padding:7px 12px;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+#sgt-bub .sgt-f button.p{background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;border-color:transparent}
+#sgt-bub .sgt-f .sgt-off{margin-right:auto;border:none;background:none;padding:4px 0;font-size:12px;color:#a68b73;text-decoration:underline}
+#sgt-bub .sgt-n{margin-right:auto;font-size:11.5px;color:#a68b73;font-weight:700}
+#sgt-bub .sgt-x{position:absolute;top:10px;right:12px;border:none;background:none;font-size:16px;color:#a68b73;cursor:pointer;font-family:inherit}
+#sgt-panel-ov{position:fixed;inset:0;background:rgba(28,14,4,.5);z-index:100045;display:flex;align-items:center;justify-content:center;padding:16px;font-family:inherit}
+#sgt-panel{background:#fff;border-radius:18px;width:440px;max-width:100%;max-height:90vh;overflow:auto;box-shadow:0 24px 70px rgba(124,45,18,.4)}
+#sgt-panel .hd{background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;padding:18px 20px;border-radius:18px 18px 0 0;position:relative}
+#sgt-panel .hd b{font-size:19px;font-weight:900;letter-spacing:-.6px}
+#sgt-panel .hd div{font-size:12.5px;opacity:.92;margin-top:4px}
+#sgt-panel .hd button{position:absolute;top:14px;right:14px;border:none;background:rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:8px;font-size:15px;cursor:pointer}
+#sgt-panel .bd{padding:14px 16px 16px}
+#sgt-panel .it{display:flex;align-items:center;gap:10px;width:100%;border:1.5px solid #f0dcc6;background:#fffaf5;border-radius:12px;
+  padding:11px 13px;margin-bottom:8px;font-size:14px;font-weight:800;color:#7c2d12;cursor:pointer;font-family:inherit;text-align:left}
+#sgt-panel .it span{margin-left:auto;font-size:12px;font-weight:700;color:#c2410c}
+#sgt-panel .sw{display:flex;align-items:center;gap:10px;border-top:1.5px dashed #ecd5bd;margin-top:6px;padding-top:12px;font-size:13.5px;color:#5b4636;font-weight:700}
+#sgt-panel .sw button{margin-left:auto;border:none;border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit}
+#sgt-panel .rs{display:block;margin:10px 0 0 auto;border:none;background:none;color:#a68b73;font-size:12px;text-decoration:underline;cursor:pointer;font-family:inherit}
+</style>
+<script>
+(function(){
+  var MB = !!window.__IS_MOBILE__;
+  function q(s){ try { return document.querySelector(s); } catch(e) { return null; } }
+  function seenMap(){ try { return JSON.parse(localStorage.getItem('sgTipSeen') || '{}') || {}; } catch(e) { return {}; } }
+  function markSeen(k){ try { var m = seenMap(); m[k] = 1; localStorage.setItem('sgTipSeen', JSON.stringify(m)); } catch(e) {} }
+  function hintsOff(){ try { return localStorage.getItem('sgTipOff') === '1'; } catch(e) { return false; } }
+  function setHintsOff(v){ try { if (v) localStorage.setItem('sgTipOff', '1'); else localStorage.removeItem('sgTipOff'); } catch(e) {} }
+  function toast(m){ if (typeof showToast === 'function') showToast(m, 'green'); }
+
+  /* ── 안내에 쓰는 화면 열기 ── */
+  function firstCust(){
+    var cs = (window.customers || []).filter(function(c){ return !c._personal; });
+    return cs.length ? cs[0] : null;
+  }
+  function openCust(){
+    var c = firstCust(); if (!c) return;
+    try {
+      if (MB) { if (!q('.mv-detail') && window.mvOpenDetail) window.mvOpenDetail(c.id); }
+      else if (!q('.customer-card') && typeof window.selectCustomer === 'function') window.selectCustomer(c.id);
+    } catch(e) {}
+  }
+  function goDr(){
+    openCust();
+    setTimeout(function(){
+      try {
+        if (MB) { var el = q('#mv-dr-chips'); if (el) el.scrollIntoView({ block: 'center' }); }
+        else if (window.scrollToCardTab) window.scrollToCardTab('.dr-section');
+      } catch(e) {}
+    }, 250);
+  }
+  function darkOn(){ try { if (!document.documentElement.classList.contains('sg-dark') && window.sgToggleDark) window.sgToggleDark(); } catch(e) {} }
+
+  /* ── 안내 내용 ──────────────────────────────────────────────
+     sel: PC 에서 비출 곳 / m: 모바일에서 비출 곳 (없으면 화면 가운데 말풍선)
+     only: 'm' 모바일 전용                                         */
+  var TOURS = {
+    dark: { name: '🌙 다크모드', steps: [
+      { sel: '#sg-dark-btn', m: '#sg-mv-dark-btn', t: '🌙 다크모드',
+        d: '이 버튼을 누르면 화면이 <b>어둡게</b> 바뀝니다. 밤에도 눈이 편해요.' },
+      { pre: darkOn, sel: '#sg-dark-btn', m: '#sg-mv-dark-btn', t: '켜졌습니다',
+        d: '바탕은 차분한 회색, 글자는 밝게 바뀌었어요.<br><b>같은 버튼을 한 번 더 누르면</b> 밝은 화면으로 돌아옵니다.' }
+    ]},
+    tools: { name: '🧰 도구 서랍', only: 'm', steps: [
+      { m: '#sg-mv-tools-btn', t: '🧰 도구',
+        d: '보험사 연락처 · 약관 · 청구 · 상담자료 · 다크모드 · 글자 크기가 <b>여기 한곳에</b> 모여 있어요.' },
+      { pre: function(){ window.sgOpenTools && window.sgOpenTools(); }, post: function(){ var o = q('#sg-drawer-ov'); if (o) o.classList.remove('open'); },
+        m: '#sg-drawer', t: '도구 서랍', hint: true,
+        d: '필요한 것을 누르면 바로 열립니다.<br>바깥을 누르거나 <b>✕</b>로 닫아요.' }
+    ]},
+    contacts: { name: '📞 보험사 연락처 복사', only: 'm', steps: [
+      { m: '#sg-mv-contact-btn', t: '📞 보험사 연락처',
+        d: '누르면 보험사별 <b>고객센터 · 팩스 번호</b>가 나옵니다.' },
+      { pre: function(){ window.sgMvContacts && window.sgMvContacts(); }, post: function(){ var o = q('#sg-mc-ov'); if (o) o.classList.remove('open'); },
+        m: '#sg-mc', t: '번호를 누르면 복사', hint: true,
+        d: '<b>"삼성화재 고객센터 1588-5114"</b>처럼 보험사 이름과 함께 복사돼요. 카톡·문자에 붙여 넣어 고객님께 보내세요.<br>📞 전화 버튼은 바로 전화 걸기입니다.' }
+    ]},
+    chips: { name: '👆 고객 화면 바로가기 줄', only: 'm', steps: [
+      { pre: openCust, m: '#sg-mv-chips', t: '👆 바로가기 줄', hint: true,
+        d: '고객정보 · 자료 · 상담 · 실손 등을 누르면 <b>그 칸으로 바로</b> 내려갑니다.<br>화면을 내려도 위에 붙어 따라와요.' }
+    ]},
+    dr: { name: '📋 설계요청 간단플랜', steps: [
+      { pre: goDr, sel: '.dr-plans', m: '#mv-dr-chips', t: '📋 간단플랜', hint: true,
+        d: '플랜을 누르면 담보와 금액이 <b>한 번에</b> 채워지고 버튼이 <b>주황색</b>으로 바뀝니다.<br>여러 개 겹쳐 고를 수 있고, <b>다시 누르면 빠집니다.</b>' }
+    ]},
+    dm: { name: '💬 퀵메시지', steps: [
+      { pre: function(){ window.openDmTemplates && window.openDmTemplates(''); }, post: function(){ window.closeDmTemplates && window.closeDmTemplates(); },
+        sel: '#dm-overlay > div', m: '#dm-overlay > div', t: '💬 퀵메시지', hint: true,
+        d: '자주 보내는 문자를 저장해 두는 곳이에요. 고객 화면에서 열면 <b>고객 이름이 들어간 채로</b> 복사됩니다.' }
+    ]},
+    claim: { name: '📄 보험금 청구서', steps: [
+      { pre: openCust, sel: '.btn-quick-msg[onclick^="openClaim"]', m: '.mv-edit-btn[onclick^="openClaim"]', t: '📄 보험금 청구',
+        d: '누르면 이 고객의 <b>이름 · 주민번호 · 연락처 · 주소 · 계좌</b>가 채워진 청구서가 열립니다.' }
+    ]},
+    myfiles: { name: '📂 내 파일', steps: [
+      { pre: function(){ window.sgOpenMyFiles && window.sgOpenMyFiles(); }, post: function(){ var b = q('#sg-mf-close'); if (b) b.click(); },
+        sel: '#sg-mf-overlay > div', m: '#sg-mf-overlay > div', t: '📂 내 파일', hint: true,
+        d: '자주 쓰는 서류와 사진을 내 구글 드라이브에 올려 두고 <b>어디서든</b> 꺼내 쓰는 곳이에요. 폴더를 만들어 정리할 수 있습니다.' }
+    ]}
+  };
+  window.SG_TOURS = TOURS;
+
+  /* ── 화면 (사용법 안내와 같은 모양: 어둡게 + 비추기 + 말풍선) ── */
+  var catchEl, ring, bub, steps = [], cur = 0, mode = 'tour', key = '', onDone = null, busy = false;
+  function build(){
+    if (catchEl) return;
+    catchEl = document.createElement('div'); catchEl.id = 'sgt-catch';
+    ring = document.createElement('div'); ring.id = 'sgt-ring';
+    bub = document.createElement('div'); bub.id = 'sgt-bub';
+    document.body.appendChild(catchEl); document.body.appendChild(ring); document.body.appendChild(bub);
+    catchEl.addEventListener('click', function(){ close(); });
+    bub.addEventListener('click', function(ev){
+      var b = ev.target.closest ? ev.target.closest('button') : null; if (!b) return;
+      var a = b.getAttribute('data-a');
+      if (a === 'next') show(cur + 1);
+      else if (a === 'prev') show(cur - 1);
+      else if (a === 'off') { setHintsOff(true); close(); toast('처음 누를 때 안내를 껐습니다 · [💡 기능 안내]에서 다시 켤 수 있어요'); }
+      else close();
+    });
+    document.addEventListener('keydown', function(ev){
+      if (!catchEl || catchEl.style.display !== 'block') return;
+      if (ev.key === 'Escape') { ev.stopPropagation(); close(); }
+    }, true);
+  }
+  function target(s){
+    var sel = MB ? (s.m || '') : (s.sel || '');
+    var el = sel ? q(sel) : null;
+    if (el) { var r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0) return el; }
+    return null;
+  }
+  function place(el){
+    var vw = window.innerWidth, vh = window.innerHeight, pad = 6;
+    if (!el) {
+      ring.className = 'full'; ring.style.cssText = 'display:block;top:50%;left:50%;width:0;height:0;';
+      bub.style.top = Math.max(10, (vh - bub.offsetHeight) / 2) + 'px';
+      bub.style.left = Math.max(10, (vw - bub.offsetWidth) / 2) + 'px';
+      return;
+    }
+    var r = el.getBoundingClientRect();
+    if ((r.top < 0 || r.top > vh - 40) && !el.__sgtScrolled) {   /* 화면 밖이면 한 번만 보이는 곳으로 */
+      el.__sgtScrolled = true;
+      var sx = window.scrollX, sy = window.scrollY;
+      try { el.scrollIntoView({ block: 'center' }); } catch(e) {}
+      if (!MB) { try { window.scrollTo(sx, sy); } catch(e) {} }   /* PC 는 화면 전체가 밀리지 않게 */
+      r = el.getBoundingClientRect();
+    }
+    var rt = r.top, rh = r.height;
+    if (rh > vh - rt - 4) rh = Math.max(40, vh - rt - 4);   /* 화면 밖으로 넘치는 부분은 자른다 */
+    ring.className = '';
+    ring.style.cssText = 'display:block;top:' + Math.max(0, rt - pad) + 'px;left:' + Math.max(0, r.left - pad) + 'px;width:'
+      + (Math.min(r.width, vw) + pad * 2) + 'px;height:' + (rh + pad * 2) + 'px;';
+    var bw = bub.offsetWidth, bh = bub.offsetHeight;
+    var top = rt + rh + 16, left = r.left + r.width / 2 - bw / 2;
+    if (top + bh > vh - 10) top = rt - bh - 16;
+    if (top < 10) top = Math.max(10, vh - bh - 16);
+    if (left + bw > vw - 10) left = vw - bw - 10;
+    if (left < 10) left = 10;
+    bub.style.top = top + 'px'; bub.style.left = left + 'px';
+  }
+  function show(i){
+    if (i < 0) i = 0;
+    if (i >= steps.length) { close(); return; }
+    if (cur !== i && steps[cur] && steps[cur].post && mode === 'tour') { try { steps[cur].post(); } catch(e) {} }
+    cur = i;
+    var s = steps[i], last = i === steps.length - 1;
+    busy = true;
+    if (s.pre && mode === 'tour') { try { s.pre(); } catch(e) {} }
+    busy = false;
+    var foot;
+    if (mode === 'hint') {
+      foot = '<button type="button" class="sgt-off" data-a="off">처음 누를 때 안내 그만 보기</button>'
+           + '<button type="button" class="p" data-a="' + (last ? 'done' : 'next') + '">' + (last ? (s.ok || '알겠어요') : '다음 ▶') + '</button>';
+    } else {
+      foot = '<span class="sgt-n">' + (i + 1) + ' / ' + steps.length + '</span>'
+           + (i > 0 ? '<button type="button" data-a="prev">◀ 이전</button>' : '')
+           + '<button type="button" class="p" data-a="' + (last ? 'done' : 'next') + '">' + (last ? (s.ok || '다 봤어요') : '다음 ▶') + '</button>';
+    }
+    bub.innerHTML = '<button type="button" class="sgt-x" data-a="x" aria-label="닫기">✕</button>'
+      + '<div class="sgt-t">' + s.t + '</div><div class="sgt-d">' + s.d + '</div><div class="sgt-f">' + foot + '</div>';
+    bub.style.display = 'block'; catchEl.style.display = 'block';
+    place(null);
+    var put = function(){ if (catchEl.style.display === 'block' && steps[cur] === s) place(target(s)); };
+    setTimeout(put, s.pre ? 380 : 30); setTimeout(put, 800);
+  }
+  function close(){
+    if (!catchEl || catchEl.style.display !== 'block') return;
+    catchEl.style.display = 'none'; ring.style.display = 'none'; bub.style.display = 'none';
+    var s = steps[cur];
+    if (mode === 'tour' && s && s.post) { try { s.post(); } catch(e) {} }
+    if (key) markSeen(key);   /* 안내를 한 번 끝까지 봤으면 처음 누를 때 안내는 다시 띄우지 않는다 */
+    if (onDone) { var f = onDone; onDone = null; setTimeout(function(){ try { f(); } catch(e) {} }, 60); }
+  }
+  function running(){ return !!(catchEl && catchEl.style.display === 'block'); }
+  function blocked(){
+    if (running() || busy) return true;
+    var g = q('#sgg-catch'); if (g && g.style.display === 'block') return true;   /* 사용법 안내 중 */
+    if (q('#sgnt-ov')) return true;                                                 /* 공지 창 */
+    return false;
+  }
+
+  /* 공지 [써 보기] · 다시 보기 — 처음부터 단계별로 */
+  window.sgTour = function(k){
+    var T = TOURS[k]; if (!T) return;
+    if (T.only === 'm' && !MB) { toast('휴대폰 화면에 있는 기능입니다'); return; }
+    build(); mode = 'tour'; key = k; steps = T.steps; onDone = null; cur = 0;
+    show(0);
+  };
+  /* 처음 누를 때 1번 — 기능 화면이 열린 뒤 그 위에 말풍선 */
+  window.sgHintOnce = function(k, then){
+    var T = TOURS[k];
+    if (!T || hintsOff() || seenMap()[k] || blocked()) { if (then) then(); return false; }
+    var hs = T.steps.filter(function(s){ return s.hint; });
+    if (!hs.length) { if (then) then(); return false; }
+    build(); mode = 'hint'; key = k; steps = hs; onDone = then || null; cur = 0;
+    show(0);
+    return true;
+  };
+
+  /* ── 💡 기능 안내 창 ── */
+  window.sgTipPanel = function(){
+    if (q('#sgt-panel-ov')) return;
+    var ov = document.createElement('div'); ov.id = 'sgt-panel-ov';
+    var list = '';
+    Object.keys(TOURS).forEach(function(k){
+      var T = TOURS[k]; if (T.only === 'm' && !MB) return;
+      list += '<button type="button" class="it" data-k="' + k + '">' + T.name + '<span>보기 ▶</span></button>';
+    });
+    list += '<button type="button" class="it" data-k="__guide">🍑 처음 사용법 전체 안내<span>보기 ▶</span></button>';
+    function paint(){
+      var off = hintsOff(), b = ov.querySelector('#sgt-sw');
+      b.textContent = off ? '꺼짐' : '켜짐';
+      b.style.background = off ? '#e7e0d8' : '#16a34a'; b.style.color = off ? '#6b5a4c' : '#fff';
+    }
+    ov.innerHTML = '<div id="sgt-panel"><div class="hd"><b>💡 기능 안내</b><div>궁금한 기능을 누르면 화면에서 바로 짚어 드립니다</div>'
+      + '<button type="button" data-a="x">✕</button></div><div class="bd">' + list
+      + '<div class="sw">처음 누를 때 안내 띄우기<button type="button" id="sgt-sw" data-a="sw"></button></div>'
+      + '<button type="button" class="rs" data-a="rs">본 안내를 처음부터 다시 띄우기</button></div></div>';
+    document.body.appendChild(ov);
+    paint();
+    function shut(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.addEventListener('click', function(ev){
+      if (ev.target === ov) { shut(); return; }
+      var b = ev.target.closest ? ev.target.closest('button') : null; if (!b) return;
+      var a = b.getAttribute('data-a'), k = b.getAttribute('data-k');
+      if (a === 'x') shut();
+      else if (a === 'sw') { setHintsOff(!hintsOff()); paint(); }
+      else if (a === 'rs') { try { localStorage.removeItem('sgTipSeen'); } catch(e) {} setHintsOff(false); paint(); toast('기능을 처음 누를 때 안내가 다시 뜹니다'); }
+      else if (k === '__guide') { shut(); setTimeout(function(){ window.sgGuideStart && window.sgGuideStart(); }, 120); }
+      else if (k) { shut(); setTimeout(function(){ window.sgTour(k); }, 120); }
+    });
+  };
+
+  /* ── 처음 누를 때: 기존 함수에 안내를 덧붙인다 (원래 동작은 그대로) ── */
+  function after(name, k, delay){
+    var f = window[name]; if (typeof f !== 'function' || f.__sgTip) return !!(f && f.__sgTip);
+    var w = function(){
+      var r = f.apply(this, arguments);
+      if (!busy) setTimeout(function(){ window.sgHintOnce(k); }, delay || 450);
+      return r;
+    };
+    w.__sgTip = true; window[name] = w; return true;
+  }
+  function before(name, k){
+    var f = window[name]; if (typeof f !== 'function' || f.__sgTip) return !!(f && f.__sgTip);
+    var w = function(){
+      var self = this, args = arguments;
+      if (!busy && !hintsOff() && !seenMap()[k] && !blocked()) {
+        var T = TOURS[k];
+        build(); mode = 'hint'; key = k; cur = 0;
+        steps = [{ t: T.steps[0].t, d: T.steps[0].d, ok: '청구서 열기' }];
+        onDone = function(){ f.apply(self, args); };
+        show(0);
+        return;
+      }
+      return f.apply(self, args);
+    };
+    w.__sgTip = true; window[name] = w; return true;
+  }
+  function hookChips(){
+    var f = window.mvOpenDetail; if (!MB || typeof f !== 'function' || f.__sgTip) return !!(f && f.__sgTip);
+    var w = function(){
+      var r = f.apply(this, arguments);
+      if (!busy) setTimeout(function(){ if (q('#sg-mv-chips')) window.sgHintOnce('chips'); }, 700);
+      return r;
+    };
+    w.__sgTip = true; window.mvOpenDetail = w; return true;
+  }
+  function hookAll(){
+    var ok = true;
+    ok = after('sgOpenTools', 'tools') && ok;
+    ok = after('sgMvContacts', 'contacts') && ok;
+    ok = after('sgOpenMyFiles', 'myfiles') && ok;
+    ok = after('openDmTemplates', 'dm') && ok;
+    ok = after('applyDrPlan', 'dr', 250) && ok;
+    ok = after('mvDrPlan', 'dr', 250) && ok;
+    ok = before('openClaim', 'claim') && ok;
+    if (MB) ok = hookChips() && ok;
+    return ok;
+  }
+  var tries = 0;
+  (function loop(){ if (!hookAll() && ++tries < 40) setTimeout(loop, 500); })();
 })();
 </script>
 
