@@ -19131,7 +19131,7 @@ window.sgImportPrompt = function (withJumin) {
    · 새 소식이 생기면 아래 SG_NOTICE_VER 만 새 날짜로 바꾸면
      모든 분께 다시 한 번 뜹니다.
    ──────────────────────────────────────────────────────────────── */
-window.SG_NOTICE_VER = '20260918';
+window.SG_NOTICE_VER = '20261001';
 
 window.sgNoticeSeen = function () {
   try { return localStorage.getItem('sgNoticeSeen') === window.SG_NOTICE_VER; }
@@ -19143,20 +19143,19 @@ window.sgNoticeMark = function () {
 
 /* 공지 내용 — 여기만 고치면 됩니다 */
 window.SG_NOTICE_ITEMS = [
-  { ic: '🤝', t: '살구 운영자가 한 분 더 함께합니다', mint: true,
-    d: '<b>정민욱 팀장님</b>이 살구 운영자로 합류하셨습니다. 앞으로 사용 문의와 안내를 두 사람이 함께 챙기겠습니다. 편하게 말씀해 주세요.' },
-  { ic: '📥', t: '고객 일괄 등록 — 파일을 그대로 올리면 됩니다',
-    d: '버튼 이름이 <b>[📥 고객 일괄 등록]</b>으로 바뀌었고, 이제 <b>엑셀(양식 상관없음) · 메모장(txt) · CSV · 글자가 있는 PDF</b>를 그대로 올릴 수 있습니다. 올리면 <b>미리보기</b>가 먼저 떠서 살구가 이름·전화·주민번호·주소 칸을 짐작해 보여주고, 틀린 칸만 바꾼 뒤 [등록]을 누르면 끝입니다. 등록 전까지는 아무것도 저장되지 않고, 이미 있는 번호는 덮어쓰지 않습니다.',
-    note: '· <b>한 줄에 한 사람</b>만 지켜 주세요. (예: 홍길동 010-1234-5678 서울 강남구 … 메모)<br>'
-        + '· 사진 · 스캔 · 손글씨 명단은 안내 창의 <b>[AI로 엑셀 만드는 방법 보기]</b>를 따라 하시면 됩니다.<br>'
-        + '· 파일 올리는 창에 <b>[엑셀 샘플 받기] · [안내 다시 보기]</b> 버튼이 생겼습니다.',
-    b: '열어보기', fn: 'import' },
-  { ic: '✎', t: '고객정보 바로 수정',
-    d: '고객정보 탭의 전화번호 · 주소 · 직업 · 계좌 · 병력 · 메모 등 각 칸 옆에 작은 <b>연필(✎)</b>이 생겼습니다. 누르면 그 자리에서 바로 고치고 <b>Enter</b>로 저장됩니다. 수정 창을 열지 않아도 됩니다.' },
-  { ic: '👨‍👩‍👧', t: '고객 관계 연결', mint: true,
-    d: '고객정보 맨 아래 <b>관계</b> 칸에서 <b>[+ 관계 추가]</b> → 다른 고객을 검색해 <b>배우자 · 자녀 · 부모 · 형제/자매 · 기타</b>로 연결합니다. 한쪽에서 연결하면 상대 고객에도 자동으로 들어가고(자녀↔부모), 관계 알약을 누르면 그 고객으로 바로 이동합니다. 이름을 검색하면 연결된 가족도 함께 나옵니다.' },
-  { ic: '👥', t: '연령대 필터 · 태그 삭제',
-    d: '필터(⚙)에 <b>20대 미만 ~ 80대 이상</b> 연령대 필터가 생겼습니다(주민번호 기준 만 나이). 고객 태그 창에서는 태그 옆 <b>✕</b>로 안 쓰는 태그를 바로 지울 수 있습니다(모든 고객에서 함께 지워집니다).' }
+  { ic: '🌙', t: '다크모드',
+    d: '· PC: 맨 위 <b>[로그아웃] 옆 🌙</b> 버튼<br>· 모바일: 위쪽 <b>🌙 다크</b> 버튼<br>· 한 번 더 누르면 밝은 화면으로 돌아옵니다',
+    b: '다크모드 켜 보기', fn: 'dark' },
+  { ic: '🧰', t: '모바일 도구 서랍',
+    d: '· <b>🧰 도구</b>에 연락처 · 약관 · 청구 · 상담자료를 모았습니다<br>· 📞 연락처 · 📋 청구서류 · 📂 내파일 · 🌙 다크는 밖에도 있습니다' },
+  { ic: '📞', t: '모바일 보험사 연락처', mint: true,
+    d: '· 번호를 누르면 PC처럼 <b>"보험사 + 번호"</b>로 복사됩니다<br>· 카톡 · 문자에 바로 붙여 넣어 고객님께 보내세요' },
+  { ic: '👆', t: '모바일 고객 화면 바로가기 줄',
+    d: '· 고객정보 · 자료 · 상담 · 실손 등을 누르면 <b>그 칸으로 바로 이동</b><br>· 화면을 내려도 위에 고정되어 따라옵니다' },
+  { ic: '✅', t: '암 보장 개시 알림', mint: true,
+    d: '· 가입 91일째 <b>암 보장 개시 알림</b> 표시가 ✅로 바뀌었습니다' },
+  { ic: '🔧', t: '그 밖의 손질',
+    d: '· 모바일 <b>내 파일</b>에서 파일 이름이 세로로 깨지던 문제를 고쳤습니다' }
 ];
 window.sgNotice = function () {
   if (document.getElementById('sgnt-ov')) return;
@@ -19205,10 +19204,10 @@ window.sgNotice = function () {
   card.innerHTML =
     '<div style="background:linear-gradient(135deg,#9a3412,#e46a25);color:#fff;padding:20px 24px 18px;'
     + 'border-radius:18px 18px 0 0;position:relative;">'
-    + '<div style="font-size:11.5px;font-weight:800;letter-spacing:2px;opacity:.85;">UPDATE · 2026.09.18</div>'
+    + '<div style="font-size:11.5px;font-weight:800;letter-spacing:2px;opacity:.85;">UPDATE · 2026.10.01</div>'
     + '<div style="font-size:21px;font-weight:900;letter-spacing:-1px;margin-top:5px;">🍑 살구 CRM 새 소식</div>'
     + '<div style="font-size:13px;line-height:1.6;letter-spacing:-.35px;margin-top:7px;opacity:.95;">'
-    + '쓰시던 명단 파일을 그대로 올려 등록하고, 고객정보는 그 자리에서 바로 고치고, 가족은 서로 연결해 두실 수 있습니다.</div>'
+    + '밤에도 눈이 편한 다크모드가 생겼고, 모바일 화면이 한결 깔끔하고 빨라졌습니다.</div>'
     + '<button type="button" id="sgnt-x" style="position:absolute;top:16px;right:18px;border:none;'
     + 'background:rgba(255,255,255,.2);color:#fff;width:28px;height:28px;border-radius:8px;'
     + 'font-size:16px;cursor:pointer;font-family:inherit;">✕</button></div>'
@@ -19241,6 +19240,7 @@ window.sgNotice = function () {
           if (fn === 'guide' && window.sgGuideStart) window.sgGuideStart();
           else if (fn === 'import' && (window.sgImportIntro || window.sgImportGuide)) (window.sgImportIntro || window.sgImportGuide)();
           else if (fn === 'sync' && window.syncContacts) window.syncContacts();
+          else if (fn === 'dark' && window.sgToggleDark) { if (!document.documentElement.classList.contains('sg-dark')) window.sgToggleDark(); }
         } catch (e) {}
       }, 120);
       return;
