@@ -13995,7 +13995,7 @@ function copyContact(el) {
         '<div style="display:flex;justify-content:flex-start;gap:8px;margin:12px 12px 18px;">' +
           '<button type="button" class="mv-dm-btn" onclick="openDmTemplates(\'\')" style="margin:0;">퀵메시지</button>' +
           '<button type="button" class="mv-dm-btn" onclick="mvAddCustomer()" style="margin:0;background:linear-gradient(135deg,#e46a25,#ef8a4a);border-color:#e46a25;color:#fff;">＋ 새 고객</button>' +
-          '<button type="button" class="mv-dm-btn" onclick="if(window.sgGuideStart)window.sgGuideStart()" style="margin:0;margin-left:auto;">❓ 사용법</button>' +
+          '<button type="button" class="mv-dm-btn" onclick="if(window.sgTipPanel)window.sgTipPanel();else if(window.sgGuideStart)window.sgGuideStart()" style="margin:0;margin-left:auto;">❓ 사용법</button>' +
         '</div>' +
         '<input type="search" class="mv-search" placeholder="이름·전화·메모 검색" id="mv-search">' +
         '<div class="mv-toolbar" style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 12px;align-items:center;">' +
@@ -18269,7 +18269,6 @@ body:not(.sg-notif-open) #notif-list { display:none !important; }
       ['사용설명서', function(){ window.sgOpenManual(); }],   /* ★ 웹 설명서 (2026-08-15) */
       ['사용법 안내 (화면에서 보기)', function(){ if (window.sgGuideStart) window.sgGuideStart(); }],   /* ★ 가이드 (2026-09-10) */
       ['📢 공지사항 (새 소식)', function(){ if (window.sgNotice) window.sgNotice(); }],   /* ★ 공지 (2026-09-11) */
-      ['💡 기능 안내 (다시 보기 · 켜고 끄기)', function(){ if (window.sgTipPanel) window.sgTipPanel(); }],   /* ★ 기능 안내 (2026-10-02) */
       '-',
       ['화면: 기본', function(){ setLayoutMode('default'); }],
       ['화면: 넓게', function(){ setLayoutMode('wide'); }],
@@ -20219,7 +20218,7 @@ window.sgSeedSamples = function () {
     b.type = 'button'; b.id = 'sgg-btn';
     b.innerHTML = '❓<span class="lb">사용법</span>';
     b.title = '살구 사용법을 화면에서 차근차근 보여드립니다';
-    b.addEventListener('click', function () { window.sgGuideStart(); });
+    b.addEventListener('click', function () { if (window.sgTipPanel) window.sgTipPanel(); else window.sgGuideStart(); });   /* ★ 사용법 · 기능 안내 창 (2026-10-02) */
     sgf.parentNode.insertBefore(b, sgf.nextSibling);
     /* ★ 기능 찾기는 '오른쪽 메뉴가 첫 줄에 남을 때까지' 검색창을 줄인다.
        그런데 그 계산은 로그인 화면이 떠 있는 동안(.header-tools 가 아직 안 보일 때)
@@ -20445,7 +20444,7 @@ window.sgSeedSamples = function () {
       pc:go('sgGuideStart'), mb:go('sgGuideStart') },
     { e:'📢', t:'공지사항 (새 소식)', g:'도움말', w:['공지','새소식','업데이트','뭐가바뀌었','새기능','소식'],
       pc:go('sgNotice'), mb:go('sgNotice') },
-    { e:'💡', t:'기능 안내 (다시 보기 · 켜고 끄기)', g:'도움말', w:['기능안내','안내','도움말','다시보기','힌트','팁','설명','처음'],
+    { e:'💡', t:'사용법 · 기능 안내 (다시 보기 · 켜고 끄기)', g:'도움말', w:['기능안내','안내','도움말','다시보기','힌트','팁','설명','처음'],
       pc:go('sgTipPanel'), mb:go('sgTipPanel') }
   ];
 
@@ -21899,9 +21898,8 @@ window.sgSeedSamples = function () {
       ]],
       ['기타', [
         ['📖', '설명서', function(){ window.sgOpenManual(); }],
-        ['❓', '사용법', function(){ if (window.sgGuideStart) window.sgGuideStart(); }],
+        ['❓', '사용법', function(){ if (window.sgTipPanel) window.sgTipPanel(); else if (window.sgGuideStart) window.sgGuideStart(); }],   /* ★ 사용법 · 기능 안내 창 (2026-10-02) */
         ['📢', '공지', function(){ if (window.sgNotice) window.sgNotice(); }],
-        ['💡', '기능 안내', function(){ if (window.sgTipPanel) window.sgTipPanel(); }],
         ['🗑', '계정삭제 요청', function(){ window.sgAccountDelete(); }]
       ]]
     ];
@@ -22017,11 +22015,13 @@ window.sgSeedSamples = function () {
 </script>
 
 
-<!-- ═══ 2026-10-02 💡 기능 안내 ═══════════════════════════════════════
-     · 처음 누를 때 1번: 그 기능 위에 짧은 말풍선 안내가 뜬다 (본 것은 다시 안 뜸)
-     · 공지 [써 보기]: 화면을 어둡게 하고 그 버튼만 비추며 단계별로 안내
-     · [💡 기능 안내] 창: 안내 다시 보기 · 처음 누를 때 안내 켜기/끄기 · 본 안내 초기화
-     기록은 이 브라우저(localStorage)에만 남는다.  sgTipSeen = {키:1} / sgTipOff = '1'
+<!-- ═══ 2026-10-02 💡 버튼별 안내 · 사용법 창 ═══════════════════════════
+     · 메뉴 버튼 · 고객 화면 탭을 누르면 그 기능이 열린 뒤 말풍선 안내 (어둡게 + 비추기)
+       [알겠어요] → 이번 접속에서는 다시 안 뜸 / [다시 보지 않기] → 계속 안 뜸
+     · '다시 보지 않기'한 버튼을 또 누르면 💡 작은 말풍선이 3초 떴다 사라짐 (누르면 안내)
+     · 공지 [써 보기] → 따라 해 보기(sgTour) · [❓ 사용법] → 사용법 · 기능 안내 창(sgTipPanel)
+     · 원래 버튼 동작은 건드리지 않는다: 누르는 것을 지켜보기만 한다(click 캡처). 청구만 예외(넘어가기 전 안내)
+     기록: localStorage sgTipNever / sgTipOff , sessionStorage sgTipSess
      ───────────────────────────────────────────────────────────────── -->
 <style id="sg-tip-css">
 #sgt-catch{position:fixed;inset:0;z-index:100070;display:none;background:transparent}
@@ -22054,18 +22054,29 @@ window.sgSeedSamples = function () {
 #sgt-panel .sw{display:flex;align-items:center;gap:10px;border-top:1.5px dashed #ecd5bd;margin-top:6px;padding-top:12px;font-size:13.5px;color:#5b4636;font-weight:700}
 #sgt-panel .sw button{margin-left:auto;border:none;border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit}
 #sgt-panel .rs{display:block;margin:10px 0 0 auto;border:none;background:none;color:#a68b73;font-size:12px;text-decoration:underline;cursor:pointer;font-family:inherit}
+#sgt-mini{position:fixed;z-index:100069;display:none;background:#9a3412;color:#fff;font-size:12.5px;font-weight:800;
+  padding:7px 12px;border-radius:999px;box-shadow:0 8px 22px rgba(0,0,0,.28);cursor:pointer;font-family:inherit;letter-spacing:-.3px;
+  white-space:nowrap;border:none;animation:sgtMini .25s ease}
+@keyframes sgtMini{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+#sgt-panel .gh{font-size:12px;font-weight:800;color:#a68b73;margin:10px 2px 6px;letter-spacing:.5px}
 </style>
+
 <script>
 (function(){
   var MB = !!window.__IS_MOBILE__;
   function q(s){ try { return document.querySelector(s); } catch(e) { return null; } }
-  function seenMap(){ try { return JSON.parse(localStorage.getItem('sgTipSeen') || '{}') || {}; } catch(e) { return {}; } }
-  function markSeen(k){ try { var m = seenMap(); m[k] = 1; localStorage.setItem('sgTipSeen', JSON.stringify(m)); } catch(e) {} }
+  function jget(st, k){ try { return JSON.parse(st.getItem(k) || '{}') || {}; } catch(e) { return {}; } }
+  function jset(st, k, key){ try { var m = jget(st, k); m[key] = 1; st.setItem(k, JSON.stringify(m)); } catch(e) {} }
+  function isNever(k){ return !!jget(localStorage, 'sgTipNever')[k]; }
+  function setNever(k){ jset(localStorage, 'sgTipNever', k); }
+  function shownNow(k){ try { return !!jget(sessionStorage, 'sgTipSess')[k]; } catch(e) { return false; } }
+  function markNow(k){ try { jset(sessionStorage, 'sgTipSess', k); } catch(e) {} }
   function hintsOff(){ try { return localStorage.getItem('sgTipOff') === '1'; } catch(e) { return false; } }
   function setHintsOff(v){ try { if (v) localStorage.setItem('sgTipOff', '1'); else localStorage.removeItem('sgTipOff'); } catch(e) {} }
   function toast(m){ if (typeof showToast === 'function') showToast(m, 'green'); }
+  function txt(el){ return ((el && el.textContent) || '').replace(/\s+/g, ''); }
 
-  /* ── 안내에 쓰는 화면 열기 ── */
+  /* ── 안내에 쓰는 화면 열기 (공지 [써 보기] 용) ── */
   function firstCust(){
     var cs = (window.customers || []).filter(function(c){ return !c._personal; });
     return cs.length ? cs[0] : null;
@@ -22077,68 +22088,115 @@ window.sgSeedSamples = function () {
       else if (!q('.customer-card') && typeof window.selectCustomer === 'function') window.selectCustomer(c.id);
     } catch(e) {}
   }
-  function goDr(){
-    openCust();
-    setTimeout(function(){
-      try {
-        if (MB) { var el = q('#mv-dr-chips'); if (el) el.scrollIntoView({ block: 'center' }); }
-        else if (window.scrollToCardTab) window.scrollToCardTab('.dr-section');
-      } catch(e) {}
-    }, 250);
-  }
   function darkOn(){ try { if (!document.documentElement.classList.contains('sg-dark') && window.sgToggleDark) window.sgToggleDark(); } catch(e) {} }
 
-  /* ── 안내 내용 ──────────────────────────────────────────────
-     sel: PC 에서 비출 곳 / m: 모바일에서 비출 곳 (없으면 화면 가운데 말풍선)
-     only: 'm' 모바일 전용                                         */
+  /* ── ① 따라 해 보기 (공지 [써 보기] · 사용법 창) ── */
   var TOURS = {
-    dark: { name: '🌙 다크모드', steps: [
+    dark: { name: '🌙 다크모드 켜 보기', steps: [
       { sel: '#sg-dark-btn', m: '#sg-mv-dark-btn', t: '🌙 다크모드',
         d: '이 버튼을 누르면 화면이 <b>어둡게</b> 바뀝니다. 밤에도 눈이 편해요.' },
       { pre: darkOn, sel: '#sg-dark-btn', m: '#sg-mv-dark-btn', t: '켜졌습니다',
         d: '바탕은 차분한 회색, 글자는 밝게 바뀌었어요.<br><b>같은 버튼을 한 번 더 누르면</b> 밝은 화면으로 돌아옵니다.' }
     ]},
-    tools: { name: '🧰 도구 서랍', only: 'm', steps: [
+    tools: { name: '🧰 도구 서랍 열어 보기', only: 'm', steps: [
       { m: '#sg-mv-tools-btn', t: '🧰 도구',
         d: '보험사 연락처 · 약관 · 청구 · 상담자료 · 다크모드 · 글자 크기가 <b>여기 한곳에</b> 모여 있어요.' },
       { pre: function(){ window.sgOpenTools && window.sgOpenTools(); }, post: function(){ var o = q('#sg-drawer-ov'); if (o) o.classList.remove('open'); },
-        m: '#sg-drawer', t: '도구 서랍', hint: true,
-        d: '필요한 것을 누르면 바로 열립니다.<br>바깥을 누르거나 <b>✕</b>로 닫아요.' }
+        m: '#sg-drawer', t: '도구 서랍', d: '필요한 것을 누르면 바로 열립니다.<br>바깥을 누르거나 <b>✕</b>로 닫아요.' }
     ]},
-    contacts: { name: '📞 보험사 연락처 복사', only: 'm', steps: [
-      { m: '#sg-mv-contact-btn', t: '📞 보험사 연락처',
-        d: '누르면 보험사별 <b>고객센터 · 팩스 번호</b>가 나옵니다.' },
+    contacts: { name: '📞 보험사 번호 복사해 보기', only: 'm', steps: [
+      { m: '#sg-mv-contact-btn', t: '📞 보험사 연락처', d: '누르면 보험사별 <b>고객센터 · 팩스 번호</b>가 나옵니다.' },
       { pre: function(){ window.sgMvContacts && window.sgMvContacts(); }, post: function(){ var o = q('#sg-mc-ov'); if (o) o.classList.remove('open'); },
-        m: '#sg-mc', t: '번호를 누르면 복사', hint: true,
+        m: '#sg-mc', t: '번호를 누르면 복사',
         d: '<b>"삼성화재 고객센터 1588-5114"</b>처럼 보험사 이름과 함께 복사돼요. 카톡·문자에 붙여 넣어 고객님께 보내세요.<br>📞 전화 버튼은 바로 전화 걸기입니다.' }
     ]},
-    chips: { name: '👆 고객 화면 바로가기 줄', only: 'm', steps: [
-      { pre: openCust, m: '#sg-mv-chips', t: '👆 바로가기 줄', hint: true,
+    chips: { name: '👆 고객 화면 바로가기 줄 보기', only: 'm', steps: [
+      { pre: openCust, m: '#sg-mv-chips', t: '👆 바로가기 줄',
         d: '고객정보 · 자료 · 상담 · 실손 등을 누르면 <b>그 칸으로 바로</b> 내려갑니다.<br>화면을 내려도 위에 붙어 따라와요.' }
-    ]},
-    dr: { name: '📋 설계요청 간단플랜', steps: [
-      { pre: goDr, sel: '.dr-plans', m: '#mv-dr-chips', t: '📋 간단플랜', hint: true,
-        d: '플랜을 누르면 담보와 금액이 <b>한 번에</b> 채워지고 버튼이 <b>주황색</b>으로 바뀝니다.<br>여러 개 겹쳐 고를 수 있고, <b>다시 누르면 빠집니다.</b>' }
-    ]},
-    dm: { name: '💬 퀵메시지', steps: [
-      { pre: function(){ window.openDmTemplates && window.openDmTemplates(''); }, post: function(){ window.closeDmTemplates && window.closeDmTemplates(); },
-        sel: '#dm-overlay > div', m: '#dm-overlay > div', t: '💬 퀵메시지', hint: true,
-        d: '자주 보내는 문자를 저장해 두는 곳이에요. 고객 화면에서 열면 <b>고객 이름이 들어간 채로</b> 복사됩니다.' }
-    ]},
-    claim: { name: '📄 보험금 청구서', steps: [
-      { pre: openCust, sel: '.btn-quick-msg[onclick^="openClaim"]', m: '.mv-edit-btn[onclick^="openClaim"]', t: '📄 보험금 청구',
-        d: '누르면 이 고객의 <b>이름 · 주민번호 · 연락처 · 주소 · 계좌</b>가 채워진 청구서가 열립니다.' }
-    ]},
-    myfiles: { name: '📂 내 파일', steps: [
-      { pre: function(){ window.sgOpenMyFiles && window.sgOpenMyFiles(); }, post: function(){ var b = q('#sg-mf-close'); if (b) b.click(); },
-        sel: '#sg-mf-overlay > div', m: '#sg-mf-overlay > div', t: '📂 내 파일', hint: true,
-        d: '자주 쓰는 서류와 사진을 내 구글 드라이브에 올려 두고 <b>어디서든</b> 꺼내 쓰는 곳이에요. 폴더를 만들어 정리할 수 있습니다.' }
     ]}
   };
-  window.SG_TOURS = TOURS;
+
+  /* ── ② 버튼별 안내 — 버튼을 누르면 그 기능이 열린 뒤 그 위에 말풍선 ──
+     on: 누른 곳 찾기 (선택자 또는 함수) · target: 비출 곳 (없으면 누른 버튼, 그것도 없으면 가운데)
+     d: 설명 · md: 모바일에서 다르게 쓸 설명 · only: 'm' 모바일 전용 / 'pc' PC 전용                      */
+  function tabOn(secSel, chip){
+    return function(el){
+      if (!MB) { var b = el.closest('.card-tabs button'); return !!(b && (b.getAttribute('onclick') || '').indexOf(secSel) >= 0); }
+      var c = el.closest('#sg-mv-chips button'); return !!(c && txt(c) === chip);
+    };
+  }
+  var HINTS = {
+    script: { name: '📜 SCRIPT (상담 대본)', only: 'pc', on: '.header-quick-btns button[onclick*="toggleScriptPanel"]', target: '#script-panel',
+      t: '📜 SCRIPT — 전화 걸기 전에 대본을 펴세요',
+      d: '오른쪽에 상담 대본이 펼쳐집니다. <b>DB TA 상담</b>과 <b>이관DB</b> 두 가지가 들어 있고, 내 화법에 맞게 고쳐 쓰셔도 됩니다.<br>대본 옆 📝 메모는 적는 즉시 저장되는 내 작업용 메모장이에요.' },
+    sched: { name: '📋 스케줄', only: 'pc', on: '[onclick*="openSchedDashboard"]',
+      t: '📋 스케줄 — 잡아둔 일정을 한눈에',
+      d: '고객마다 넣어둔 재연락 · 미팅이 <b>달력 한 장</b>에 모입니다. 날짜를 끌어다 옮길 수도 있고, 오늘 할 일이 몇 건인지 바로 보입니다.' },
+    dm: { name: '💬 퀵메시지', on: '[onclick^="openDmTemplates"]', target: '#dm-overlay > div',
+      t: '💬 퀵메시지 — 자주 보내는 문자',
+      d: '안부 · 감사 · 생일 인사처럼 매번 비슷한 문자를 저장해 두고 눌러서 복사합니다. 고객 화면에서 열면 <b>{이름} 자리에 그 고객 이름</b>이 들어가요.' },
+    gift: { name: '⭐ 중요 할 일', on: '[onclick*="toggleGiftPanel"], [onclick*="mvOpenGiftModal"]',
+      t: '⭐ 중요 할 일',
+      d: '고객마다 적어 둔 <b>중요 할 일 · 선물 약속</b>이 한곳에 모입니다. 끝낸 일은 완료로 넘겨 두세요.' },
+    bday: { name: '🎂 생일자', on: '[onclick*="openBirthdayPanel"]',
+      t: '🎂 생일자',
+      d: '<b>오늘 · 내일</b> 생일인 고객이 나옵니다. 누르면 그 고객으로 바로 이동해요.' },
+    bell: { name: '🔔 기한초과 · 오늘 알림', on: '#sg-bell, #sg-mv-bell',
+      t: '🔔 기한초과 · 오늘 알림',
+      d: '오늘 예정된 일과 <b>날짜가 지난 일</b>을 모아 보여 줍니다. 버튼의 숫자는 남은 건수예요. 한 번 더 누르면 닫힙니다.' },
+    consult: { name: '🗂 상담 도구', only: 'pc', on: function(el){ var b = el.closest('.sg-menu-wrap > button'); return !!(b && txt(b).indexOf('상담도구') === 0); }, target: '.sg-menu.open',
+      t: '🗂 상담 도구',
+      d: '실손비교표 · 보험사 연락처 · 상담자료 · 청구 필요서류 · 청구서 · 약관이 모여 있어요.' },
+    mytools: { name: '🛠 내 도구', only: 'pc', on: function(el){ var b = el.closest('.sg-menu-wrap > button'); return !!(b && txt(b).indexOf('내도구') === 0); }, target: '.sg-menu.open',
+      t: '🛠 내 도구',
+      d: '연락처 · 캘린더 동기화, 대표코드, 내 아이디/비번, 백업 폴더, 공지사항, 화면 넓게 보기가 있어요.' },
+    myfiles: { name: '📂 내 파일', on: function(el){
+        var b = el.closest('button'); if (!b) return false;
+        if ((b.getAttribute('onclick') || '').indexOf('sgMobileMyFiles') >= 0) return true;
+        return !MB && txt(b) === '내파일' && !!b.closest('.header, .header-tools');
+      }, target: '#sg-mf-overlay > div',
+      t: '📂 내 파일',
+      d: '자주 쓰는 서류와 사진을 내 구글 드라이브에 올려 두고 <b>어디서든</b> 꺼내 쓰는 곳이에요. 폴더를 만들어 정리할 수 있습니다.' },
+    tools: { name: '🧰 도구 (모바일)', only: 'm', on: '#sg-mv-tools-btn', target: '#sg-drawer',
+      t: '🧰 도구 서랍', d: '보험사 연락처 · 약관 · 청구 · 상담자료 · 다크모드 · 글자 크기가 모여 있어요. 필요한 것을 누르면 바로 열립니다.' },
+    contacts: { name: '📞 보험사 연락처 (모바일)', only: 'm', on: '#sg-mv-contact-btn', target: '#sg-mc',
+      t: '📞 번호를 누르면 복사',
+      d: '<b>"삼성화재 고객센터 1588-5114"</b>처럼 보험사 이름과 함께 복사돼요. 카톡·문자에 붙여 넣어 고객님께 보내세요. 📞 전화 버튼은 바로 전화 걸기입니다.' },
+    claimdocs: { name: '📋 청구 필요서류', on: '[onclick*="openClaimDocsModal"]', target: '#cd-overlay > div',
+      t: '📋 청구 필요서류',
+      d: '청구할 항목을 체크하면 <b>필요한 서류 목록</b>이 만들어지고, 그대로 복사해 고객님께 보낼 수 있어요.' },
+    dark: { name: '🌙 다크모드', on: '#sg-dark-btn, #sg-mv-dark-btn',
+      t: '🌙 다크모드', d: '화면이 어둡게 바뀌었어요. <b>한 번 더 누르면</b> 밝은 화면으로 돌아옵니다.' },
+    /* 고객 화면 칸 — PC 는 위쪽 탭, 모바일은 바로가기 줄 */
+    tInfo: { name: '👤 고객정보', on: tabOn('.info-grid', '고객정보'), target: '.info-grid', mtarget: '#sg-mv-chips',
+      t: '👤 고객정보',
+      d: '전화 · 주소 · 직업 · 계좌 · 병력 · 메모가 들어 있어요. 칸 옆 <b>✎ 연필</b>을 누르면 그 자리에서 바로 고치고 Enter 로 저장됩니다.',
+      md: '전화 · 주소 · 직업 · 계좌 · 병력 · 메모가 들어 있어요. 전화번호를 누르면 바로 전화 · 문자로 이어집니다.' },
+    tSched: { name: '📅 고객 스케줄', on: tabOn('.sched-add-form', '스케줄'), target: '.sched-add-form', mtarget: '#sg-mv-chips',
+      t: '📅 스케줄 — 다시 연락할 날',
+      d: '재연락 · 미팅 날짜를 넣어 두면 <b>스케줄 달력</b>에 모여서 보입니다. 그날이 오면 알려드리니 놓치는 고객이 없어집니다.' },
+    tProp: { name: '📎 고객 자료', on: tabOn('.proposal-section', '자료'), target: '.proposal-section', mtarget: '#sg-mv-chips',
+      t: '📎 자료', d: '사진 · PDF · 엑셀 · 한글 등 이 고객의 자료를 <b>무엇이든</b> 넣어 둘 수 있어요.' },
+    tConsult: { name: '💬 상담 기록', on: tabOn('.consult-form', '상담'), target: '.consult-form', mtarget: '#sg-mv-chips',
+      t: '💬 상담 — 통화 후 한 줄만',
+      d: '통화하고 나서 한 줄만 적어 두세요. 날짜별로 쌓여서, 다음에 전화할 때 <b>지난번에 무슨 얘기를 했는지</b> 바로 보입니다.' },
+    tGift: { name: '⭐ 고객 중요할일', on: tabOn('.gift-section', '중요할일'), target: '.gift-section', mtarget: '#sg-mv-chips',
+      t: '⭐ 중요할일', d: '이 고객에게 해야 할 일 · 선물 약속을 적어 두는 곳이에요. 모두 모아 보려면 위쪽 <b>⭐ 중요 할 일</b>을 누르세요.' },
+    tAuto: { name: '🚗 자동차보험', on: tabOn('.auto-section', '자동차'), target: '.auto-section', mtarget: '#sg-mv-chips',
+      t: '🚗 자동차보험', d: '고객의 차량별 <b>자동차보험</b>을 등록해 두는 곳이에요. <b>🚗 새 차량 자동차 보험 등록</b>으로 추가합니다.' },
+    tSilson: { name: '🏥 실손 점검', on: tabOn('.silson-section', '실손'), target: '.silson-section', mtarget: '#sg-mv-chips',
+      t: '🏥 실손보험 재가입 점검', d: '실손보험 <b>가입일</b>을 넣으면 몇 세대 실손인지와 <b>재가입 점검</b>까지 남은 기간을 알려 줍니다.' },
+    tMr: { name: '📒 매니저 요청', on: tabOn('.mr-section', '매니저'), target: '.mr-section', mtarget: '#sg-mv-chips',
+      t: '📒 매니저 요청', d: '매니저에게 맡긴 <b>요청</b>을 기록해 두는 곳이에요. <b>📒 매니저 목록</b>을 눌러 새 요청을 적습니다.' },
+    tDr: { name: '📋 설계요청', on: tabOn('.dr-section', '설계요청'), target: '.dr-plans', mtarget: '#mv-dr-chips',
+      t: '📋 설계요청 — 플랜 버튼 한 번이면 됩니다',
+      d: '담보를 하나하나 고르지 않아도 <b>간단플랜</b>을 누르면 금액까지 한 번에 채워지고 버튼이 <b>주황색</b>이 됩니다. 여러 개 겹쳐 고를 수 있고, <b>다시 누르면 빠집니다.</b> 자주 쓰는 조합은 <b>내 플랜</b>으로 저장하세요.' }
+  };
+  window.SG_TOURS = TOURS; window.SG_HINTS = HINTS;
+  function avail(o){ return !(o.only === 'm' && !MB) && !(o.only === 'pc' && MB); }
 
   /* ── 화면 (사용법 안내와 같은 모양: 어둡게 + 비추기 + 말풍선) ── */
-  var catchEl, ring, bub, steps = [], cur = 0, mode = 'tour', key = '', onDone = null, busy = false;
+  var catchEl, ring, bub, mini, steps = [], cur = 0, mode = 'tour', key = '', onDone = null, busy = false, miniT = 0;
   function build(){
     if (catchEl) return;
     catchEl = document.createElement('div'); catchEl.id = 'sgt-catch';
@@ -22151,16 +22209,15 @@ window.sgSeedSamples = function () {
       var a = b.getAttribute('data-a');
       if (a === 'next') show(cur + 1);
       else if (a === 'prev') show(cur - 1);
-      else if (a === 'off') { setHintsOff(true); close(); toast('처음 누를 때 안내를 껐습니다 · [💡 기능 안내]에서 다시 켤 수 있어요'); }
+      else if (a === 'never') { if (key) setNever(key); close(); toast('이 안내는 다시 뜨지 않습니다 · 필요하면 버튼 옆 💡 말풍선을 누르세요'); }
       else close();
     });
     document.addEventListener('keydown', function(ev){
-      if (!catchEl || catchEl.style.display !== 'block') return;
+      if (!running()) return;
       if (ev.key === 'Escape') { ev.stopPropagation(); close(); }
     }, true);
   }
-  function target(s){
-    var sel = MB ? (s.m || '') : (s.sel || '');
+  function findEl(sel){
     var el = sel ? q(sel) : null;
     if (el) { var r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0) return el; }
     return null;
@@ -22194,6 +22251,12 @@ window.sgSeedSamples = function () {
     if (left < 10) left = 10;
     bub.style.top = top + 'px'; bub.style.left = left + 'px';
   }
+  function stepTarget(s){
+    if (s.el && s.el.isConnected) { var r = s.el.getBoundingClientRect(); if (r.width > 0) return s.el; }
+    var sels = MB ? [s.m, s.mtarget, s.target] : [s.sel, s.target];
+    for (var i = 0; i < sels.length; i++) { var e = findEl(sels[i]); if (e) return e; }
+    return (s.btn && s.btn.isConnected && s.btn.getBoundingClientRect().width > 0) ? s.btn : null;
+  }
   function show(i){
     if (i < 0) i = 0;
     if (i >= steps.length) { close(); return; }
@@ -22205,137 +22268,155 @@ window.sgSeedSamples = function () {
     busy = false;
     var foot;
     if (mode === 'hint') {
-      foot = '<button type="button" class="sgt-off" data-a="off">처음 누를 때 안내 그만 보기</button>'
-           + '<button type="button" class="p" data-a="' + (last ? 'done' : 'next') + '">' + (last ? (s.ok || '알겠어요') : '다음 ▶') + '</button>';
+      foot = (s.noNever ? '<span class="sgt-n"></span>' : '<button type="button" class="sgt-off" data-a="never">다시 보지 않기</button>')
+           + '<button type="button" class="p" data-a="done">' + (s.ok || '알겠어요') + '</button>';
     } else {
       foot = '<span class="sgt-n">' + (i + 1) + ' / ' + steps.length + '</span>'
            + (i > 0 ? '<button type="button" data-a="prev">◀ 이전</button>' : '')
            + '<button type="button" class="p" data-a="' + (last ? 'done' : 'next') + '">' + (last ? (s.ok || '다 봤어요') : '다음 ▶') + '</button>';
     }
     bub.innerHTML = '<button type="button" class="sgt-x" data-a="x" aria-label="닫기">✕</button>'
-      + '<div class="sgt-t">' + s.t + '</div><div class="sgt-d">' + s.d + '</div><div class="sgt-f">' + foot + '</div>';
+      + '<div class="sgt-t">' + s.t + '</div><div class="sgt-d">' + ((MB && s.md) || s.d) + '</div><div class="sgt-f">' + foot + '</div>';
     bub.style.display = 'block'; catchEl.style.display = 'block';
     place(null);
-    var put = function(){ if (catchEl.style.display === 'block' && steps[cur] === s) place(target(s)); };
+    var put = function(){ if (running() && steps[cur] === s) place(stepTarget(s)); };
     setTimeout(put, s.pre ? 380 : 30); setTimeout(put, 800);
   }
   function close(){
-    if (!catchEl || catchEl.style.display !== 'block') return;
+    if (!running()) return;
     catchEl.style.display = 'none'; ring.style.display = 'none'; bub.style.display = 'none';
     var s = steps[cur];
     if (mode === 'tour' && s && s.post) { try { s.post(); } catch(e) {} }
-    if (key) markSeen(key);   /* 안내를 한 번 끝까지 봤으면 처음 누를 때 안내는 다시 띄우지 않는다 */
+    if (mode === 'hint' && key) markNow(key);
     if (onDone) { var f = onDone; onDone = null; setTimeout(function(){ try { f(); } catch(e) {} }, 60); }
   }
   function running(){ return !!(catchEl && catchEl.style.display === 'block'); }
   function blocked(){
     if (running() || busy) return true;
     var g = q('#sgg-catch'); if (g && g.style.display === 'block') return true;   /* 사용법 안내 중 */
-    if (q('#sgnt-ov')) return true;                                                 /* 공지 창 */
+    if (q('#sgnt-ov') || q('#sgt-panel-ov')) return true;                         /* 공지 · 사용법 창 */
     return false;
   }
 
-  /* 공지 [써 보기] · 다시 보기 — 처음부터 단계별로 */
+  /* 따라 해 보기 — 공지 [써 보기] · 사용법 창 */
   window.sgTour = function(k){
     var T = TOURS[k]; if (!T) return;
     if (T.only === 'm' && !MB) { toast('휴대폰 화면에 있는 기능입니다'); return; }
     build(); mode = 'tour'; key = k; steps = T.steps; onDone = null; cur = 0;
     show(0);
   };
-  /* 처음 누를 때 1번 — 기능 화면이 열린 뒤 그 위에 말풍선 */
-  window.sgHintOnce = function(k, then){
-    var T = TOURS[k];
-    if (!T || hintsOff() || seenMap()[k] || blocked()) { if (then) then(); return false; }
-    var hs = T.steps.filter(function(s){ return s.hint; });
-    if (!hs.length) { if (then) then(); return false; }
-    build(); mode = 'hint'; key = k; steps = hs; onDone = then || null; cur = 0;
+  /* 버튼별 안내 한 장 */
+  function hintStep(k, btn){
+    var H = HINTS[k];
+    return { t: H.t, d: H.d, md: H.md, target: H.target, mtarget: H.mtarget, btn: btn };
+  }
+  window.sgHint = function(k, btn, opts){
+    var H = HINTS[k]; if (!H) return;
+    build(); mode = 'hint'; key = k; cur = 0;
+    var st = hintStep(k, btn);
+    if (opts && opts.noNever) st.noNever = true;
+    if (opts && opts.ok) st.ok = opts.ok;
+    steps = [st]; onDone = (opts && opts.then) || null;
     show(0);
-    return true;
   };
+  /* 💡 작은 말풍선 — '다시 보지 않기'를 누른 버튼을 또 눌렀을 때. 화면을 가리지 않고 3초 뒤 사라짐 */
+  function showMini(k, btn){
+    if (!mini) {
+      mini = document.createElement('button'); mini.type = 'button'; mini.id = 'sgt-mini';
+      mini.textContent = '💡 안내가 필요하면 눌러주세요';
+      document.body.appendChild(mini);
+      mini.addEventListener('click', function(ev){
+        ev.stopPropagation(); mini.style.display = 'none';
+        window.sgHint(mini.__k, mini.__btn, { noNever: true });
+      });
+    }
+    mini.__k = k; mini.__btn = btn;
+    mini.style.display = 'block';
+    var vw = window.innerWidth, vh = window.innerHeight, mw = mini.offsetWidth, mh = mini.offsetHeight;
+    var r = (btn && btn.isConnected) ? btn.getBoundingClientRect() : { top: vh / 2, bottom: vh / 2, left: vw / 2, width: 0 };
+    var top = r.bottom + 8; if (top + mh > vh - 8) top = r.top - mh - 8;
+    var left = r.left + r.width / 2 - mw / 2; if (left + mw > vw - 8) left = vw - mw - 8; if (left < 8) left = 8;
+    mini.style.top = Math.max(8, top) + 'px'; mini.style.left = left + 'px';
+    clearTimeout(miniT); miniT = setTimeout(function(){ mini.style.display = 'none'; }, 3000);
+  }
 
-  /* ── 💡 기능 안내 창 ── */
+  /* ── 누르는 것을 지켜보기만 한다 (원래 동작은 건드리지 않음) ── */
+  function matchKey(el){
+    for (var k in HINTS) {
+      var H = HINTS[k]; if (!avail(H)) continue;
+      var on = H.on, hit = null;
+      try {
+        if (typeof on === 'function') { if (on(el)) hit = el.closest('button') || el; }
+        else hit = el.closest(on);
+      } catch(e) { hit = null; }
+      if (hit) return { k: k, btn: hit };
+    }
+    return null;
+  }
+  document.addEventListener('click', function(ev){
+    try {
+      if (!ev.isTrusted || hintsOff()) return;
+      var t = ev.target; if (!t || !t.closest) return;
+      if (t.closest('#sgt-bub, #sgt-catch, #sgt-mini, #sgt-panel-ov, #sgg-bub, #sgnt-ov')) return;
+      var m = matchKey(t); if (!m) return;
+      if (isNever(m.k)) { setTimeout(function(){ if (!blocked()) showMini(m.k, m.btn); }, 250); return; }
+      if (shownNow(m.k)) return;
+      setTimeout(function(){ if (!blocked() && !hintsOff()) window.sgHint(m.k, m.btn); }, MB ? 600 : 500);
+    } catch(e) {}
+  }, true);
+
+  /* 보험금 청구 — 다른 화면으로 넘어가므로, 넘어가기 전에 안내 */
+  HINTS.claim = { name: '📄 보험금 청구', t: '📄 보험금 청구',
+    d: '이 고객의 <b>이름 · 주민번호 · 연락처 · 주소 · 계좌</b>가 채워진 청구서가 열립니다. 보험사를 고르고 사고 내용만 적으면 됩니다.' };
+  (function hookClaim(n){
+    var f = window.openClaim;
+    if (typeof f !== 'function') { if (n < 40) setTimeout(function(){ hookClaim(n + 1); }, 500); return; }
+    if (f.__sgTip) return;
+    var w = function(){
+      var self = this, args = arguments;
+      if (!busy && !hintsOff() && !isNever('claim') && !shownNow('claim') && !blocked()) {
+        window.sgHint('claim', null, { ok: '청구서 열기', then: function(){ f.apply(self, args); } });
+        return;
+      }
+      return f.apply(self, args);
+    };
+    w.__sgTip = true; window.openClaim = w;
+  })(0);
+
+  /* ── ❓ 사용법 · 기능 안내 창 ── */
   window.sgTipPanel = function(){
     if (q('#sgt-panel-ov')) return;
     var ov = document.createElement('div'); ov.id = 'sgt-panel-ov';
-    var list = '';
-    Object.keys(TOURS).forEach(function(k){
-      var T = TOURS[k]; if (T.only === 'm' && !MB) return;
-      list += '<button type="button" class="it" data-k="' + k + '">' + T.name + '<span>보기 ▶</span></button>';
-    });
-    list += '<button type="button" class="it" data-k="__guide">🍑 처음 사용법 전체 안내<span>보기 ▶</span></button>';
+    var tours = '', hints = '';
+    Object.keys(TOURS).forEach(function(k){ if (avail(TOURS[k])) tours += '<button type="button" class="it" data-t="' + k + '">' + TOURS[k].name + '<span>따라 하기 ▶</span></button>'; });
+    Object.keys(HINTS).forEach(function(k){ if (avail(HINTS[k]) && !(MB && k === 'claim' && false)) hints += '<button type="button" class="it" data-h="' + k + '">' + HINTS[k].name + '<span>보기 ▶</span></button>'; });
     function paint(){
       var off = hintsOff(), b = ov.querySelector('#sgt-sw');
       b.textContent = off ? '꺼짐' : '켜짐';
       b.style.background = off ? '#e7e0d8' : '#16a34a'; b.style.color = off ? '#6b5a4c' : '#fff';
     }
-    ov.innerHTML = '<div id="sgt-panel"><div class="hd"><b>💡 기능 안내</b><div>궁금한 기능을 누르면 화면에서 바로 짚어 드립니다</div>'
-      + '<button type="button" data-a="x">✕</button></div><div class="bd">' + list
-      + '<div class="sw">처음 누를 때 안내 띄우기<button type="button" id="sgt-sw" data-a="sw"></button></div>'
-      + '<button type="button" class="rs" data-a="rs">본 안내를 처음부터 다시 띄우기</button></div></div>';
+    ov.innerHTML = '<div id="sgt-panel"><div class="hd"><b>❓ 사용법 · 기능 안내</b><div>궁금한 것을 누르면 화면에서 바로 짚어 드립니다</div>'
+      + '<button type="button" data-a="x">✕</button></div><div class="bd">'
+      + '<button type="button" class="it" data-a="guide">🍑 처음 사용법 전체 안내<span>보기 ▶</span></button>'
+      + (tours ? '<div class="gh">새 기능 따라 해 보기</div>' + tours : '')
+      + '<div class="gh">버튼별 안내</div>' + hints
+      + '<div class="sw">버튼 누를 때 안내 띄우기<button type="button" id="sgt-sw" data-a="sw"></button></div>'
+      + '<button type="button" class="rs" data-a="rs">\'다시 보지 않기\' 한 안내도 다시 띄우기</button></div></div>';
     document.body.appendChild(ov);
     paint();
     function shut(){ if (ov.parentNode) ov.parentNode.removeChild(ov); }
     ov.addEventListener('click', function(ev){
       if (ev.target === ov) { shut(); return; }
       var b = ev.target.closest ? ev.target.closest('button') : null; if (!b) return;
-      var a = b.getAttribute('data-a'), k = b.getAttribute('data-k');
+      var a = b.getAttribute('data-a'), tk = b.getAttribute('data-t'), hk = b.getAttribute('data-h');
       if (a === 'x') shut();
       else if (a === 'sw') { setHintsOff(!hintsOff()); paint(); }
-      else if (a === 'rs') { try { localStorage.removeItem('sgTipSeen'); } catch(e) {} setHintsOff(false); paint(); toast('기능을 처음 누를 때 안내가 다시 뜹니다'); }
-      else if (k === '__guide') { shut(); setTimeout(function(){ window.sgGuideStart && window.sgGuideStart(); }, 120); }
-      else if (k) { shut(); setTimeout(function(){ window.sgTour(k); }, 120); }
+      else if (a === 'rs') { try { localStorage.removeItem('sgTipNever'); sessionStorage.removeItem('sgTipSess'); } catch(e) {} setHintsOff(false); paint(); toast('버튼을 누르면 안내가 다시 뜹니다'); }
+      else if (a === 'guide') { shut(); setTimeout(function(){ window.sgGuideStart && window.sgGuideStart(); }, 120); }
+      else if (tk) { shut(); setTimeout(function(){ window.sgTour(tk); }, 120); }
+      else if (hk) { shut(); setTimeout(function(){ window.sgHint(hk, null, { noNever: true }); }, 120); }
     });
   };
-
-  /* ── 처음 누를 때: 기존 함수에 안내를 덧붙인다 (원래 동작은 그대로) ── */
-  function after(name, k, delay){
-    var f = window[name]; if (typeof f !== 'function' || f.__sgTip) return !!(f && f.__sgTip);
-    var w = function(){
-      var r = f.apply(this, arguments);
-      if (!busy) setTimeout(function(){ window.sgHintOnce(k); }, delay || 450);
-      return r;
-    };
-    w.__sgTip = true; window[name] = w; return true;
-  }
-  function before(name, k){
-    var f = window[name]; if (typeof f !== 'function' || f.__sgTip) return !!(f && f.__sgTip);
-    var w = function(){
-      var self = this, args = arguments;
-      if (!busy && !hintsOff() && !seenMap()[k] && !blocked()) {
-        var T = TOURS[k];
-        build(); mode = 'hint'; key = k; cur = 0;
-        steps = [{ t: T.steps[0].t, d: T.steps[0].d, ok: '청구서 열기' }];
-        onDone = function(){ f.apply(self, args); };
-        show(0);
-        return;
-      }
-      return f.apply(self, args);
-    };
-    w.__sgTip = true; window[name] = w; return true;
-  }
-  function hookChips(){
-    var f = window.mvOpenDetail; if (!MB || typeof f !== 'function' || f.__sgTip) return !!(f && f.__sgTip);
-    var w = function(){
-      var r = f.apply(this, arguments);
-      if (!busy) setTimeout(function(){ if (q('#sg-mv-chips')) window.sgHintOnce('chips'); }, 700);
-      return r;
-    };
-    w.__sgTip = true; window.mvOpenDetail = w; return true;
-  }
-  function hookAll(){
-    var ok = true;
-    ok = after('sgOpenTools', 'tools') && ok;
-    ok = after('sgMvContacts', 'contacts') && ok;
-    ok = after('sgOpenMyFiles', 'myfiles') && ok;
-    ok = after('openDmTemplates', 'dm') && ok;
-    ok = after('applyDrPlan', 'dr', 250) && ok;
-    ok = after('mvDrPlan', 'dr', 250) && ok;
-    ok = before('openClaim', 'claim') && ok;
-    if (MB) ok = hookChips() && ok;
-    return ok;
-  }
-  var tries = 0;
-  (function loop(){ if (!hookAll() && ++tries < 40) setTimeout(loop, 500); })();
 })();
 </script>
 
